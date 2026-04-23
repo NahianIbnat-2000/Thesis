@@ -137,7 +137,7 @@ Each sovereign green bond is paired with a **maturity-matched conventional bond*
 
 ## Notebooks
 
-### Databricks (Production)
+### Databricks / VSCode (Production)
 | Notebook | Description |
 |---|---|
 | `GreenBond_Regression.ipynb` | Main DiD panel regressions, fixed effects, robustness checks, coefficient plots |
@@ -158,7 +158,7 @@ Each sovereign green bond is paired with a **maturity-matched conventional bond*
 3. **Regressions:** Run `GreenBond_Regression.ipynb` on Databricks (or a local PySpark/pandas environment) to reproduce all regression tables and coefficient plots.
 4. **Event study:** Run `GreenBond_EventStudy.ipynb` to reproduce all event study figures.
 
-All outputs are saved to `output/regression/`.
+All outputs are saved to `output/`.
 
 ---
 
