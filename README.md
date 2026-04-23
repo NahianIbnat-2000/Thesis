@@ -9,7 +9,7 @@ Supervisor: Zoltán Csaba Tóth | April 2026
 
 ## Overview
 
-This repository contains all data, code, and written chapters for my MA thesis. The study investigates whether daily political climate sentiment influences the **Greenium** — the yield discount on sovereign green bonds relative to maturity-matched conventional twins — in India and Indonesia over 2020–2024.
+This repository contains all data, code, and written chapters for my MA thesis first draft. The content will change as per the Thesis Seminar Comments and Supervisor Comments The study investigates whether daily political climate sentiment influences the **Greenium** — the yield discount on sovereign green bonds relative to maturity-matched conventional twins — in India and Indonesia over 2020–2024.
 
 The empirical design uses a **Twin-Bond quasi-experimental framework** paired with a **staggered Difference-in-Differences (DiD)** estimator, anchored on two political shocks: India's inaugural green bond auction (January 2023) and Indonesia's JETP announcement at the G20 Bali Summit (November 2022). Climate sentiment is measured using **GDELT V2Tone** scores, with a **ClimateBERT** robustness check.
 
