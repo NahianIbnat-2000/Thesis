@@ -151,6 +151,42 @@ Each sovereign green bond is paired with a **maturity-matched conventional bond*
 
 ---
 
+## Environment
+
+### Requirements
+
+- Python 3.10+
+- See [`requirements.txt`](requirements.txt) for full dependencies
+
+### Cloud Environments Used
+
+| Environment | Runtime | Used For |
+|---|---|---|
+| Google Colab | GPU (T4) | NLP notebooks — GDELT extraction, ClimateBERT inference |
+| Databricks Community Edition | Apache Spark | Regression notebooks — DiD panel, event study |
+
+### Local Reproduction
+
+```bash
+pip install -r requirements.txt
+```
+
+Key packages:
+
+| Package | Version | Purpose |
+|---|---|---|
+| `pandas`, `numpy` | ≥1.5, ≥1.23 | Data manipulation and panel construction |
+| `statsmodels` | ≥0.13 | OLS regression, DiD, Durbin-Watson, VIF |
+| `transformers`, `torch` | ≥4.30, ≥2.0 | ClimateBERT sentiment classification |
+| `requests` | ≥2.28 | GDELT DOC API queries |
+| `matplotlib` | ≥3.6 | All thesis figures |
+| `openpyxl` | ≥3.0 | Excel I/O for raw bond data |
+| `tqdm` | ≥4.64 | Progress bars for NLP inference |
+
+> **Note:** The ClimateBERT model (`climatebert/distilroberta-base-climate-sentiment`) is downloaded automatically via Hugging Face `transformers` on first run. A GPU runtime is strongly recommended for the ClimateBERT notebook.
+
+---
+
 ## How to Reproduce
 
 1. **Sentiment data:** Run `GreenBond_GDELT_clean.ipynb` and `GreenBond_ClimateBERT_clean.ipynb` on Google Colab to regenerate processed GDELT files.
