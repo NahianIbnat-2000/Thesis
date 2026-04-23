@@ -18,4 +18,24 @@ requests>=2.28.0           # GDELT API queries
 matplotlib>=3.6.0          # All thesis figures
 
 # ── Utilities (stdlib, no install needed) ─────
+# ── Data manipulation ──────────────────────────
+pandas>=1.5.0
+numpy>=1.23.0
+openpyxl>=3.0.10          # Excel I/O
+
+# ── Regression & econometrics ──────────────────
+statsmodels>=0.13.0        # OLS, DiD, Durbin-Watson, VIF
+
+# ── NLP / ClimateBERT ─────────────────────────
+transformers>=4.30.0       # AutoTokenizer, AutoModelForSequenceClassification
+torch>=2.0.0               # PyTorch backend for ClimateBERT
+tqdm>=4.64.0               # Progress bars
+
+# ── HTTP / API ────────────────────────────────
+requests>=2.28.0           # GDELT API queries
+
+# ── Visualisation ─────────────────────────────
+matplotlib>=3.6.0          # All thesis figures
+
+# ── Utilities (stdlib, no install needed) ─────
 # os, time, random, warnings, datetime — standard library
