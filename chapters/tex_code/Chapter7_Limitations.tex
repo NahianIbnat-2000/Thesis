@@ -1,0 +1,288 @@
+\documentclass[12pt,a4paper]{article}
+
+% ── Packages ──
+\usepackage[margin=2.5cm]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+% lmodern not available in this environment
+\usepackage{setspace}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage[hidelinks]{hyperref}
+\usepackage[round]{natbib}
+\usepackage{caption}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{enumitem}
+\usepackage{parskip}
+
+\onehalfspacing
+
+\begin{document}
+
+
+
+% ══════════════════════════════════════════════════════════════
+%  CHAPTER 7 — LIMITATIONS
+% ══════════════════════════════════════════════════════════════
+
+\newpage
+\setcounter{section}{6}
+\section{Limitations}
+
+This chapter provides a systematic assessment of the study's limitations across four dimensions: data availability and coverage (Section~7.1), measurement validity (Section~7.2), identification and causal inference (Section~7.3), and scope and generalisability (Section~7.4). Acknowledging these limitations honestly is not merely a scholarly formality; it is essential for correctly interpreting the null results reported in Chapter~5 and for guiding future research. A null finding can reflect either a genuine absence of an effect or the inability of the research design to detect an effect that exists. The limitations discussed below suggest that both explanations are plausible to varying degrees.
+
+%─────────────────────────────────────────
+\subsection{Data Availability and Coverage}
+
+\subsubsection{Exclusion of Thailand}
+
+The original research design planned to include three countries: India, Indonesia, and Thailand. Thailand was ultimately excluded entirely from the empirical analysis because no sovereign green bonds with verifiable, continuous secondary-market yield data could be identified on Refinitiv or AsianBondsOnline. Thailand's green bond market, while growing, remains dominated by sub-sovereign and corporate issuances rather than central government instruments \citep{Panizza2025}. The exclusion is consequential for two reasons. First, it reduces the cross-country variation in the panel from three treatment units to two, limiting the power of the pooled DiD estimator. Second, it introduces a selection concern: the two countries that \textit{do} have tradeable sovereign green bonds---India and Indonesia---may be systematically different from Thailand in ways that affect the generalisability of the findings. Both India and Indonesia have relatively deep domestic financial markets and were motivated to issue green bonds partly for signaling purposes; a country that has not yet issued such bonds might respond differently to political sentiment.
+
+\subsubsection{Short Pre-Treatment Windows}
+
+The Twin-Bond design requires sufficient pre-treatment data to validate the parallel trends assumption and to estimate the baseline Greenium level before the political shock. For India, this requirement is effectively unmet: both Indian green bonds (5Y and 10Y) were issued at or after the treatment date of 25 January 2023, so no pre-treatment Greenium observations exist. The parallel trends assumption is satisfied by construction through bond-pair matching, but this is a methodological assumption rather than an empirical verification \citep{Zerbib2019}. For Indonesia, the 10Y conventional twin was issued only in September 2022---just two months before the JETP treatment date of 15 November 2022---providing a pre-treatment window of only approximately 40 trading days. The Indonesia 2033 pair has no usable pre-treatment observations at all, as its conventional twin began trading in January 2023, after the treatment. Short pre-treatment windows increase the risk that any estimated post-treatment change reflects baseline measurement error rather than a genuine treatment effect \citep{Callaway2021}.
+
+\subsubsection{Truncated India CDS Data}
+
+India's 5-year CDS spread series (sourced from Investing.com) ends on 26 September 2025, substantially earlier than all other variables. The complete-case restriction applied during panel construction therefore truncates the India subsample to July 2024---well before the most recent bond observations extend to. This means the India panel spans only approximately 18 months (January 2023 to July 2024), compared to over 27 months for Indonesia (September 2022 to December 2024). The shorter India sample reduces statistical power for detecting treatment effects and may miss later dynamics in the India Greenium that could have emerged as the green bond market matured. A forward-looking replication using updated CDS data would extend the India analysis by approximately 9--12 months.
+
+\subsubsection{Bond Data Source: Refinitiv Only}
+
+All bond yield data are sourced from a single provider, Refinitiv, accessed through CEU's institutional subscription. While Refinitiv is a widely used and reputable source, relying on a single data provider introduces the risk of systematic measurement error if Refinitiv's pricing methodology or data collection procedures introduce biases that differ across bond types or countries. An alternative data source---such as Bloomberg or AsianBondsOnline---would allow cross-validation of the YTM series and strengthen confidence in the Greenium estimates. Furthermore, Refinitiv's coverage of Indian and Indonesian sovereign bonds begins only with their issuance dates, precluding any yield comparison that would require pre-issuance data.
+
+%─────────────────────────────────────────
+\subsection{Measurement Validity}
+
+\subsubsection{V2Tone as a Proxy for Political Credibility}
+
+The most fundamental measurement limitation of this study is the use of GDELT V2Tone as the primary operationalisation of political climate sentiment. V2Tone is a general-purpose tone score computed by the GDELT system across all article content; it was not designed to measure political credibility, environmental commitment, or the specific dimension of government-investor communication that the Credibility Premium theory requires. Several specific validity concerns arise.
+
+First, V2Tone measures the \textit{tone} of news coverage rather than the \textit{content} of government communication. An article that critically reports on a government's failure to meet climate targets would score negatively on V2Tone, even though its primary content is a factual account of political action rather than an expression of negative sentiment. The distinction between media tone and political content validity is important for interpreting the null result on H1: the sentiment variable may simply not measure what the theory requires it to measure \citep{Grimmer2013}.
+
+Second, V2Tone is computed at the article level and aggregated across all articles that match the GDELT theme filters (CLIMATE\%, ENV\_\%, ENERGY\%, GREEN\%) without distinguishing between articles that report on government policy and those that report on corporate behaviour, NGO advocacy, or scientific findings. A day on which a major international climate report is published may score very differently from a day on which the Finance Minister announces a green bond issuance---yet both would contribute equally to the daily mean V2Tone score.
+
+Third, the sampling procedure (up to 1,000 articles per country per month) may introduce time-varying composition effects if the mix of article types changes across the study period. For example, if international climate summits attract proportionally more negative coverage in later years due to increased public scrutiny of government commitments, a downward trend in V2Tone might reflect changing media framing rather than changing political credibility.
+
+\subsubsection{Signaling Noise as Standard Deviation}
+
+The Signaling Noise variable is operationalised as the within-day standard deviation of article-level V2Tone scores. While this is a defensible proxy for the dispersion of media tone, it conflates several distinct phenomena. A high standard deviation on a given day could reflect genuine political contradictions (e.g., simultaneous green bond issuance and coal power plant approval), differences in the editorial stance of news outlets (e.g., pro-government vs.\ opposition media), variation across article topics within the broad GDELT theme filter, or simply random sampling variance on days with fewer articles. Without article-level metadata that distinguishes between these sources of dispersion, the Signaling Noise variable cannot be cleanly interpreted as a measure of political inconsistency. The fact that its coefficient has the opposite sign from the theoretical prediction may partly reflect this measurement ambiguity.
+
+\subsubsection{ClimateBERT Coverage Failure}
+
+As documented in Chapter~5, the ClimateBERT robustness check produced only 20 usable observations after first-differencing, rendering it incapable of providing a meaningful test of the main results. The root cause is the GDELT DOC API's constraint of returning at most 250 articles per query and 10 queries per day, which---across 10 half-year query windows for two countries---yields a maximum of approximately 5,000 articles before language and deduplication filters are applied. For a study covering 3,654 country-days, this implies on average less than 1.4 articles per country-day available for ClimateBERT scoring. This coverage failure has two implications. First, the robustness check cannot confirm or deny the primary V2Tone results. Second, the directional inconsistency between V2Tone and ClimateBERT scores (correlation $r = +0.276$ for India, $r = -0.037$ for Indonesia) raises the possibility that the two measures capture different dimensions of climate communication, and that the null result on H1 is partly an artefact of measuring the wrong dimension with V2Tone.
+
+\subsubsection{Lack of Multilingual NLP Coverage}
+
+Both the GDELT V2Tone pipeline and the ClimateBERT pipeline operate primarily on English-language sources. This is a significant limitation for a study of India and Indonesia, where the politically relevant climate discourse---ministerial speeches, parliamentary debates, regulatory consultations, and domestic newspaper reporting---occurs predominantly in Hindi, Bengali, Urdu, Indonesian, and Javanese. To the extent that international English-language media coverage of these countries' climate policies is systematically more positive (or more negative) than domestic vernacular coverage, the V2Tone scores will be biased in unknown directions. Future work should prioritise multilingual sentiment extraction, ideally using models trained on South and Southeast Asian political discourse \citep{Webersinke2022}.
+
+%─────────────────────────────────────────
+\subsection{Identification and Causal Inference}
+
+\subsubsection{Staggered DiD with Two Treatment Units}
+
+The staggered Difference-in-Differences estimator requires sufficient variation in treatment timing to identify causal effects. In this study, there are only two treatment units (India and Indonesia) with a separation of approximately ten weeks between their respective treatment dates (15 November 2022 for Indonesia; 25 January 2023 for India). This is an extremely thin basis for a staggered DiD design. Recent methodological work by \citet{Callaway2021} and \citet{Goodman-Bacon2021} has shown that conventional two-way fixed-effects DiD estimators can produce biased estimates when treatment is staggered across units---particularly when the treatment effect is heterogeneous, or when early-treated units serve as control observations for late-treated units during their own post-treatment period. With only two treatment units, robustness checks that would normally be used to address these concerns (e.g., group-time average treatment effects, clean comparison groups) cannot be implemented meaningfully. The pooled Post coefficient in M5 should therefore be interpreted with considerable caution as a descriptive estimate rather than a well-identified causal parameter.
+
+\subsubsection{Potential Confounders Around Treatment Dates}
+
+Both treatment events were embedded in broader geopolitical and macroeconomic contexts that may have independently affected the Greenium. India's inaugural green bond auction in January 2023 coincided with a period of rising global interest rates following the US Federal Reserve's aggressive tightening cycle, which may have differentially affected the pricing of long-duration green bonds relative to shorter-duration conventional twins. Indonesia's JETP announcement at the G20 Bali Summit occurred alongside a major geopolitical event (the G20 itself) that attracted coordinated international attention to Indonesia's economic trajectory. To the extent that these concurrent events affected green and conventional bond yields differently---through channels unrelated to political climate sentiment---the estimated Post coefficients will confound the political treatment effect with these alternative explanations. The use of monthly time fixed effects in M5 absorbs some of this confounding, but within-month confounders operating at the daily or weekly frequency remain uncontrolled.
+
+\subsubsection{Endogeneity of Sentiment}
+
+The core identification assumption of the regression framework is that daily climate sentiment is exogenous to daily Greenium movements. This assumption is plausible to a first approximation---it seems unlikely that a 1-basis-point change in the Indian green bond yield causes a measurable shift in the tone of climate coverage in the Indian press on the same day. However, reverse causality cannot be ruled out entirely. If major moves in the Greenium attract media attention---for example, if a sudden widening is reported as a sign of investor confidence in India's green bond programme---then the sentiment variable may partly reflect rather than cause bond market dynamics. Furthermore, both sentiment and the Greenium may be jointly driven by unobserved third variables, such as news about global commodity prices or the outcomes of international climate negotiations, that simultaneously affect media tone and bond market conditions. The first-differencing approach removes time-invariant confounders but does not address time-varying endogeneity of this kind.
+
+\subsubsection{Liquidity and Pricing Irregularities}
+
+Sovereign bond markets in India and Indonesia are less liquid than those in advanced economies, and the bid-ask spread on individual bonds---particularly newer issuances---can be wide on days with low trading activity. The YTM series used in this study is computed as the midpoint of bid and ask yields from Refinitiv, which means that on days with wide spreads, the computed Greenium may reflect pricing irregularities rather than genuine market valuations. This concern is particularly acute for the Indonesia 2033 bond pair, where the conventional twin was issued in January 2023 and may have experienced thin liquidity in its early months. Stale pricing or illiquidity-driven noise in the YTM series would attenuate the regression coefficients toward zero, potentially explaining part of the null result on H1 and H3.
+
+%─────────────────────────────────────────
+\subsection{Scope and Generalisability}
+
+\subsubsection{Two-Country Sample}
+
+The empirical analysis covers only two countries---India and Indonesia---which restricts the generalisability of the findings in several important ways. Both countries are large, coal-dependent emerging markets in South and Southeast Asia, which means the results may not extend to smaller emerging markets with different political economies of energy transition, to advanced economies with more developed green bond markets, or to countries in Africa or Latin America where green finance is at an earlier stage. The finding that political sentiment does not drive the Greenium may be specific to the political economy of these two countries, where government climate credibility is persistently contested and bond markets may have ``priced in'' a structural credibility discount from the outset. A broader panel of sovereign green bond issuers---including European sovereigns, where the Greenium literature is more developed \citep{Flammer2021}---would allow the country-specific findings to be contextualised.
+
+\subsubsection{Study Period: 2020--2024}
+
+The study period covers 2020 to 2024, which coincides with two major global disruptions: the COVID-19 pandemic (2020--2022) and the Russia-Ukraine war and associated commodity price shock (2022). Both events introduced large, atypical shocks to global risk appetite, bond markets, and political communication environments. It is unclear whether the null result on political sentiment reflects a genuine structural feature of sovereign green bond markets, or whether the unusual macroeconomic conditions of the study period made it particularly difficult for political signals to be heard above the noise of these global shocks. The dominance of the VIX coefficient---which may partly absorb these global disruptions---is consistent with this interpretation. Replication over a longer, more stable post-pandemic period would help disentangle these effects.
+
+\subsubsection{High-Frequency Mismatch}
+
+The theoretical framework assumes that political credibility operates at the daily frequency at which the sentiment variable is measured. However, there are strong reasons to believe that sovereign bond investors update their assessments of political credibility at much lower frequencies---quarterly, in response to budget cycles and international review processes, or annually, in response to major policy milestones. If credibility is a slow-moving variable, then daily sentiment scores are simply the wrong unit of analysis for detecting its financial effects, and the null result reflects a frequency mismatch between theory and measurement rather than an absence of the underlying phenomenon \citep{Baker2019}. A monthly or quarterly sentiment aggregation, matched to lower-frequency bond pricing data, might reveal patterns that are invisible at the daily frequency.
+
+\subsubsection{No Investor-Level Data}
+
+The analysis operates entirely at the aggregate market level, using daily bond yields as the measure of investor behaviour. No investor-level data---such as bond ownership data, order flow, or survey-based measures of investor expectations---are available to this study. This means it is impossible to directly test whether investors read and respond to climate news at the daily frequency, or to distinguish between changes in investor \textit{demand} for green bonds and changes in \textit{supply} conditions (e.g., auction timing, market-making behaviour). The absence of microstructure data is a fundamental limitation for a study that aims to identify the channel through which political communication affects bond pricing. Without knowing whether the null result reflects lack of investor attention, lack of relevant information in the sentiment measure, or true indifference of market participants to climate credibility signals, it is difficult to draw strong conclusions about the mechanism.
+
+%─────────────────────────────────────────
+\subsection{Summary of Limitations}
+
+Table~\ref{tab:limits} provides a concise overview of the main limitations and their likely direction of bias.
+
+\begin{table}[H]
+\centering
+\caption{Summary of Key Limitations}
+\label{tab:limits}
+\small
+\begin{tabularx}{\textwidth}{p{4cm}p{5.5cm}X}
+\toprule
+\textbf{Limitation} & \textbf{Nature of problem} & \textbf{Likely bias direction} \\
+\midrule
+Thailand excluded       & Reduces cross-country variation; selection concern & Understates generalisability \\
+Short pre-treatment windows & Parallel trends assumed, not tested (India) & Unknown \\
+India CDS truncation    & Shorter India panel (18 vs.\ 27 months) & Attenuates India estimates \\
+V2Tone validity         & Measures media tone, not political credibility & Attenuates H1 toward null \\
+Signaling noise proxy   & Conflates multiple sources of dispersion & Direction uncertain \\
+ClimateBERT coverage ($N=20$) & Robustness check unreliable & Robustness check uninformative \\
+Monolingual NLP         & Misses Hindi/Indonesian political discourse & Biases sentiment in unknown direction \\
+Two treatment units     & Staggered DiD poorly identified & Unknown, risk of confounded estimates \\
+Treatment confounders   & Concurrent macroeconomic events & Upward bias on Post coefficient \\
+Illiquidity / stale pricing & YTM reflects bid-ask noise on thin days & Attenuates all coefficients toward null \\
+Two-country sample      & India + Indonesia only & Cannot generalise to other contexts \\
+High-frequency mismatch & Credibility is slow-moving; daily sentiment may not capture it & Attenuates H1 and H3 toward null \\
+No microstructure data  & Cannot test investor-level channels & Cannot identify mechanism \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Taken together, the limitations listed in Table~\ref{tab:limits} suggest a coherent story about why the null results emerged. Several limitations---most notably the V2Tone validity concern, the high-frequency mismatch, and the illiquidity attenuation---are likely to have pushed all coefficients toward zero, making it harder to detect effects that may genuinely exist. Other limitations---most notably the two-treatment-unit DiD and the short pre-treatment windows---reduce confidence in the causal interpretation of the estimates that \textit{are} reported. Neither concern invalidates the study's contribution, but both counsel against strong causal language. The findings are best understood as descriptive evidence that, within the specific design of this study, high-frequency political sentiment does not predict daily Greenium movements---and not as proof that political credibility is irrelevant to sovereign green bond pricing in the long run.
+
+% ── References ──
+\newpage
+\bibliographystyle{apalike}
+
+\begin{thebibliography}{99}
+
+\bibitem[Baker et al., 2022]{Baker2022}
+Baker, M., Bergstresser, D., Sergi, B., \& Wurgler, J. (2022).
+Financing the response to climate change: The pricing and ownership of U.S.\ green bonds.
+\textit{Critical Finance Review}, \textit{11}(3--4), 415--437.
+
+\bibitem[Baker et al., 2019]{Baker2019}
+Baker, S.~R., Bloom, N., \& Davis, S.~J. (2019).
+Measuring economic policy uncertainty.
+\textit{Quarterly Journal of Economics}, \textit{131}(4), 1593--1636.
+
+\bibitem[Callaway \& Sant'Anna, 2021]{Callaway2021}
+Callaway, B., \& Sant'Anna, P.~H.~C. (2021).
+Difference-in-differences with multiple time periods.
+\textit{Journal of Econometrics}, \textit{225}(2), 200--230.
+
+\bibitem[Goodman-Bacon, 2021]{Goodman-Bacon2021}
+Goodman-Bacon, A. (2021).
+Difference-in-differences with variation in treatment timing.
+\textit{Journal of Econometrics}, \textit{225}(2), 254--277.
+
+\bibitem[Grimmer \& Stewart, 2013]{Grimmer2013}
+Grimmer, J., \& Stewart, B.~M. (2013).
+Text as data: The promise and pitfalls of automatic content analysis methods for political texts.
+\textit{Political Analysis}, \textit{21}(3), 267--297.
+
+\bibitem[Chatterjee \& Hadi, 2012]{Chatterjee2012}
+Chatterjee, S., \& Hadi, A.~S. (2012).
+\textit{Regression Analysis by Example} (5th ed.).
+Wiley.
+
+\bibitem[Dragotto et al., 2025]{Dragotto2025}
+Dragotto, M., Aristei, D., \& Gallo, G. (2025).
+Climate awareness and green bond market dynamics: A high-frequency analysis.
+\textit{International Review of Financial Analysis}, \textit{91}, 103012.
+
+\bibitem[Durbin \& Watson, 1950]{Durbin1950}
+Durbin, J., \& Watson, G.~S. (1950).
+Testing for serial correlation in least squares regression: I.
+\textit{Biometrika}, \textit{37}(3/4), 409--428.
+
+\bibitem[Flammer, 2021]{Flammer2021}
+Flammer, C. (2021).
+Corporate green bonds.
+\textit{Journal of Financial Economics}, \textit{142}(2), 499--516.
+
+\bibitem[Franco et al., 2014]{Franco2014}
+Franco, A., Malhotra, N., \& Simonovits, G. (2014).
+Publication bias in the social sciences: Unlocking the file drawer.
+\textit{Science}, \textit{345}(6203), 1502--1505.
+
+\bibitem[Gabor, 2021]{Gabor2021}
+Gabor, D. (2021).
+The Wall Street Consensus.
+\textit{Development and Change}, \textit{52}(3), 429--459.
+
+\bibitem[ICMA, 2022]{ICMA2022}
+International Capital Market Association. (2022).
+\textit{Green Bond Principles: Voluntary process guidelines for issuing green bonds}.
+ICMA Group.
+
+\bibitem[Kling et al., 2021]{Kling2021}
+Kling, G., Volz, U., Murinde, V., \& Ayas, S. (2021).
+The impact of climate vulnerability on budgets and the cost of capital.
+\textit{Ecological Economics}, \textit{185}, 107047.
+
+\bibitem[Larcker \& Watts, 2020]{Larcker2020}
+Larcker, D.~F., \& Watts, E.~M. (2020).
+Where is the greenium?
+\textit{Journal of Accounting and Economics}, \textit{69}(2--3), 101312.
+
+\bibitem[Lau et al., 2024]{Lau2024}
+Lau, P., Sze, A., \& Zhang, Y. (2024).
+Climate policy credibility and the pricing of green bonds.
+Working paper, Chinese University of Hong Kong.
+
+\bibitem[Leetaru \& Schrodt, 2013]{Leetaru2013}
+Leetaru, K., \& Schrodt, P. (2013).
+GDELT: Global data on events, location, and tone, 1979--2012.
+\textit{ISA Annual Convention}, \textit{2}, 1--49.
+
+\bibitem[MacKinlay, 1997]{MacKinlay1997}
+MacKinlay, A.~C. (1997).
+Event studies in economics and finance.
+\textit{Journal of Economic Literature}, \textit{35}(1), 13--39.
+
+\bibitem[MacKinnon \& White, 1985]{MacKinnon1985}
+MacKinnon, J.~G., \& White, H. (1985).
+Some heteroskedasticity-consistent covariance matrix estimators with improved finite sample properties.
+\textit{Journal of Econometrics}, \textit{29}(3), 305--325.
+
+\bibitem[Neumann, 2025]{Neumann2025}
+Neumann, T. (2025).
+\textit{The Political Economy of Green Bonds in Emerging Markets: Coal Interests and Climate Finance}.
+Springer Nature.
+
+\bibitem[Panizza et al., 2025]{Panizza2025}
+Panizza, U., Weder di Mauro, B., Shi, S., \& Gulati, M. (2025).
+The sovereign greenium: Big promise but small price effect
+(IHEID Working Paper No.\ HEIDWP16-2025).
+Graduate Institute of International and Development Studies.
+
+\bibitem[Rethel \& Sinclair, 2014]{Rethel2014}
+Rethel, L., \& Sinclair, T.~J. (2014).
+\textit{The Problem with Banks}.
+Zed Books.
+
+\bibitem[Webersinke et al., 2022]{Webersinke2022}
+Webersinke, N., Schimanski, T., Bingler, J., Leippold, M., \& Kraus, M. (2022).
+ClimateBERT: A pre-trained language model for climate-related disclosures.
+\textit{arXiv preprint arXiv:2110.12010}.
+
+\bibitem[G\"{u}rkaynak et al., 2005]{Gürkaynak2005}
+G\"{u}rkaynak, R.~S., Sack, B., \& Swanson, E. (2005).
+The sensitivity of long-term interest rates to economic news: Evidence and implications for macroeconomic models.
+\textit{American Economic Review}, \textit{95}(1), 425--436.
+
+\bibitem[Soroka, 2015]{Soroka2015}
+Soroka, S.~N. (2015).
+\textit{Negativity in Democratic Politics: Causes and Consequences}.
+Cambridge University Press.
+
+\bibitem[Zerbib, 2019]{Zerbib2019}
+Zerbib, O.~D. (2019).
+The effect of pro-environmental preferences on bond prices: Evidence from green bonds.
+\textit{Journal of Banking \& Finance}, \textit{98}, 39--60.
+
+\end{thebibliography}
+
+
+\end{document}
