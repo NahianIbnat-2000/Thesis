@@ -53,13 +53,16 @@ Thesis/
 │   │       ├── exchange_rate/       # USD/INR & USD/IDR exchange rates (Refinitiv)
 │   │       └── cds/                 # Sovereign CDS spreads (Investing.com)
 │   └── processed/
-│       ├── gdelt/
-│       │   ├── daily_sentiment_gdelt.csv    # GDELT V2Tone daily climate sentiment
-│       │   ├── daily_climatebert.csv        # ClimateBERT sentence-level scores
-│       │   └── daily_sentiment_merged.csv   # Merged sentiment panel
-│       └── regression/
-│           └── regression_panel.csv         # Final analysis-ready panel dataset
-│
+│   │   ├── gdelt/
+│   │   │   ├── daily_sentiment_gdelt.csv    # GDELT V2Tone daily climate sentiment
+│   │   │   ├── daily_climatebert.csv        # ClimateBERT sentence-level scores
+│   │   │   └── daily_sentiment_merged.csv   # Merged sentiment panel
+│   │   └── regression/
+│   │       └── regression_panel.csv         # Final analysis-ready panel dataset
+│   └── documentation/
+│       ├── DataCollection.pdf           # Data sourcing documentation
+│       └── GreenBond_DataSources.html   # Interactive data source reference
+│       
 ├── notebooks/
 │   ├── databricks/                  # Production notebooks (run on Databricks)
 │   │   ├── GreenBond_Regression.ipynb       # DiD regression & robustness checks
@@ -68,22 +71,20 @@ Thesis/
 │       ├── GreenBond_GDELT_clean.ipynb      # GDELT data collection & V2Tone extraction
 │       └── GreenBond_ClimateBERT_clean.ipynb # ClimateBERT sentiment scoring
 │
-├── output/
-│   ├── regression/                  # All figures used in Chapter 5
-│   │   ├── plot1_greenium_timeseries.png
-│   │   ├── plot2_coefficients.png
-│   │   ├── plot3_sentiment_scatter.png
-│   │   ├── plot4_noise_quartiles.png
-│   │   ├── event_study_india.png
-│   │   ├── event_study_indonesia.png
-│   │   ├── event_study_pooled.png
-│   │   └── event_study_comparison.png
-│   ├── gdelt/                       # GDELT raw output files
-│   └── html/                        # Interactive HTML visualisations
-│
-└── data/
-    ├── DataCollection.pdf           # Data sourcing documentation
-    └── GreenBond_DataSources.html   # Interactive data source reference
+└── output/
+    ├── regression/                  # All figures used in Chapter 5
+    │   ├── plot1_greenium_timeseries.png
+    │   ├── plot2_coefficients.png
+    │   ├── plot3_sentiment_scatter.png
+    │   ├── plot4_noise_quartiles.png
+    │   ├── event_study_india.png
+    │   ├── event_study_indonesia.png
+    │   ├── event_study_pooled.png
+    │   └── event_study_comparison.png
+    ├── gdelt/                       # GDELT raw output files
+    └── html/                        # Interactive HTML visualisations
+
+    
 ```
 
 ---
