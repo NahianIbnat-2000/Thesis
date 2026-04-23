@@ -1,0 +1,297 @@
+\documentclass[12pt,a4paper]{article}
+
+% ── Packages ──────────────────────────────────────────────────────────────────
+\usepackage[a4paper,margin=2.5cm]{geometry}
+\usepackage{setspace}
+\usepackage{parskip}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{colortbl}
+\usepackage{caption}
+\usepackage[round]{natbib}
+\usepackage[hidelinks]{hyperref}
+\usepackage{amsmath}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{enumitem}
+\usepackage{float}
+
+% ── Typography ────────────────────────────────────────────────────────────────
+\onehalfspacing
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{8pt}
+
+% ── Colours ───────────────────────────────────────────────────────────────────
+\definecolor{chapterblue}{RGB}{26,58,92}
+\definecolor{tableheader}{RGB}{232,237,242}
+\definecolor{rulecolor}{RGB}{180,195,210}
+
+% ── Heading formatting ────────────────────────────────────────────────────────
+\titleformat{\section}
+  {\color{chapterblue}\Large\bfseries}
+  {\thesection}{1em}{}[\vspace{2pt}{\color{rulecolor}\titlerule[0.5pt]}]
+
+\titleformat{\subsection}
+  {\color{chapterblue}\large\bfseries}
+  {\thesubsection}{1em}{}
+
+\titleformat{\subsubsection}
+  {\normalsize\bfseries}
+  {\thesubsubsection}{1em}{}
+
+\titlespacing*{\section}{0pt}{18pt}{8pt}
+\titlespacing*{\subsection}{0pt}{14pt}{6pt}
+\titlespacing*{\subsubsection}{0pt}{10pt}{4pt}
+
+% ── Header / Footer ───────────────────────────────────────────────────────────
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0.4pt}
+\fancyhead[L]{\small\color{gray} Do Politicians' Words Have a Dollar Value?}
+\fancyhead[R]{\small\color{gray} Chapter 3: Data}
+\fancyfoot[C]{\small\thepage}
+
+% ── Table styling ─────────────────────────────────────────────────────────────
+\captionsetup[table]{
+  labelfont=bf,
+  textfont=it,
+  position=above,
+  skip=4pt
+}
+\renewcommand{\arraystretch}{1.25}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\arraybackslash}p{#1}}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\begin{document}
+
+% Create an unprinted Section 3 so visible headings start at 3.1
+\setcounter{section}{2}
+\refstepcounter{section}
+\setcounter{subsection}{0}
+\setcounter{subsubsection}{0} 
+\noindent
+{\Large\bfseries \thesection \quad Data}
+\vspace{6pt}
+
+This chapter describes the three categories of data used in the empirical analysis: financial bond yield data, control variables, and political sentiment data. Each source is described in terms of its origin, collection method, coverage period, and role in the empirical strategy. The chapter concludes with a summary of the final panel dataset and a discussion of key data limitations.
+
+% ─────────────────────────────────────────────────────────────────────────────
+\subsection{Financial Data: Bond Yields}
+
+The primary financial data for this study consists of daily sovereign bond yields for India and Indonesia, sourced from Refinitiv via the institutional access provided by Central European University. For each country, two types of bonds were collected: sovereign green bonds, which form the treatment group, and maturity-matched conventional bonds, which form the control group. The yield measure used throughout is the midpoint of the daily bid and ask yield-to-maturity (YTM), calculated as:
+
+\begin{equation}
+\text{Mid-YTM} = \frac{\text{BidYld} + \text{AskYld}}{2}
+\end{equation}
+
+Using YTM rather than bond prices allows comparison across bonds with different coupon structures and remaining maturities, providing a more accurate measure of effective borrowing cost. All yield data were downloaded in Excel format and contain daily bid and ask observations from Refinitiv's secondary market records.
+
+\subsubsection{India}
+
+Two sovereign green bonds were collected for India. The first is a 10-year bond (ISIN: IN0020220144) issued in January 2023, with daily observations running from 27 January 2023 to 20 April 2026, yielding 842 trading-day observations. The second is a 5-year bond (ISIN: IN0020230143) issued in November 2023, covering 13 November 2023 to 20 April 2026, with 634 observations. Both bonds are denominated in Indian rupees (INR) and represent India's inaugural and second sovereign green bond issuances respectively.
+
+Each green bond is paired with a maturity-matched conventional twin bond from the same sovereign issuer. The 10-year green bond is paired with IN0020190362, a conventional bond issued in January 2020 with 1,645 observations covering January 2020 to April 2026. The 5-year green bond is paired with IN072629G, also issued in January 2020, with the same coverage window. The extended pre-treatment history of these conventional bonds, spanning three years before India's first green bond issuance, provides the baseline yield data needed to validate the parallel trends assumption by construction.
+
+\subsubsection{Indonesia}
+
+Two sovereign green bonds were collected for Indonesia. The first is a 10-year bond (ISIN: US71567RAV87) issued in June 2022, covering 20 September 2022 to 20 April 2026 with 935 observations. The second is a longer-dated bond maturing in 2033 (ISIN: US71567RAY27) issued in November 2023, covering 15 November 2023 to 20 April 2026 with 634 observations. Both are denominated in US dollars (USD), as Indonesia issues its sovereign green bonds, known as Green Sukuk, in international markets.
+
+These are paired with conventional USD-denominated twins. The 10-year green bond is matched with US455780DN36, issued in September 2022, with 854 observations. The 2033 green bond is paired with US455780DR40, issued in January 2023, with 295 observations. It is important to note that the conventional twin for the Indonesia 2033 bond begins after the treatment date, meaning it offers no pre-treatment observations. This is acknowledged as a limitation and addressed through the twin-bond matching design, which establishes comparability by construction rather than through an empirical parallel trends test.
+
+\begin{table}[H]
+\caption{Bond Yield Data Summary}
+\label{tab:bonds}
+\centering
+\small
+\rowcolors{2}{white}{tableheader}
+\begin{tabular}{L{3.0cm} L{2.8cm} C{1.1cm} C{2.0cm} C{2.0cm} R{1.0cm}}
+\toprule
+\rowcolor{tableheader}
+\textbf{Bond} & \textbf{ISIN} & \textbf{CCY} & \textbf{Start} & \textbf{End} & \textbf{Obs} \\
+\midrule
+India Green 10Y      & IN0020220144 & INR & 27-Jan-2023 & 20-Apr-2026 & 842   \\
+India Green 5Y       & IN0020230143 & INR & 13-Nov-2023 & 20-Apr-2026 & 634   \\
+India Conv.\ 10Y     & IN0020190362 & INR & 01-Jan-2020 & 21-Apr-2026 & 1,645 \\
+India Conv.\ 5Y      & IN072629G    & INR & 01-Jan-2020 & 21-Apr-2026 & 1,645 \\
+\midrule
+Indonesia Green 10Y  & US71567RAV87 & USD & 20-Sep-2022 & 20-Apr-2026 & 935   \\
+Indonesia Green 2033 & US71567RAY27 & USD & 15-Nov-2023 & 20-Apr-2026 & 634   \\
+Indonesia Conv.\ 10Y & US455780DN36 & USD & 20-Sep-2022 & 20-Apr-2026 & 854   \\
+Indonesia Conv.\ 2033& US455780DR40 & USD & 11-Jan-2023 & 20-Apr-2026 & 295   \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\subsection{Control Variables}
+
+Four control variables are included in the regression models to isolate the effect of political sentiment from broader macroeconomic shocks. Each variable is matched to the panel by date and, where relevant, by country.
+
+\subsubsection{VIX --- Global Risk Appetite}
+
+The CBOE Volatility Index (VIX), sourced from the Federal Reserve Bank of St.\ Louis (FRED), serves as the primary measure of global investor risk appetite. The VIX captures expected near-term volatility in US equity markets and is widely used as a proxy for global financial stress. Higher VIX values indicate risk-off conditions that typically compress yield spreads across asset classes, including the Greenium. The dataset contains 1,641 daily observations running from 2 January 2020 to 16 April 2026. Because VIX is not quoted on weekends or holidays when bond markets in Asia may trade, forward-filling is applied to ensure complete panel coverage.
+
+\subsubsection{Exchange Rates --- Currency Risk}
+
+Daily exchange rates for the Indian rupee (INR/USD) and Indonesian rupiah (IDR/USD) were sourced from Refinitiv using the same institutional access as the bond yield data. These are mid-rates computed as the average of the daily bid and ask. Each series contains 1,644 daily observations from 1 January 2020 to 20 April 2026. Exchange rate movements affect the relative attractiveness of local-currency and USD-denominated bonds to international investors. They are included as controls to ensure that Greenium movements are not driven by currency depreciation or appreciation rather than political sentiment.
+
+\subsubsection{CDS Spreads --- Sovereign Default Risk}
+
+Five-year Credit Default Swap (CDS) spreads for India and Indonesia were downloaded from Investing.com. CDS spreads measure the cost of insuring against sovereign default and serve as the most direct available proxy for country-specific credit risk. The India CDS series (INGV5YUSAC) contains 856 daily observations from 1 January 2020 to 26 September 2025, while the Indonesia CDS series (IDGV5YUSAC) contains 1,622 daily observations from 1 January 2020 to 17 April 2026. The earlier end date for the India CDS series is a data availability constraint: Investing.com does not provide India CDS data beyond September 2025. As a practical consequence, the India sub-panel is restricted to July 2024 once the complete-case restriction is applied across all variables.
+
+\begin{table}[H]
+\caption{Control Variables Summary}
+\label{tab:controls}
+\centering
+\small
+\rowcolors{2}{white}{tableheader}
+\begin{tabular}{L{2.2cm} L{2.2cm} L{3.2cm} C{1.0cm} L{4.0cm}}
+\toprule
+\rowcolor{tableheader}
+\textbf{Variable} & \textbf{Source} & \textbf{Coverage} & \textbf{Obs} & \textbf{Role in model} \\
+\midrule
+VIX              & FRED           & Jan 2020 -- Apr 2026 & 1,641 & Global risk appetite \\
+INR/USD          & Refinitiv      & Jan 2020 -- Apr 2026 & 1,644 & India currency risk \\
+IDR/USD          & Refinitiv      & Jan 2020 -- Apr 2026 & 1,644 & Indonesia currency risk \\
+CDS India 5Y     & Investing.com  & Jan 2020 -- Sep 2025 &   856 & India sovereign default risk \\
+CDS Indonesia 5Y & Investing.com  & Jan 2020 -- Apr 2026 & 1,622 & Indonesia sovereign default risk \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\subsection{Political Sentiment Data}
+
+The key independent variable in this study is daily political climate sentiment. Unlike the financial and control variables, this measure does not exist in any pre-compiled database and must be constructed from raw news data. Two approaches are used: GDELT V2Tone scores serve as the primary sentiment measure, while ClimateBERT scores are used as a robustness check.
+
+\subsubsection{Primary Measure: GDELT V2Tone}
+
+The GDELT 2.0 Global Knowledge Graph (GKG) is a real-time, open-source database that monitors news coverage across more than 100 languages worldwide. It assigns a tone score --- V2Tone --- to each news article, reflecting the overall emotional valence of the coverage on a continuous scale. GDELT is particularly valuable for this study because it captures local-language news sources in Hindi and Indonesian, allowing the analysis to detect domestic political dynamics that would be invisible in English-only datasets.
+
+Articles were retrieved using Google BigQuery, querying the public dataset \texttt{gdelt-bq.gdeltv2.gkg} for articles mentioning India or Indonesia alongside climate-related themes. The theme filter applied was \texttt{CLIMATE\%}, \texttt{ENV\_\%}, \texttt{ENERGY\%}, and \texttt{GREEN\%}, which captures a broad range of environmentally relevant political discourse. To manage computational costs while maintaining representativeness, a random sample of up to 1,000 articles per country per month was taken. This yielded approximately 120,000 articles in total, aggregated into 3,654 country-day observations covering 1 January 2020 to 31 December 2024 --- 1,827 days per country.
+
+Two variables are derived from this pipeline. The first is the mean daily V2Tone score across all climate-relevant articles for a given country on a given day, normalised to $[-1, +1]$, where $-1$ represents the most hostile climate sentiment and $+1$ the most positive. This is the primary sentiment variable (\texttt{sentiment\_gdelt}) used in the regression models to test Hypothesis~1.
+
+The second variable is the standard deviation of article-level V2Tone scores within each country-day (\texttt{sentiment\_std}). This captures the degree of internal disagreement in political climate coverage on a given day --- how much the tone varies across different articles. A high standard deviation on a given day means some outlets or political actors are signalling positive climate commitments while others convey negative or contradictory signals. This is the operationalisation of \textit{signaling noise} used to test Hypothesis~2, and represents the empirical measure of the Credibility Gap.
+
+\subsubsection{Robustness Check: ClimateBERT}
+
+ClimateBERT \citep{Webersinke2022} is a transformer-based natural language processing model trained specifically on climate-related corporate and policy disclosures. Unlike V2Tone, which measures general media tone, ClimateBERT is designed to distinguish between vague environmental claims and concrete, credible policy commitments --- a distinction that is directly relevant to this study's theoretical framework.
+
+To generate ClimateBERT scores, real article headlines were retrieved via the GDELT DOC API and scored using a two-stage pipeline: a climate relevance detector first filters out non-climate articles, and the ClimateBERT sentiment model then assigns a label of \textit{opportunity} ($+1.0$), \textit{neutral} ($0.0$), or \textit{risk} ($-1.0$) to each article. Daily scores are aggregated by country and merged with the V2Tone series. This pipeline was run in Google Colab using a T4 GPU.
+
+Due to API rate limits on the GDELT DOC endpoint, ClimateBERT coverage is limited to 52 matched country-days --- approximately 1.4\% of the full panel. Because of this sparse coverage, ClimateBERT cannot serve as the primary sentiment variable. It is used instead as a directional robustness check to validate whether V2Tone and ClimateBERT agree on the sign of sentiment on days where both are available. The correlation between the two measures is $r = +0.276$ for India (weak positive, directionally consistent) and $r = -0.037$ for Indonesia (near zero, divergent). This divergence for Indonesia is discussed further in the limitations section.
+
+\begin{table}[H]
+\caption{Sentiment Variables Summary}
+\label{tab:sentiment}
+\centering
+\small
+\rowcolors{2}{white}{tableheader}
+\begin{tabular}{L{3.2cm} L{3.8cm} L{2.2cm} C{1.8cm} L{2.6cm}}
+\toprule
+\rowcolor{tableheader}
+\textbf{Variable} & \textbf{Source} & \textbf{Scale} & \textbf{Country-days} & \textbf{Role} \\
+\midrule
+\texttt{sentiment\_gdelt}
+  & GDELT GKG via BigQuery
+  & $[-1,\; +1]$ continuous
+  & 3,654
+  & Primary sentiment (H1) \\
+\texttt{sentiment\_std}
+  & GDELT GKG via BigQuery
+  & $[0,\; +\infty)$ continuous
+  & 3,654
+  & Signaling noise (H2) \\
+\texttt{sentiment\_climatebert}
+  & GDELT DOC API + HuggingFace (ClimateBERT, Webersinke et al.\ 2022)
+  & $\{-1,\; 0,\; +1\}$ categorical (\textit{risk / neutral / opportunity})
+  & 52 (1.4\% of panel)
+  & Robustness check only \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\subsection{Panel Construction}
+
+The final panel dataset is constructed by merging all three data categories on a common date key. For each bond pair, the Greenium is computed daily as the difference between the green bond's YTM and its conventional twin's YTM:
+
+\begin{equation}
+\Delta y_{i,t} = \text{YTM}^{\text{green}}_{i,t} - \text{YTM}^{\text{conv}}_{i,t}
+\end{equation}
+
+A negative Greenium indicates that the green bond trades at a lower yield than its conventional twin --- the investor premium for the green label. Sentiment data are merged at the country level. Control variables are matched by date, with country-specific assignment for exchange rates and CDS spreads. VIX is forward-filled over non-trading days to ensure complete panel coverage.
+
+The panel is restricted to complete cases across all variables and to the period 2022--2024, yielding a final dataset of 1,455 observations before first-differencing and 1,451 after. This covers 564 observations for India (across two bond pairs) and 891 observations for Indonesia (across two bond pairs). Treatment dummies are assigned as follows: India Post $= 1$ from 25 January 2023 (inaugural green bond auction) and Indonesia Post $= 1$ from 15 November 2022 (JETP announcement at the G20 Bali Summit).
+
+\begin{table}[H]
+\caption{Final Panel Summary}
+\label{tab:panel}
+\centering
+\small
+\rowcolors{2}{white}{tableheader}
+\begin{tabular}{L{2.2cm} C{1.2cm} C{1.0cm} L{4.8cm} R{2.5cm}}
+\toprule
+\rowcolor{tableheader}
+\textbf{Country} & \textbf{Pair} & \textbf{Obs} & \textbf{Period} & \textbf{Mean Greenium (pp)} \\
+\midrule
+India     & 10Y  & 386 & 27-Jan-2023 to 19-Jul-2024  & $+0.0148$ \\
+India     & 5Y   & 178 & 15-Nov-2023 to 19-Jul-2024  & $-0.0278$ \\
+Indonesia & 10Y  & 596 & 20-Sep-2022 to 31-Dec-2024  & $-0.0691$ \\
+Indonesia & 2033 & 295 & 15-Nov-2023 to 31-Dec-2024  & $+0.0357$ \\
+\midrule
+\textbf{Total} & & \textbf{1,455} & & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ─────────────────────────────────────────────────────────────────────────────
+\subsection{Data Limitations}
+
+Several data constraints merit acknowledgement. First, the India CDS series ends in September 2025, which --- combined with the complete-case restriction --- limits the India panel to July 2024. This does not affect the treatment period (January 2023), but it does reduce the post-treatment observation window for India relative to Indonesia.
+
+Second, India's green bonds were issued at or after the treatment date, meaning there are no pre-treatment observations for the India 10-year green bond pair. This makes it impossible to formally test parallel trends for India using standard pre-event coefficient tests. The Twin-Bond matching design --- pairing bonds from the same sovereign issuer with matching maturity and currency --- substitutes for this test by establishing comparability through construction.
+
+Third, ClimateBERT coverage is limited to 52 country-days (1.4\% of the panel), driven by API sampling constraints from the GDELT DOC endpoint. This sparse coverage means ClimateBERT cannot serve as the primary analysis variable and is relegated to a robustness check. The near-zero correlation between V2Tone and ClimateBERT for Indonesia ($r = -0.037$) further suggests that these two measures capture different aspects of political climate communication, and caution is warranted when interpreting their alignment.
+
+Finally, the GDELT sentiment series ends on 31 December 2024, while bond yield data extend to April 2026. The panel is therefore truncated at December 2024 for all sentiment-dependent models. Both treatment events --- November 2022 and January 2023 --- fall well within the sentiment coverage window, so this truncation does not compromise the core causal analysis.
+
+\begin{table}[H]
+\caption{Data Limitations and Mitigations}
+\label{tab:limitations}
+\centering
+\small
+\rowcolors{2}{white}{tableheader}
+\begin{tabular}{L{4.2cm} L{4.2cm} L{4.2cm}}
+\toprule
+\rowcolor{tableheader}
+\textbf{Limitation} & \textbf{Impact} & \textbf{Mitigation} \\
+\midrule
+India CDS ends Sep-2025
+  & India panel truncated to Jul-2024
+  & Does not affect treatment period; acknowledged in results \\
+No pre-treatment data for India green bonds
+  & Cannot test parallel trends for India empirically
+  & Twin-bond matching design establishes comparability by construction \\
+Indonesia Conv.\ 2033 twin starts post-treatment
+  & No pre-treatment baseline for this pair
+  & Parallel trends satisfied by Zerbib (2019) matching design \\
+ClimateBERT coverage: 52/3,654 days (1.4\%)
+  & Cannot use ClimateBERT as primary variable
+  & Used as directional robustness check; V2Tone is primary \\
+GDELT sentiment ends Dec-2024
+  & Panel truncated despite bond data to Apr-2026
+  & Both treatment events fall within coverage window \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\end{document}
