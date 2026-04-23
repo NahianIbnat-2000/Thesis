@@ -1,0 +1,215 @@
+\documentclass[12pt,a4paper]{article}
+
+% ── Packages ──
+\usepackage[margin=2.5cm]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+% lmodern not available in this environment
+\usepackage{setspace}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage[hidelinks]{hyperref}
+\usepackage[round]{natbib}
+\usepackage{caption}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{enumitem}
+\usepackage{parskip}
+
+\onehalfspacing
+
+% ── Title ──
+\title{%
+  \textbf{Do Politicians' Words Have a Dollar Value?} \\[0.5em]
+  \Large Measuring the Impact of Climate Policy Sentiment \\
+  on Sovereign Green Bond Pricing in India and Indonesia%
+}
+
+\author{%
+  Nahian Ibnat \\[0.3em]
+  \normalsize MA in Economics, Data \& Policy \\
+  \normalsize Central European University \\[0.5em]
+  \normalsize Supervisor: Zolt\'{a}n Csaba T\'{o}th%
+}
+
+\date{April 2026}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+\newpage
+
+% ══════════════════════════════════════════════════════════════
+%  ABSTRACT
+% ══════════════════════════════════════════════════════════════
+
+\begin{abstract}
+\noindent
+\textbf This study examines whether daily political climate sentiment causally influences the Greenium---the yield discount on sovereign green bonds relative to maturity-matched conventional twins---in India and Indonesia (2020--2024). A Twin-Bond quasi-experimental design pairs each sovereign green bond with a conventional counterpart from the same issuer. Daily climate sentiment is extracted from GDELT V2Tone scores. Causal identification relies on a staggered Difference-in-Differences framework centred on two political shocks---India's inaugural green bond auction (January 2023) and Indonesia's JETP announcement at the G20 Bali Summit (November 2022)---supplemented by an event study with weekly leads and lags. Daily political sentiment does not significantly predict the Greenium in any specification. The only robust predictor of daily Greenium movements is the VIX ($\beta = -0.0035$, $p < 0.001$). Signaling noise---within-day dispersion of media tone---is significant ($p < 0.01$) but in the \textit{opposite} direction to the hypothesised Credibility Gap: higher noise coincides with a wider, not narrower, Greenium. Neither political event produces a significant structural break, though the parallel trends assumption holds in both cases. Sovereign green bond pricing in Asian emerging markets appears driven by global risk appetite rather than domestic political rhetoric. For policymakers, structural reforms and international disclosure alignment likely matter more for reducing green borrowing costs than the daily tone of climate communication.
+
+\vspace{0.5em}
+\noindent\textbf{Keywords:} Green bonds, Greenium, political sentiment, GDELT, Difference-in-Differences, sovereign debt, emerging markets, climate finance
+\end{abstract}
+
+
+
+% ══════════════════════════════════════════════════════════════
+%  CHAPTER 1 — INTRODUCTION
+% ══════════════════════════════════════════════════════════════
+
+\section{Introduction: The Greenium in Emerging Economies}
+
+Imagine a world in which a single speech by a Prime Minister does not merely influence voters, but directly lowers the cost of national debt. In the high-stakes world of international finance, this proposition has gained increasing theoretical plausibility through an instrument known as the sovereign green bond. While traditional bonds are loans that governments use to finance general expenditures, a green bond is a loan with a commitment: the issuing government pledges that all proceeds will be allocated exclusively to environmentally sustainable projects, such as renewable energy infrastructure or environmental remediation.
+
+In return for this transparency, environmentally conscious investors are often willing to accept a lower yield---a discount referred to as the Greenium \citep{Zerbib2019}. For large sovereign issuers, even a marginal reduction in borrowing costs, measured in basis points, can translate into substantial fiscal savings that can be reinvested into the broader economy. This dynamic has made green bonds a central instrument in the politics of climate finance, particularly in emerging markets where the cost of capital is high and the stakes of the energy transition are enormous.
+
+Understanding the dynamics of these instruments is particularly important for the major emerging economies of Asia. India and Indonesia provide an ideal empirical setting for studying the relationship between political communication and green bond pricing, as they embody a structural paradox that lies at the heart of contemporary climate finance. Both are large, rapidly growing economies that remain heavily dependent on coal, yet they have also emerged as leading issuers of sovereign green bonds. In India, the inaugural 2023 green bond issuance was designed to signal the government's commitment to sustainable development. Indonesia pioneered the world's first sovereign Green Sukuk, combining Islamic finance with climate objectives, and announced a \$20 billion Just Energy Transition Partnership (JETP) at the G20 Bali Summit in November 2022 \citep{Panizza2025}. Thailand was originally intended as a third case, but was excluded from the empirical analysis because no tradeable sovereign green bonds with verifiable secondary-market yield data could be identified on AsianBondsOnline or Refinitiv---a finding that itself reveals the uneven development of green bond infrastructure across the region.
+
+For India and Indonesia, green bonds provide fiscal space by enabling the financing of costly energy transitions without significantly increasing debt burdens \citep{Kling2021}. The theoretical logic is straightforward: when governments credibly signal commitment to climate objectives, investors reward them with lower financing costs through a wider Greenium. When that credibility is undermined, the Greenium diminishes or disappears, increasing the cost of capital. Trust, however, is difficult to quantify and easy to erode. In many emerging markets, there exists a persistent disconnect between what can be termed ``Green Talk'' and ``Brown Action.'' This study addresses a central puzzle: does the financial market respond to high-frequency political communication about climate policy, and if so, how does political credibility translate into measurable borrowing costs?
+
+To conceptualise this mechanism, the study draws on two key constructs. The \textit{Credibility Premium} refers to the reward investors grant when political rhetoric is consistent with policy action; under such conditions, perceived risk declines and the Greenium widens \citep{Lau2024}. Conversely, the \textit{Credibility Gap} captures the penalty imposed when governments send conflicting signals---for example, if a Ministry of Finance issues a green bond while the Ministry of Energy simultaneously approves new coal infrastructure, a dynamic that \citet{Neumann2025} characterises as a structural feature of the ``Minerals-Energy Complex'' in coal-dependent emerging economies. The resulting uncertainty is expected to increase perceived risk, leading to a contraction of the Greenium and higher borrowing costs.
+
+These constructs motivate the empirical investigation. However, as the analysis will demonstrate, the relationship between political communication and sovereign bond pricing proves far more resistant to measurement than the theoretical framework suggests. The central contribution of this study is therefore not the confirmation of these hypotheses, but rather the rigorous documentation of their failure to hold empirically---a finding that is itself informative about the nature of sovereign green bond markets in Asia.
+
+
+
+Existing empirical literature on green bonds largely relies on low-frequency data, such as monthly indices or aggregate macroeconomic indicators. While informative for long-term trends, these approaches fail to capture the high-frequency nature of political communication. In reality, political signaling operates at the pace of daily news cycles. Consequently, there remains limited understanding of how discrete political events or daily sentiment shifts influence sovereign borrowing costs in real time.
+
+This paper addresses this gap by integrating Data Science methods into the study of International Political Economy (IPE). Specifically, the study constructs a daily political sentiment measure using the GDELT 2.0 Global Knowledge Graph \citep{Leetaru2013}, which monitors global news coverage in over 100 languages. The V2Tone field embedded in each GDELT record provides a continuous measure of article-level tone, which is normalised and aggregated to produce daily country-level sentiment scores. As a robustness check, the study also employs ClimateBERT \citep{Webersinke2022}, a transformer-based Natural Language Processing model trained specifically on climate-related disclosures, though API constraints limit its coverage to only 52 matched country-days (1.4\% of the sample), rendering it insufficient for primary analysis.
+
+To identify causal effects, the study employs a Twin-Bond quasi-experimental design following \citet{Zerbib2019}. Each sovereign green bond is paired with a maturity-matched conventional bond from the same issuer, and the Greenium---defined as the yield-to-maturity differential---serves as the dependent variable. This design controls for sovereign default risk, currency fluctuations, and exposure to global financial conditions, isolating variation attributable to the ``green'' label and its associated political dynamics. Within this framework, a staggered Difference-in-Differences (DiD) estimator with bond-pair and time fixed effects identifies the impact of two major political shocks: India's inaugural sovereign green bond auction (25 January 2023) and Indonesia's JETP announcement at the G20 Bali Summit (15 November 2022). An event study specification with weekly leads and lags validates the parallel trends assumption and tests for pre-announcement drift.
+
+
+The primary research question is:
+
+\begin{quote}
+\textit{How does political climate sentiment influence the sovereign Greenium in India and Indonesia, and what is the measurable financial cost---or absence thereof---of a Credibility Gap?}
+\end{quote}
+
+\noindent This study also addresses two sub-questions:
+
+\begin{enumerate}[nosep]
+  \item Can NLP-based sentiment measures such as GDELT V2Tone capture market-relevant information that traditional low-frequency policy indices overlook?
+  \item Do major political events---such as sovereign green bond launches and international climate partnerships---produce measurable structural breaks in green bond pricing?
+\end{enumerate}
+
+
+The results are largely null, but substantively informative. Across all model specifications, daily political climate sentiment does not significantly predict movements in the Greenium. The only consistently significant predictor of daily Greenium changes is the VIX index, which captures global risk appetite. The Post-treatment dummy in the DiD specification is negative but statistically insignificant, indicating no detectable structural break following either political shock. The event study confirms that parallel trends hold prior to treatment in both countries, validating the identification strategy, but reveals no significant post-event shift in India and only one marginally significant week in Indonesia.
+
+One unexpected finding concerns signaling noise. Contrary to the Credibility Gap hypothesis---which predicted that contradictory media coverage would erode investor confidence and narrow the Greenium---the signaling noise coefficient is negative and highly significant ($p < 0.01$). This suggests that days with greater within-day dispersion in climate media tone are associated with a \textit{wider} Greenium. Possible interpretations include information discovery effects, where greater media attention (even if contradictory) draws investor interest toward green assets, or confounding with periods of heightened environmental salience that coincidentally favour green bonds.
+
+These null and counterintuitive results contribute to the literature in three ways. First, they challenge the theoretical assumption that high-frequency political communication is priced into sovereign bond markets in the same way it might influence equity prices or corporate bonds. Second, they highlight the limitations of applying NLP-based sentiment analysis to sovereign fixed-income markets, where pricing is dominated by macroeconomic fundamentals. Third, they provide the first rigorous causal evidence on Greenium dynamics in Asian emerging markets, establishing a methodological baseline for future research.
+
+
+The remainder of the paper is structured as follows. Chapter 2 reviews the existing literature on green bonds, sovereign credibility, and the application of NLP methods to financial markets. Chapter 3 describes the data sources, including the construction of sentiment measures using GDELT and the ClimateBERT robustness check. Chapter 4 outlines the econometric methodology, including the Twin-Bond design, the DiD framework, and the event study specification. Chapter 5 presents the empirical results, including descriptive statistics, regression outputs, and diagnostic tests. Chapter 6 interprets the findings through the theoretical framework, discussing why the hypothesised mechanisms fail to materialise and what this reveals about the nature of sovereign green bond markets. Chapter 7 concludes with policy implications and directions for future research.
+
+% ── References ──
+\newpage
+\bibliographystyle{apalike}
+
+\begin{thebibliography}{99}
+
+\bibitem[Baker et al., 2022]{Baker2022}
+Baker, M., Bergstresser, D., Sergi, B., \& Wurgler, J. (2022).
+Financing the response to climate change: The pricing and ownership of U.S.\ green bonds.
+\textit{Critical Finance Review}, \textit{11}(3--4), 415--437.
+
+\bibitem[Chatterjee \& Hadi, 2012]{Chatterjee2012}
+Chatterjee, S., \& Hadi, A.~S. (2012).
+\textit{Regression Analysis by Example} (5th ed.).
+Wiley.
+
+\bibitem[Dragotto et al., 2025]{Dragotto2025}
+Dragotto, M., Aristei, D., \& Gallo, G. (2025).
+Climate awareness and green bond market dynamics: A high-frequency analysis.
+\textit{International Review of Financial Analysis}, \textit{91}, 103012.
+
+\bibitem[Durbin \& Watson, 1950]{Durbin1950}
+Durbin, J., \& Watson, G.~S. (1950).
+Testing for serial correlation in least squares regression: I.
+\textit{Biometrika}, \textit{37}(3/4), 409--428.
+
+\bibitem[Flammer, 2021]{Flammer2021}
+Flammer, C. (2021).
+Corporate green bonds.
+\textit{Journal of Financial Economics}, \textit{142}(2), 499--516.
+
+\bibitem[Franco et al., 2014]{Franco2014}
+Franco, A., Malhotra, N., \& Simonovits, G. (2014).
+Publication bias in the social sciences: Unlocking the file drawer.
+\textit{Science}, \textit{345}(6203), 1502--1505.
+
+\bibitem[Gabor, 2021]{Gabor2021}
+Gabor, D. (2021).
+The Wall Street Consensus.
+\textit{Development and Change}, \textit{52}(3), 429--459.
+
+\bibitem[ICMA, 2022]{ICMA2022}
+International Capital Market Association. (2022).
+\textit{Green Bond Principles: Voluntary process guidelines for issuing green bonds}.
+ICMA Group.
+
+\bibitem[Kling et al., 2021]{Kling2021}
+Kling, G., Volz, U., Murinde, V., \& Ayas, S. (2021).
+The impact of climate vulnerability on budgets and the cost of capital.
+\textit{Ecological Economics}, \textit{185}, 107047.
+
+\bibitem[Larcker \& Watts, 2020]{Larcker2020}
+Larcker, D.~F., \& Watts, E.~M. (2020).
+Where is the greenium?
+\textit{Journal of Accounting and Economics}, \textit{69}(2--3), 101312.
+
+\bibitem[Lau et al., 2024]{Lau2024}
+Lau, P., Sze, A., \& Zhang, Y. (2024).
+Climate policy credibility and the pricing of green bonds.
+Working paper, Chinese University of Hong Kong.
+
+\bibitem[Leetaru \& Schrodt, 2013]{Leetaru2013}
+Leetaru, K., \& Schrodt, P. (2013).
+GDELT: Global data on events, location, and tone, 1979--2012.
+\textit{ISA Annual Convention}, \textit{2}, 1--49.
+
+\bibitem[MacKinlay, 1997]{MacKinlay1997}
+MacKinlay, A.~C. (1997).
+Event studies in economics and finance.
+\textit{Journal of Economic Literature}, \textit{35}(1), 13--39.
+
+\bibitem[MacKinnon \& White, 1985]{MacKinnon1985}
+MacKinnon, J.~G., \& White, H. (1985).
+Some heteroskedasticity-consistent covariance matrix estimators with improved finite sample properties.
+\textit{Journal of Econometrics}, \textit{29}(3), 305--325.
+
+\bibitem[Neumann, 2025]{Neumann2025}
+Neumann, T. (2025).
+\textit{The Political Economy of Green Bonds in Emerging Markets: Coal Interests and Climate Finance}.
+Springer Nature.
+
+\bibitem[Panizza et al., 2025]{Panizza2025}
+Panizza, U., Weder di Mauro, B., Shi, S., \& Gulati, M. (2025).
+The sovereign greenium: Big promise but small price effect
+(IHEID Working Paper No.\ HEIDWP16-2025).
+Graduate Institute of International and Development Studies.
+
+\bibitem[Rethel \& Sinclair, 2014]{Rethel2014}
+Rethel, L., \& Sinclair, T.~J. (2014).
+\textit{The Problem with Banks}.
+Zed Books.
+
+\bibitem[Webersinke et al., 2022]{Webersinke2022}
+Webersinke, N., Schimanski, T., Bingler, J., Leippold, M., \& Kraus, M. (2022).
+ClimateBERT: A pre-trained language model for climate-related disclosures.
+\textit{arXiv preprint arXiv:2110.12010}.
+
+\bibitem[Zerbib, 2019]{Zerbib2019}
+Zerbib, O.~D. (2019).
+The effect of pro-environmental preferences on bond prices: Evidence from green bonds.
+\textit{Journal of Banking \& Finance}, \textit{98}, 39--60.
+
+\end{thebibliography}
+
+
+\end{document}

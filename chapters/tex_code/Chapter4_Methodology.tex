@@ -1,0 +1,395 @@
+\documentclass[12pt,a4paper]{article}
+
+% ── Packages ──
+\usepackage[margin=2.5cm]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+% lmodern not available in this environment
+\usepackage{setspace}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage[hidelinks]{hyperref}
+\usepackage[round]{natbib}
+\usepackage{caption}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{enumitem}
+\usepackage{parskip}
+
+\onehalfspacing
+
+% ── Title ──
+\title{%
+  \textbf{Do Politicians' Words Have a Dollar Value?} \\[0.5em]
+  \Large Measuring the Impact of Climate Policy Sentiment \\
+  on Sovereign Green Bond Pricing in India and Indonesia%
+}
+
+\author{%
+  Nahian Ibnat \\[0.3em]
+  \normalsize MA in Economics, Data \& Policy \\
+  \normalsize Central European University \\[0.5em]
+  \normalsize Supervisor: Zolt\'{a}n Csaba T\'{o}th%
+}
+
+\date{April 2026}
+
+\begin{document}
+
+\maketitle
+\thispagestyle{empty}
+\newpage
+
+
+
+
+% ══════════════════════════════════════════════════════════════
+%  CHAPTER 4 — METHODOLOGY
+% ══════════════════════════════════════════════════════════════
+
+\newpage
+\setcounter{section}{3}   
+\section{Methodology}
+
+This chapter describes the empirical strategy used to test the three hypotheses introduced in the Introduction. The analysis combines a twin-bond matching design, high-frequency political sentiment measures, and a staggered Difference-in-Differences framework. The chapter is organised into five parts: the research design, the construction of the sentiment variables, the regression framework, the event study specification, and the identification of political shocks.
+
+All empirical analysis is conducted in Python using \texttt{pandas} for panel construction and \texttt{statsmodels} for estimation. All regressions use heteroskedasticity-robust HC3 standard errors following \citet{MacKinnon1985}.
+
+\subsection{Research Design: Twin-Bond Approach}
+
+The main identification challenge in this study is to separate the effect of political sentiment from the wider macroeconomic factors that move sovereign bond yields. To address this, the analysis adopts a twin-bond matching design following \citet{Zerbib2019}.
+
+For each sovereign green bond issued by India and Indonesia, a maturity-matched conventional bond from the same sovereign issuer is selected. Matching is based on issuer, currency denomination, and comparable maturity. The green bond is treated as the treatment asset, while the conventional bond serves as the control.
+
+The main dependent variable is the Greenium, defined as the daily difference in yield-to-maturity between the green bond and its conventional twin:
+
+\begin{equation}
+\Delta y_{i,t} = \text{YTM}^{\text{GB}}_{i,t} - \text{YTM}^{\text{CB}}_{i,t}
+\label{eq:greenium_def}
+\end{equation}
+
+\noindent where $\Delta y_{i,t}$ denotes the yield spread for bond pair $i$ on day $t$, $\text{YTM}^{\text{GB}}$ is the green bond yield-to-maturity, and $\text{YTM}^{\text{CB}}$ is the conventional bond yield-to-maturity. A negative value of $\Delta y_{i,t}$ indicates that the green bond trades at a lower yield than its conventional counterpart, implying a borrowing advantage for the sovereign issuer.
+
+Yield-to-maturity is used rather than bond prices because it accounts for differences in coupon structure and residual maturity, providing a more accurate measure of effective borrowing cost \citep{Zerbib2019}. Because the comparison is made within the same sovereign issuer, the design controls for country-specific default risk, currency exposure, and broad global financial conditions. Changes in the Greenium can therefore be interpreted as changes in the market valuation of the green label and the political signals associated with it.
+
+Table~\ref{tab:twin_bonds} summarises the four bond pairs used in the analysis. For India, the conventional twins were selected from pre-2023 issuances in order to provide a longer baseline period before the first sovereign green bond auction. For Indonesia, conventional twins were chosen using the maturity-matching principle in \citet{Zerbib2019}. One limitation is that the Indonesia 10-year conventional twin begins only shortly before the treatment date, while the Indonesia 2033 conventional twin begins after treatment and therefore provides no pre-treatment observations.
+
+\begin{table}[H]
+\centering
+\caption{Twin-Bond Pairs}
+\label{tab:twin_bonds}
+\small
+\begin{tabular}{llllc}
+\toprule
+\textbf{Pair} & \textbf{Green Bond} & \textbf{Conventional Twin} & \textbf{Currency} & \textbf{Pre-treatment} \\
+\midrule
+India 10Y      & IN0020220144 (Jan 2023) & IN0020190362 (Jan 2020) & INR & 3 years \\
+India 5Y       & IN0020230143 (Nov 2023) & IN072629G (Jan 2020)    & INR & 3 years \\
+Indonesia 10Y  & US71567RAV87 (Jun 2022) & US455780DN36 (Sep 2022) & USD & 2 months \\
+Indonesia 2033 & US71567RAY27 (Nov 2023) & US455780DR40 (Jan 2023) & USD & post-treatment \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Political Sentiment Measures}
+
+The main explanatory variables in this study are daily measures of climate-related political sentiment. Because no ready-made high-frequency indicator exists for this purpose, the sentiment series is constructed from raw news data using a Natural Language Processing (NLP) pipeline.
+
+Two sentiment approaches are used. GDELT V2Tone serves as the primary measure, while ClimateBERT is used as a robustness check. Together, these measures capture both the average tone of climate-related news coverage and the extent of disagreement within that coverage.
+
+\subsubsection{Primary Measure: GDELT V2Tone}
+
+The primary source is the GDELT 2.0 Global Knowledge Graph (GKG), accessed through Google BigQuery \citep{Leetaru2013}. GDELT monitors global news coverage across more than 100 languages, making it suitable for capturing domestic political discourse in Hindi, Indonesian, and English-language regional media.
+
+Articles are filtered using climate- and energy-related GDELT theme codes: \texttt{CLIMATE\%}, \texttt{ENV\_\%}, \texttt{ENERGY\%}, and \texttt{GREEN\%}. Articles are then geocoded to India and Indonesia respectively. To keep the dataset computationally manageable while preserving coverage, a random sample of up to 1,000 articles per country per month is retained.
+
+Each article contains a \texttt{V2Tone} field, which measures the overall tone of coverage. In this study, V2Tone is normalised to a $[-1,+1]$ scale. The article-level scores are then aggregated into two daily country-level variables.
+
+The first is the mean daily sentiment score:
+
+\begin{equation}
+\text{Sentiment}_{c,t} = \frac{1}{N_{c,t}} \sum_{j=1}^{N_{c,t}} \text{V2Tone}_{j,c,t}
+\quad \in [-1, +1]
+\label{eq:sentiment}
+\end{equation}
+
+The second is signaling noise, measured as the within-day standard deviation of article-level tone:
+
+\begin{equation}
+\text{Signaling Noise}_{c,t} = \text{SD}\left(\text{V2Tone}_{j,c,t}\right)
+\quad \in [0, \infty)
+\label{eq:noise}
+\end{equation}
+
+\noindent where $c$ indexes country, $t$ indexes day, and $j$ indexes individual articles. The sentiment variable captures the average tone of climate-related political coverage on a given day. The signaling noise variable captures the extent to which that coverage is internally contradictory.
+
+This operationalisation follows the logic of the Credibility Gap. If some media sources report positive climate commitments while others report negative or conflicting signals on the same day, the resulting higher standard deviation reflects a noisier and less credible information environment \citep{Neumann2025}.
+
+The final GDELT sentiment file contains 3,654 country-day observations, covering 1 January 2020 to 31 December 2024, or 1,827 days per country. It is based on approximately 120,000 sampled articles. Mean daily sentiment is $-0.063$ for India and $-0.087$ for Indonesia, indicating a slight negative tilt in climate-related coverage. Mean signaling noise is 0.335 for India and 0.402 for Indonesia, suggesting greater within-day disagreement in Indonesian climate media coverage.
+
+\subsubsection{Robustness Check: ClimateBERT}
+
+As a robustness check, the study also uses ClimateBERT \citep{Webersinke2022}, a transformer-based language model trained on climate-related disclosures. Unlike V2Tone, which measures general tone, ClimateBERT is designed to identify more substantive climate-related language and to distinguish between positive opportunity framing and negative risk framing.
+
+The ClimateBERT pipeline uses two stages. First, \texttt{distilroberta-base-climate-detector} filters articles for climate relevance. Second, \texttt{distilroberta-base-climate-sentiment} classifies the filtered text into three categories: \textit{opportunity} ($+1$), \textit{neutral} ($0$), or \textit{risk} ($-1$). Following the model’s paragraph-level training format, headlines from the same country and day are concatenated into a single paragraph before scoring.
+
+A major limitation emerged during data collection. The GDELT DOC API, used to retrieve the article headlines needed for ClimateBERT scoring, returned only 4,891 articles across the full study period, of which 1,539 were English-language. After aggregation, this produced only 54 climate-relevant country-day observations. After first-differencing, only 20 observations remained available for regression analysis, which is too small for reliable inference.
+
+ClimateBERT is therefore not used as the primary sentiment measure. Instead, it is reported as a supplementary validation exercise. On the 52 matched country-days where both V2Tone and ClimateBERT scores are available, the correlation between the two measures is $r = +0.276$ for India and $r = -0.037$ for Indonesia. This suggests that the two methods capture overlapping but distinct dimensions of climate-related media content.
+
+\subsection{Econometric Strategy}
+
+The main empirical framework is a staggered Difference-in-Differences design estimated on a fixed-effects panel. The analysis proceeds in two steps. First, all continuous variables are first-differenced within each bond pair to remove serial correlation and pair-specific trends. Second, the differenced regressors are standardised to allow direct comparison of coefficient magnitudes across variables.
+
+\subsubsection{First-Differencing}
+
+The Greenium series in levels exhibits strong positive serial correlation. In the levels specification, the Durbin-Watson statistic is approximately 0.44, which is well below the benchmark value of 2.0 and indicates substantial autocorrelation \citep{Durbin1950}. To address this, all continuous variables are transformed using first differences within each bond pair:
+
+\begin{equation}
+\Delta x_{i,t} = x_{i,t} - x_{i,t-1}
+\quad \text{within each bond pair } i
+\label{eq:fd}
+\end{equation}
+
+This transformation removes persistent pair-specific trends and substantially reduces serial correlation. After first-differencing, the Durbin-Watson statistic rises to approximately 2.54, indicating that the transformed specification is no longer affected by strong autocorrelation.
+
+First-differencing leads to the loss of the first observation in each bond pair. As a result, the panel falls from 1,455 observations to 1,451.
+
+All first-differenced regressors are then standardised by subtracting the mean and dividing by the standard deviation. This produces $z$-scores, allowing each coefficient to be interpreted as the change in the Greenium associated with a one-standard-deviation change in the corresponding explanatory variable.
+
+\subsubsection{Model Specifications}
+
+Five nested regression models are estimated on the pooled sample, followed by country-specific versions of the preferred specification. All models use HC3 heteroskedasticity-robust standard errors \citep{MacKinnon1985}.
+
+The baseline fixed-effects specification is:
+
+\begin{equation}
+\Delta y_{i,t} = \alpha_i + \delta_t + \beta_1 \, \Delta\text{Sentiment}_{c,t} + \gamma' \Delta X_{c,t} + \varepsilon_{i,t}
+\label{eq:baseline}
+\end{equation}
+
+\noindent where $\alpha_i$ denotes bond-pair fixed effects, $\delta_t$ denotes monthly time fixed effects, $\Delta\text{Sentiment}_{c,t}$ is the first-differenced and standardised sentiment measure, and $\Delta X_{c,t}$ is a vector of first-differenced control variables.
+
+The five models are summarised in Table~\ref{tab:models}.
+
+\begin{table}[H]
+\centering
+\caption{Model Specifications}
+\label{tab:models}
+\small
+\begin{tabular}{lll}
+\toprule
+\textbf{Model} & \textbf{Specification} & \textbf{Hypothesis} \\
+\midrule
+M1 & $\Delta$Sentiment + pair FE & H1 baseline \\
+M2 & + $\Delta\log(\text{VIX})$, $\Delta$CDS, $\Delta\log(\text{FX})$ & H1 controlled \\
+M3 & + $\Delta$Signaling Noise & H2 \\
+M4 & + $\Delta$Sentiment $\times$ $\Delta$Noise & H2 mechanism \\
+M5 & + Post treatment + monthly time FE & H3 pooled DiD \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+M1 and M2 test Hypothesis 1, the Credibility Premium. If more positive climate sentiment widens the Greenium, the coefficient on $\Delta$Sentiment should be negative.
+
+M3 tests Hypothesis 2, the Credibility Gap. If contradictory political signaling weakens confidence in the green label, the coefficient on $\Delta$Signaling Noise should be positive, implying a narrowing of the Greenium.
+
+M4 extends this mechanism test by including an interaction term between sentiment and noise. This allows the effect of positive sentiment to vary depending on how internally consistent the surrounding political communication is.
+
+M5 tests Hypothesis 3, the structural break hypothesis. The Post indicator equals 1 from 25 January 2023 onward for India and from 15 November 2022 onward for Indonesia. A negative and statistically significant coefficient on Post indicates that the political event widened the Greenium.
+
+The full M5 specification is:
+
+\begin{equation}
+\Delta y_{i,t} = \alpha_i + \delta_t + \beta_1 \, \text{Post}_{c,t} + \beta_2 \, \Delta\text{Sentiment}_{c,t} + \beta_3 \, \Delta\log(\text{VIX})_t + \beta_4 \, \Delta\text{CDS}_{c,t} + \beta_5 \, \Delta\log(\text{FX})_{c,t} + \varepsilon_{i,t}
+\label{eq:m5}
+\end{equation}
+
+The coefficients are interpreted as follows. $\beta_1$ captures the average structural shift in the Greenium after the treatment event. $\beta_2$ measures the marginal effect of daily political sentiment. $\beta_3$ controls for global risk appetite. $\beta_4$ controls for changes in sovereign default risk. $\beta_5$ controls for exchange-rate movements. Bond-pair fixed effects absorb all time-invariant differences between the matched pairs, while monthly time fixed effects absorb common shocks affecting all bonds in a given month.
+
+In addition to the pooled specification, M5 is estimated separately for India and Indonesia. This allows the treatment effect to differ across the two political and institutional settings.
+
+\subsubsection{Control Variables}
+
+Three groups of control variables are included in the regressions in order to isolate the effect of political sentiment from broader macro-financial conditions. All control variables are matched to the panel by date and, where appropriate, by country.
+
+\begin{table}[H]
+\centering
+\caption{Control Variables}
+\label{tab:controls}
+\small
+\begin{tabular}{llll}
+\toprule
+\textbf{Variable} & \textbf{Source} & \textbf{Transformation} & \textbf{Purpose} \\
+\midrule
+VIX              & FRED (St.\ Louis Fed) & log, first-differenced & Global risk appetite \\
+INR/USD, IDR/USD & Refinitiv              & log, first-differenced & Currency risk \\
+India CDS 5Y     & Investing.com          & first-differenced      & India default risk \\
+Indonesia CDS 5Y & Investing.com          & first-differenced      & Indonesia default risk \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The VIX is used as a measure of global investor risk appetite. Higher VIX values indicate periods of financial stress and greater risk aversion. Because VIX is not quoted on weekends and some holidays, it is forward-filled to ensure continuity across trading days.
+
+Exchange rates are included to capture currency risk. The INR/USD rate is matched only to India bond pairs, while the IDR/USD rate is matched only to Indonesia bond pairs. This ensures that each bond pair receives the correct country-specific exchange-rate control.
+
+Five-year sovereign CDS spreads are included as the main proxy for country-specific default risk. India CDS and Indonesia CDS are each matched only to the relevant country’s bond pairs.
+
+\subsubsection{Diagnostic Tests}
+
+Several diagnostic checks are applied to the preferred specifications, especially M3 and M5.
+
+First, the Durbin-Watson test is used to assess serial correlation in the residuals \citep{Durbin1950}. After first-differencing, the test statistics are approximately 2.54 for M3 and 2.57 for M5, indicating that serial correlation is no longer a major concern.
+
+Second, the Jarque-Bera test is used to assess residual normality.
+
+Third, Variance Inflation Factors (VIFs) are computed for the regressors in M3 in order to detect multicollinearity. All VIF values are below 1.05, which is well within the conventional threshold of 5 and indicates that collinearity is not a concern \citep{Chatterjee2012}.
+
+\subsection{Event Study}
+
+In addition to the pooled DiD specification, the analysis uses an event study framework to examine the timing of treatment effects and to assess the parallel trends assumption. Unlike the single Post dummy in the DiD model, the event study estimates a separate coefficient for each week before and after treatment \citep{MacKinlay1997}.
+
+The event study specification is:
+
+\begin{equation}
+\Delta y_{i,t} = \sum_{k=k_{\min}}^{k_{\max}} \beta_k \, D^{(k)}_{c,t} + \alpha_i + \varepsilon_{i,t}
+\label{eq:event_study}
+\end{equation}
+
+\noindent where $D^{(k)}_{c,t}$ is an indicator equal to 1 when observation $(i,t)$ falls in event week $k$ relative to the treatment date in country $c$. Event time is defined in trading days and grouped into weekly bins, with 5 trading days treated as one event week. The event window spans $\pm 10$ weeks around the treatment date. Week $-1$, the week immediately before treatment, is omitted and serves as the reference category.
+
+The event study serves two purposes. First, the coefficients on pre-treatment weeks test the parallel trends assumption. If the estimates for $k < 0$ are close to zero and statistically insignificant, there is no evidence of differential trends prior to treatment. Second, the coefficients on post-treatment weeks trace the timing and persistence of any treatment effect. Significant negative coefficients after treatment indicate a widening Greenium and therefore a stronger market valuation of the green label.
+
+The event study is estimated in three versions: pooled, India only, and Indonesia only. The pooled event study contains 149 observations, the India specification contains 55, and the Indonesia specification contains 94. All models include bond-pair fixed effects and use HC3 robust standard errors. Confidence intervals are reported at the 95\% level.
+
+\subsection{Political Shock Events and Case Selection}
+
+The empirical design centres on two major political and regulatory events. These events are treated as plausibly exogenous shocks to the information environment surrounding sovereign climate policy. They are selected because each represents a clear and observable moment of intensified political signaling.
+
+\subsubsection{India: Inaugural Sovereign Green Bond Auction}
+
+For India, the treatment event is the inaugural sovereign green bond auction on 25 January 2023. Although the government had already published its green bond framework, the auction marked the first point at which investors directly priced India’s sovereign green commitment in the market \citep{Panizza2025}. The issuance consisted of two tranches, a 5-year bond and a 10-year bond, with a total value of INR 160 billion.
+
+Within the empirical framework of this study, a negative post-treatment coefficient implies that the auction increased confidence in India’s green label and widened the Greenium.
+
+A limitation arises in the India case because both Indian green bonds were issued at or after the treatment date. This means that no pre-treatment Greenium observations exist for India. As a result, the parallel trends assumption cannot be tested directly using pre-event coefficients. Instead, comparability is established by construction through the twin-bond matching design, which matches bonds from the same issuer, currency, and similar maturity. In the India-only event study, all pre-treatment coefficients are mechanically zero because no observations exist before the treatment week.
+
+\subsubsection{Indonesia: JETP Announcement at the G20 Bali Summit}
+
+For Indonesia, the treatment event is the announcement of the Just Energy Transition Partnership (JETP) on 15 November 2022 at the G20 Bali Summit. This agreement mobilised approximately \$20 billion in international climate finance and can be interpreted as a strong signal of external validation for Indonesia’s energy transition strategy \citep{Neumann2025}.
+
+Unlike India, Indonesia’s 10-year green bond predates the treatment by several months, having been issued in June 2022. This provides a short but usable pre-treatment window for event study analysis. The Indonesia event study contains 94 observations, with event weeks spanning from $-8$ to $+10$.
+
+The use of these two discrete events rather than a continuously varying treatment variable is intentional. Focusing on clearly identifiable shocks reduces the endogeneity concerns that would arise if political variables were allowed to move continuously alongside bond markets. The staggered timing of the two events, with Indonesia treated in November 2022 and India in January 2023, also strengthens the pooled Difference-in-Differences design by providing variation in treatment exposure across countries.
+
+
+% ── References ──
+\newpage
+\bibliographystyle{apalike}
+
+\begin{thebibliography}{99}
+
+\bibitem[Baker et al., 2022]{Baker2022}
+Baker, M., Bergstresser, D., Sergi, B., \& Wurgler, J. (2022).
+Financing the response to climate change: The pricing and ownership of U.S.\ green bonds.
+\textit{Critical Finance Review}, \textit{11}(3--4), 415--437.
+
+\bibitem[Chatterjee \& Hadi, 2012]{Chatterjee2012}
+Chatterjee, S., \& Hadi, A.~S. (2012).
+\textit{Regression Analysis by Example} (5th ed.).
+Wiley.
+
+\bibitem[Dragotto et al., 2025]{Dragotto2025}
+Dragotto, M., Aristei, D., \& Gallo, G. (2025).
+Climate awareness and green bond market dynamics: A high-frequency analysis.
+\textit{International Review of Financial Analysis}, \textit{91}, 103012.
+
+\bibitem[Durbin \& Watson, 1950]{Durbin1950}
+Durbin, J., \& Watson, G.~S. (1950).
+Testing for serial correlation in least squares regression: I.
+\textit{Biometrika}, \textit{37}(3/4), 409--428.
+
+\bibitem[Flammer, 2021]{Flammer2021}
+Flammer, C. (2021).
+Corporate green bonds.
+\textit{Journal of Financial Economics}, \textit{142}(2), 499--516.
+
+\bibitem[Franco et al., 2014]{Franco2014}
+Franco, A., Malhotra, N., \& Simonovits, G. (2014).
+Publication bias in the social sciences: Unlocking the file drawer.
+\textit{Science}, \textit{345}(6203), 1502--1505.
+
+\bibitem[Gabor, 2021]{Gabor2021}
+Gabor, D. (2021).
+The Wall Street Consensus.
+\textit{Development and Change}, \textit{52}(3), 429--459.
+
+\bibitem[ICMA, 2022]{ICMA2022}
+International Capital Market Association. (2022).
+\textit{Green Bond Principles: Voluntary process guidelines for issuing green bonds}.
+ICMA Group.
+
+\bibitem[Kling et al., 2021]{Kling2021}
+Kling, G., Volz, U., Murinde, V., \& Ayas, S. (2021).
+The impact of climate vulnerability on budgets and the cost of capital.
+\textit{Ecological Economics}, \textit{185}, 107047.
+
+\bibitem[Larcker \& Watts, 2020]{Larcker2020}
+Larcker, D.~F., \& Watts, E.~M. (2020).
+Where is the greenium?
+\textit{Journal of Accounting and Economics}, \textit{69}(2--3), 101312.
+
+\bibitem[Lau et al., 2024]{Lau2024}
+Lau, P., Sze, A., \& Zhang, Y. (2024).
+Climate policy credibility and the pricing of green bonds.
+Working paper, Chinese University of Hong Kong.
+
+\bibitem[Leetaru \& Schrodt, 2013]{Leetaru2013}
+Leetaru, K., \& Schrodt, P. (2013).
+GDELT: Global data on events, location, and tone, 1979--2012.
+\textit{ISA Annual Convention}, \textit{2}, 1--49.
+
+\bibitem[MacKinlay, 1997]{MacKinlay1997}
+MacKinlay, A.~C. (1997).
+Event studies in economics and finance.
+\textit{Journal of Economic Literature}, \textit{35}(1), 13--39.
+
+\bibitem[MacKinnon \& White, 1985]{MacKinnon1985}
+MacKinnon, J.~G., \& White, H. (1985).
+Some heteroskedasticity-consistent covariance matrix estimators with improved finite sample properties.
+\textit{Journal of Econometrics}, \textit{29}(3), 305--325.
+
+\bibitem[Neumann, 2025]{Neumann2025}
+Neumann, T. (2025).
+\textit{The Political Economy of Green Bonds in Emerging Markets: Coal Interests and Climate Finance}.
+Springer Nature.
+
+\bibitem[Panizza et al., 2025]{Panizza2025}
+Panizza, U., Weder di Mauro, B., Shi, S., \& Gulati, M. (2025).
+The sovereign greenium: Big promise but small price effect
+(IHEID Working Paper No.\ HEIDWP16-2025).
+Graduate Institute of International and Development Studies.
+
+\bibitem[Rethel \& Sinclair, 2014]{Rethel2014}
+Rethel, L., \& Sinclair, T.~J. (2014).
+\textit{The Problem with Banks}.
+Zed Books.
+
+\bibitem[Webersinke et al., 2022]{Webersinke2022}
+Webersinke, N., Schimanski, T., Bingler, J., Leippold, M., \& Kraus, M. (2022).
+ClimateBERT: A pre-trained language model for climate-related disclosures.
+\textit{arXiv preprint arXiv:2110.12010}.
+
+\bibitem[Zerbib, 2019]{Zerbib2019}
+Zerbib, O.~D. (2019).
+The effect of pro-environmental preferences on bond prices: Evidence from green bonds.
+\textit{Journal of Banking \& Finance}, \textit{98}, 39--60.
+
+\end{thebibliography}
+
+
+\end{document}
