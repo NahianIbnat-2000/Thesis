@@ -218,3 +218,11 @@ All outputs are saved to `output/`.
 **Nahian Ibnat**  
 MA in Economics, Data & Policy  
 Central European University
+
+## Feedback & Questions
+
+Scan the QR code below to share your thoughts or ask questions about this thesis:
+
+![Feedback Form QR Code](feedback_qr.png)
+
+Or click here: [Open Feedback Form](https://forms.gle/YMKYULpfnAX5dyV4A)
