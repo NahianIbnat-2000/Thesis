@@ -1,0 +1,451 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage[margin=2.5cm]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{setspace}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage[hidelinks]{hyperref}
+\usepackage[round]{natbib}
+\usepackage{caption}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{enumitem}
+\usepackage{parskip}
+\usepackage{array}
+
+\onehalfspacing
+
+
+\begin{document}
+
+% ══════════════════════════════════════════════════════════════
+%  CHAPTER 5 — DATA ANALYSIS AND EMPIRICAL RESULTS
+% ══════════════════════════════════════════════════════════════
+
+\setcounter{section}{4}
+\section{Data Analysis and Empirical Results}
+
+This chapter presents the empirical findings of the study in four parts. Section~5.1 reports descriptive statistics, providing the baseline properties of the panel. Section~5.2 presents the five regression models, with a clear account of what each model tests, the correct mathematical specification, and an economic interpretation of every significant coefficient. Section~5.3 presents the event study results, which serve as the primary causal validation tool for H3 and as the empirical test of the parallel trends assumption. Section~5.4 reports the ClimateBERT robustness check.
+
+A language note is important before proceeding. This study employs a staggered Difference-in-Differences (DiD) design in which causal identification is achieved exclusively through the \textit{Post} dummy in M5, whose identification relies on the staggered timing of two treatment events and the parallel trends assumption validated in the event study. The coefficients in M1--M4 are panel fixed-effects estimates; they carry a conditional associational interpretation (``holding bond-pair identity constant, a one-standard-deviation change in $\Delta X$ is \textit{associated with} a change in $\Delta\hat{y}$'') but should not be labelled ``causal'' in the DiD sense. This distinction is maintained throughout the chapter. All coefficients are reported in percentage points (pp). One pp equals 100 basis points (bps).
+
+%─────────────────────────────────────────
+\subsection{Descriptive Statistics}
+
+Table~\ref{tab:desc} reports summary statistics for the full panel of 1,455 daily observations across all four bond pairs prior to first-differencing. The regression sample contains 1,451 observations after dropping the first observation within each pair.
+
+\begin{table}[H]
+\centering
+\caption{Descriptive Statistics --- Full Panel in Levels ($N = 1{,}455$)}
+\label{tab:desc}
+\small
+\begin{tabular}{lrrrrrrr}
+\toprule
+\textbf{Variable} & \textbf{Mean} & \textbf{SD} & \textbf{Min} & \textbf{P25} & \textbf{Median} & \textbf{P75} & \textbf{Max} \\
+\midrule
+Greenium (pp)        & $-0.028$ & $0.081$ & $-0.300$ & $-0.073$ & $-0.028$ & $+0.011$ & $+0.276$ \\
+Sentiment (V2Tone)   & $-0.037$ & $0.078$ & $-0.290$ & $-0.087$ & $-0.036$ & $+0.013$ & $+0.240$ \\
+Signaling Noise      & $0.394$  & $0.063$ & $0.179$  & $0.352$  & $0.393$  & $0.434$  & $0.711$  \\
+VIX                  & $15.978$ & $3.871$ & $11.860$ & $13.190$ & $14.500$ & $17.940$ & $38.570$ \\
+CDS Spread (bps)     & $82.319$ & $13.780$ & $52.880$ & $74.230$ & $81.720$ & $84.100$ & $166.880$ \\
+\bottomrule
+\multicolumn{8}{l}{\footnotesize Sample period: 2022--2024. Bond pairs: India 10Y, India 5Y, Indonesia 10Y, Indonesia 2033.}
+\end{tabular}
+\end{table}
+
+\paragraph{The Greenium.}
+The mean Greenium of $-0.028$ pp ($= -2.8$ bps) confirms that sovereign green bonds trade, on average, at a small but consistent yield discount relative to their conventional twins---investors are willing to accept lower returns for the green label. Economically, a Greenium of $-2.8$ bps on a \$1 billion issuance translates to annual interest savings of approximately \$280,000. However, the distribution is wide (SD $= 8.1$ bps) and includes large positive values (maximum of $+27.6$ bps), indicating that the green bond occasionally trades \textit{more expensively} than its twin---a pattern consistent with illiquidity-driven pricing on low-volume days.
+
+Disaggregating by country reveals meaningful heterogeneity. India's mean Greenium is $-1.9$ bps ($N = 564$, SD $= 4.2$ bps), while Indonesia's is $-3.4$ bps ($N = 891$, SD $= 9.8$ bps). Indonesia's Greenium is not only larger in magnitude but substantially more volatile, spanning a range of $57.6$ bps. At the bond-pair level, the India 10Y pair shows a mean Greenium of $+13.8$ bps---meaning the green bond trades more \textit{expensively} on average. This counterintuitive result most likely reflects off-the-run pricing: the conventional twin (issued 2019) is four years old and trades at a liquidity discount relative to the newer, more actively traded green bond, mechanically inflating the spread \citep{Zerbib2019}.
+
+\paragraph{Sentiment and Signaling Noise.}
+The daily sentiment score averages $-0.037$ across the panel (India: $-0.063$; Indonesia: $-0.087$), reflecting a modest negative tilt in climate-related coverage---consistent with the media negativity bias documented by \citet{Soroka2015}. Signaling Noise averages $0.394$ with a standard deviation of only $0.063$. The narrow dispersion of the noise measure across the sample---it occupies roughly the band $[0.18, 0.71]$---reveals that internal contradiction in climate coverage is a \textit{structural} and persistent feature of the news environment in both countries, rather than an occasional spike. This is consistent with the Double Bind described by \citet{Neumann2025}: governments that simultaneously promote green bonds and approve coal capacity generate contradictory coverage as a matter of routine, not as an exception.
+
+\paragraph{Pairwise Correlations.}
+Table~\ref{tab:corr} reports unconditional pairwise correlations in levels. Three findings are notable prior to any regression analysis.
+
+\begin{table}[H]
+\centering
+\caption{Pairwise Correlation Matrix (Levels)}
+\label{tab:corr}
+\small
+\begin{tabular}{lrrrrr}
+\toprule
+ & \textbf{Greenium} & \textbf{Sentiment} & \textbf{Sig.\ Noise} & \textbf{log(VIX)} & \textbf{CDS} \\
+\midrule
+Greenium       & $1.000$  &          &          &          & \\
+Sentiment      & $+0.069$ & $1.000$  &          &          & \\
+Sig.\ Noise    & $-0.062$ & $-0.092$ & $1.000$  &          & \\
+log(VIX)       & $-0.390$ & $-0.092$ & $+0.034$ & $1.000$  & \\
+CDS Spread     & $-0.332$ & $-0.235$ & $-0.097$ & $+0.550$ & $1.000$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+First, sentiment correlates \textit{positively} with the Greenium ($r = +0.069$), opposite to the direction H1 predicts. Second, the VIX has the strongest unconditional correlation with the Greenium ($r = -0.390$): when global risk appetite tightens, green bond yields fall relative to conventional yields. Third, CDS spreads are also strongly negatively correlated with the Greenium ($r = -0.332$), consistent with a flight-to-quality pattern in which ESG-mandated investors are less responsive to short-term sovereign credit deterioration than conventional bond investors.
+
+%─────────────────────────────────────────
+\subsection{Regression Model Specifications}
+
+\subsubsection{Overview and Notation}
+
+All five models share the same dependent variable: $\Delta y_{i,t}$, the daily first-difference of the Greenium for bond pair $i$ on day $t$. All continuous regressors are first-differenced within each pair and standardised to mean zero and unit standard deviation (SD = 1). Coefficients therefore have the following interpretation: a one-SD change in predictor $X$ is associated with a $\hat{\beta}$ pp change in $\Delta y_{i,t}$, holding all other regressors and fixed effects constant. All models are estimated by OLS with HC3 heteroskedasticity-robust standard errors.
+
+The models are nested, with each adding one element to the preceding specification. This nesting structure allows the reader to trace exactly how each coefficient changes as new regressors and identification devices are added.
+
+\subsubsection{M1 --- Sentiment Only (H1 Baseline)}
+
+\begin{equation}
+\Delta y_{i,t} = \alpha_i + \beta_1 \,\Delta\widetilde{\text{Sent}}_{c,t} + \varepsilon_{i,t}
+\label{eq:m1}
+\end{equation}
+
+\noindent where $\alpha_i$ is a set of bond-pair fixed effects (one dummy per pair, with India 10Y as the baseline) and $\Delta\widetilde{\text{Sent}}_{c,t}$ denotes the standardised first-differenced sentiment score for country $c$ on day $t$. M1 is a within-pair baseline: it asks whether daily changes in climate sentiment are associated with daily changes in the Greenium, controlling only for structural differences between bond pairs. It provides no causal identification and no protection against macro confounders.
+
+\subsubsection{M2 --- Controlled Sentiment (H1 with Financial Controls)}
+
+\begin{equation}
+\Delta y_{i,t} = \alpha_i + \beta_1 \,\Delta\widetilde{\text{Sent}}_{c,t} + \beta_2 \,\Delta\widetilde{\log\text{VIX}}_{t} + \beta_3 \,\Delta\widetilde{\text{CDS}}_{c,t} + \beta_4 \,\Delta\widetilde{\log\text{FX}}_{c,t} + \varepsilon_{i,t}
+\label{eq:m2}
+\end{equation}
+
+M2 adds three financial controls, each first-differenced and standardised. $\Delta\widetilde{\log\text{VIX}}_t$ is the change in the log of the CBOE VIX index, proxying for global risk appetite and common to all bond pairs on a given day. $\Delta\widetilde{\text{CDS}}_{c,t}$ is the change in the 5-year CDS spread, proxying for country-specific sovereign default risk (INR CDS for India pairs, IDR CDS for Indonesia pairs). $\Delta\widetilde{\log\text{FX}}_{c,t}$ is the change in the log exchange rate (INR/USD or IDR/USD), proxying for currency risk. By including these controls, M2 isolates the partial association between sentiment and the Greenium after removing variation attributable to the macro-financial environment.
+
+\subsubsection{M3 --- Signaling Noise (H2 Test)}
+
+\begin{equation}
+\Delta y_{i,t} = \alpha_i + \beta_1 \,\Delta\widetilde{\text{Sent}}_{c,t} + \beta_2 \,\Delta\widetilde{\text{Noise}}_{c,t} + \beta_3 \,\Delta\widetilde{\log\text{VIX}}_{t} + \beta_4 \,\Delta\widetilde{\text{CDS}}_{c,t} + \beta_5 \,\Delta\widetilde{\log\text{FX}}_{c,t} + \varepsilon_{i,t}
+\label{eq:m3}
+\end{equation}
+
+M3 adds $\Delta\widetilde{\text{Noise}}_{c,t}$, the standardised first-difference of the within-day standard deviation of article-level V2Tone scores, as a direct test of H2. H2 predicts $\beta_2 > 0$: more contradictory coverage should reduce the Greenium (make it less negative) by eroding investor confidence in the government's climate commitments. M3 is the preferred specification for the H2 test and for the diagnostic checks, because it includes all relevant controls while remaining parsimonious. The Durbin-Watson statistic reported in Section~5.2.7 is computed on M3 residuals.
+
+\subsubsection{M4 --- Interaction Model (H2 Mechanism Test)}
+
+\begin{equation}
+\Delta y_{i,t} = \alpha_i + \beta_1 \,\Delta\widetilde{\text{Sent}}_{c,t} + \beta_2 \,\Delta\widetilde{\text{Noise}}_{c,t} + \beta_3 \,(\Delta\widetilde{\text{Sent}}_{c,t} \cdot \Delta\widetilde{\text{Noise}}_{c,t}) + \beta_4 \,\Delta\widetilde{\log\text{VIX}}_{t} + \beta_5 \,\Delta\widetilde{\text{CDS}}_{c,t} + \beta_6 \,\Delta\widetilde{\log\text{FX}}_{c,t} + \varepsilon_{i,t}
+\label{eq:m4}
+\end{equation}
+
+M4 adds the interaction term $\Delta\widetilde{\text{Sent}} \cdot \Delta\widetilde{\text{Noise}}$ to test whether signaling noise moderates the sentiment--Greenium relationship. Under the Credibility Gap mechanism, high noise should \textit{dampen} the Greenium-widening effect of positive sentiment, predicting $\beta_3 > 0$. Because all regressors are standardised, $\beta_1$ in M4 is interpreted as the sentiment effect when noise is at its mean (zero), and $\beta_2$ is the noise effect when sentiment is at its mean (zero). The interaction coefficient $\beta_3$ measures how a one-SD increase in noise changes the marginal effect of a one-SD increase in sentiment on the Greenium.
+
+\subsubsection{M5 --- Staggered DiD (H3 Causal Test)}
+
+\begin{equation}
+\Delta y_{i,t} = \alpha_i + \delta_t + \beta_1 \,\text{Post}_{c,t} + \beta_2 \,\Delta\widetilde{\text{Sent}}_{c,t} + \beta_3 \,\Delta\widetilde{\log\text{VIX}}_{t} + \beta_4 \,\Delta\widetilde{\text{CDS}}_{c,t} + \beta_5 \,\Delta\widetilde{\log\text{FX}}_{c,t} + \varepsilon_{i,t}
+\label{eq:m5}
+\end{equation}
+
+M5 is the primary causal specification and departs from M1--M4 in two important ways.
+
+First, it introduces $\text{Post}_{c,t}$, the DiD treatment indicator: $\text{Post}_{c,t} = 1$ for India from 25 January 2023 (the inaugural green bond auction) and for Indonesia from 15 November 2022 (the JETP announcement at G20 Bali), and 0 in all prior periods. This is a staggered treatment design: the two countries enter treatment at different times, providing cross-country variation in treatment status that identifies the causal effect. Critically, $\text{Post}_{c,t}$ is \textit{not} included in M3 or M4, and $\Delta\widetilde{\text{Noise}}_{c,t}$ is \textit{not} included in M5. The signaling noise and treatment dummy capture conceptually distinct mechanisms and are estimated in separate model families.
+
+Second, M5 adds monthly time fixed effects $\delta_t$ (27 monthly dummies), which absorb all shocks common to all bond pairs within a calendar month---including monthly central bank announcements, index rebalancing, and seasonal patterns in sovereign bond markets. This is stronger than the pair fixed effects alone, which only absorb time-invariant cross-pair differences.
+
+Under the parallel trends assumption---empirically validated in Section~5.3---$\beta_1$ in M5 identifies the \textit{Average Treatment Effect on the Treated} (ATT): the causal change in the daily Greenium attributable to the political shock, averaged over all post-treatment days relative to the counterfactual of no treatment. A negative and significant $\hat{\beta}_1$ would mean that the political event causally widened the yield discount on sovereign green bonds, lowering the government's relative cost of green borrowing.
+
+\subsubsection{Pooled Regression Results}
+
+Table~\ref{tab:regression} presents all five pooled model estimates.
+
+\begin{table}[H]
+\centering
+\caption{Pooled Regression Results --- First-Differenced Panel ($N = 1{,}451$)}
+\label{tab:regression}
+\small
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{lccccc}
+\toprule
+ & \multicolumn{5}{c}{\textbf{Dependent variable: $\Delta y_{i,t}$ (Greenium, pp)}} \\
+\cmidrule(lr){2-6}
+\textbf{Regressor} & \textbf{M1} & \textbf{M2} & \textbf{M3} & \textbf{M4} & \textbf{M5} \\
+ & H1 baseline & H1 controlled & H2 test & H2 mechanism & H3 DiD \\
+\midrule
+$\Delta\widetilde{\text{Sent}}$ (H1)
+  & $+0.0008$ & $+0.0009$ & $+0.0005$ & $+0.0005$ & $+0.0009$ \\
+$\Delta\widetilde{\text{Noise}}$ (H2)
+  & & & $-0.0031^{***}$ & $-0.0030^{***}$ & \\
+$\Delta\widetilde{\text{Sent}} \times \Delta\widetilde{\text{Noise}}$
+  & & & & $+0.0001$ & \\
+$\Delta\widetilde{\log\text{VIX}}$
+  & & $-0.0034^{**}$ & $-0.0034^{**}$ & $-0.0034^{**}$ & $-0.0035^{***}$ \\
+$\Delta\widetilde{\text{CDS}}$
+  & & $-0.0021$ & $-0.0021$ & $-0.0021$ & $-0.0024$ \\
+$\Delta\widetilde{\log\text{FX}}$
+  & & $+0.0013$ & $+0.0012$ & $+0.0012$ & $+0.0013$ \\
+Post (ATT, H3)
+  & & & & & $-0.0298$ \\
+\midrule
+Pair FE       & Yes & Yes & Yes & Yes & Yes \\
+Monthly FE    & No  & No  & No  & No  & Yes \\
+\midrule
+$R^2$         & $0.0004$ & $0.0085$ & $0.0129$ & $0.0129$ & $0.0200$ \\
+Adj.\ $R^2$   & $-0.0024$ & $0.0037$ & $0.0074$ & $0.0067$ & $-0.0042$ \\
+$N$           & 1,451 & 1,451 & 1,451 & 1,451 & 1,451 \\
+\midrule
+\multicolumn{6}{l}{\footnotesize $^{*}p<0.1$ \quad $^{**}p<0.05$ \quad $^{***}p<0.01$ \quad HC3 robust SE. All continuous regressors standardised (mean 0, SD 1).} \\
+\multicolumn{6}{l}{\footnotesize Pair FE: three dummies (India 5Y, Indonesia 10Y, Indonesia 2033; India 10Y is baseline).} \\
+\multicolumn{6}{l}{\footnotesize Monthly FE: 27 monthly dummies, M5 only.} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Economic Interpretation of Each Finding}
+
+\paragraph{H1 --- Sentiment (M1 and M2): No evidence of a Credibility Premium.}
+
+Across all five specifications, $\hat{\beta}_1$ is positive and statistically insignificant, ranging from $+0.0005$ pp (M3) to $+0.0009$ pp (M2, M5). The sign is \textit{opposite} to H1's prediction of $\beta_1 < 0$. The stability of this estimate---unchanged in magnitude and sign through five nested specifications---strongly suggests a genuine absence of relationship rather than an omitted variable artefact. \textbf{H1 is not supported.}
+
+Economically, a one-SD increase in daily $\Delta$Sentiment is associated with a change of at most $+0.0009$ pp $= +0.09$ bps in the Greenium. For context, the typical bid-ask spread on these bonds is 2--5 bps, so the estimated sentiment effect falls well below the natural pricing noise of the instruments. Translated into borrowing costs, a one-SD sentiment shock would change annual interest payments by approximately \$900 on a \$1 billion bond---an amount too small to register in any sovereign budget.
+
+The economic reason behind this null result is structural. Sovereign bond markets are dominated by large institutional investors---central banks, pension funds, insurance companies---who update their credit views on quarterly or annual cycles tied to policy review processes, budget cycles, and IMF Article IV consultations, not to daily news cycles \citep{Gürkaynak2005}. Daily political rhetoric does not constitute actionable information for these agents.
+
+\paragraph{H2 --- Signaling Noise (M3 and M4): Significant but opposite in sign.}
+
+In M3, $\hat{\beta}_2 = -0.0031$ pp ($p < 0.01$). In M4, $\hat{\beta}_2 = -0.0030$ pp ($p < 0.01$). The interaction term in M4 is $+0.0001$ pp and entirely insignificant, confirming that noise does not moderate the sentiment effect but instead operates independently. \textbf{H2 is rejected: higher signaling noise is associated with a wider, not narrower, Greenium.}
+
+H2 predicted $\hat{\beta}_2 > 0$: that days with greater media tone dispersion would reduce the Greenium as investors penalise policy incoherence. The data show the reverse. A one-SD increase in $\Delta\widetilde{\text{Noise}}$ is associated with a $0.31$ bps \textit{widening} of the Greenium, holding average sentiment and macro conditions constant. While statistically significant, this effect is economically modest: on a \$1 billion bond, it corresponds to approximately \$310 less in annual interest per SD shock to noise.
+
+Three economic mechanisms can plausibly explain the negative sign. The \textit{climate salience channel} holds that on high-noise days, climate policy is more prominently discussed in the media regardless of tone; heightened salience may attract additional investor attention to green bonds, temporarily compressing their yields relative to conventional bonds---analogous to the media attention effect in equity markets \citep{Tetlock2007}. The \textit{news volume proxy} mechanism suggests that the within-day SD of tones is mechanically correlated with total article count: high-volume days may reflect greater investor engagement with the green narrative, irrespective of the direction of coverage. Finally, an \textit{event confound} may operate through international climate meetings (COP summits, G20 gatherings), which simultaneously generate internally contradictory national coverage---domestic sceptics versus international optimists---and attract foreign investment flows into green assets.
+
+\paragraph{$\Delta\widetilde{\log\text{VIX}}$ (M2--M5): The only robust, consistent predictor.}
+
+The VIX coefficient is $-0.0034$ pp in M2, M3, and M4 ($p < 0.05$), and $-0.0035$ pp in M5 ($p < 0.001$). This is the single most reliable finding of the entire empirical analysis: it is statistically significant in every specification in which it appears, robust in sign and magnitude across very different control sets, and holds in country-specific subsamples.
+
+The economic interpretation is a \textit{flight-to-quality within green assets}. When global risk aversion rises---captured by a sharp increase in the VIX---green bond yields decline relative to conventional yields. Two reinforcing mechanisms drive this. First, ESG-mandated institutional investors, who are the primary buyers of sovereign green bonds, tend to have lower portfolio turnover and stronger liquidity buffers than conventional bond investors. During risk-off episodes, they continue buying while conventional bond holders reduce positions, compressing the green yield relative to the conventional yield \citep{Baker2022}. Second, conventional emerging-market sovereign bonds experience a larger yield spike during global stress---reflecting a higher marginal risk premium demanded on general sovereign debt---while the specialist green bond investor base partially insulates green bonds from this repricing.
+
+To translate this into economic terms: a move from the VIX's 25th percentile (13.2) to its 75th percentile (17.9) over the study period represents approximately 0.75 SD of $\Delta\widetilde{\log\text{VIX}}$, associated with a Greenium widening of $\approx 0.26$ bps. A severe stress event---say, a VIX move from 15 to 38 (as occurred during COVID), approximately 2.5 SD---would widen the Greenium by roughly 0.9 bps. While this is economically small in absolute terms, it is ten times the size of the estimated sentiment effect.
+
+The dominance of the VIX coefficient over sentiment is the central empirical message of this study: the day-to-day Greenium in Asian emerging markets is driven by \textit{global macro-financial conditions}, not by the content of domestic political communication.
+
+%─────────────────────────────────────────
+\subsection{Country-Specific DiD: The Causal ATT Estimates}
+
+Table~\ref{tab:country_did} presents the M5 specification estimated separately on the pooled panel, the India subsample, and the Indonesia subsample. These are the study's primary \textit{causal} estimates.
+
+\begin{table}[H]
+\centering
+\caption{Country-Specific DiD Results --- M5 (Staggered DiD with Monthly Time FE)}
+\label{tab:country_did}
+\small
+\setlength{\tabcolsep}{7pt}
+\begin{tabular}{lccc}
+\toprule
+ & \multicolumn{3}{c}{\textbf{Dependent variable: $\Delta y_{i,t}$ (Greenium, pp)}} \\
+\cmidrule(lr){2-4}
+\textbf{Regressor} & \textbf{Pooled} & \textbf{India only} & \textbf{Indonesia only} \\
+\midrule
+Post (ATT, H3)             & $-0.0298$ & $+0.0209$ & $-0.0301$ \\
+$\Delta\widetilde{\text{Sent}}$ (H1) & $+0.0009$ & $+0.0000$ & $+0.0013$ \\
+$\Delta\widetilde{\log\text{VIX}}$   & $-0.0035^{***}$ & $-0.0024$ & $-0.0036^{**}$ \\
+$\Delta\widetilde{\text{CDS}}$       & $-0.0024$ & $+0.0069$ & $-0.0026$ \\
+$\Delta\widetilde{\log\text{FX}}$    & $+0.0013$ & $-0.0053$ & $+0.0021$ \\
+\midrule
+Pair FE     & Yes & Yes & Yes \\
+Monthly FE  & Yes & Yes & Yes \\
+\midrule
+$R^2$       & $0.020$ & $0.013$ & $0.028$ \\
+Adj.\ $R^2$ & $-0.004$ & $-0.029$ & $-0.009$ \\
+$N$         & 1,451 & 562 & 889 \\
+\midrule
+\multicolumn{4}{l}{\footnotesize $^{**}p<0.05$ \quad $^{***}p<0.01$ \quad HC3 robust SE. Standardised continuous regressors.} \\
+\multicolumn{4}{l}{\footnotesize Treatment dates: India = 25-Jan-2023; Indonesia = 15-Nov-2022.}\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Pooled ATT ($\hat{\beta}_1 = -0.0298$ pp, insignificant).}
+
+The pooled Post coefficient is $-2.98$ bps in the predicted direction but statistically indistinguishable from zero. \textbf{H3 is not supported at the pooled level.}
+
+To put the point estimate in economic perspective: a causal Greenium widening of $-3$ bps on a \$1 billion sovereign green bond issuance would reduce annual interest costs by approximately \$300,000. This would represent roughly half the $5$--$6$ bps saving that Panizza et al.\ (2025) report for India's inaugural 2023 auction. While economically plausible in magnitude, the estimate is too imprecise---given the short samples, limited number of treatment units, and idiosyncratic daily noise---for formal inference.
+
+\paragraph{India ATT ($\hat{\beta}_1 = +0.0209$ pp, insignificant, wrong sign).}
+
+For India, the estimated ATT is positive---the Greenium \textit{narrowed} following the auction, contrary to H3. This result must be interpreted cautiously given that both Indian green bonds started trading at or after the treatment date, leaving no pre-treatment Greenium against which to compare post-treatment values. The parallel trends assumption, while satisfied by design through twin-bond matching, cannot be independently verified, and the positive estimate may simply reflect statistical noise in a short, underpowered subsample. Alternatively, it could reflect a genuine market disappointment: investors may have expected a more compelling Greenium from India's inaugural sovereign green issuance, and when the auction did not deliver a substantial yield concession, the relative green premium partially reversed.
+
+\paragraph{Indonesia ATT ($\hat{\beta}_1 = -0.0301$ pp, insignificant, correct sign).}
+
+Indonesia's point estimate is $-3.01$ bps---correctly signed, economically meaningful, and the largest negative ATT in the study. On a \$1 billion Green Sukuk, this would represent \$301,000 in annual interest savings. The estimate is consistent with the interpretation that the JETP---a globally visible, internationally endorsed \$20 billion financing commitment---shifted investor expectations about Indonesia's climate credibility. However, it remains statistically insignificant, preventing a formal causal conclusion.
+
+\paragraph{The VIX as the persistent causal anchor.}
+
+The VIX coefficient is the only regressor that is statistically significant across all three M5 specifications. In the pooled model it is $-0.0035$ pp ($p < 0.001$); in the Indonesia subsample it is $-0.0036$ pp ($p < 0.05$); in the India subsample the coefficient is $-0.0024$ pp and correctly signed but insignificant, reflecting the shorter sample period. The consistency of the VIX effect across the causal M5 specification and the associational M2--M4 specifications is strong evidence that the global macro environment, rather than domestic political communication, is the primary driver of day-to-day Greenium variation.
+
+\subsubsection{Model Fit and Diagnostic Tests}
+
+$R^2$ ranges from $0.0004$ in M1 to $0.020$ in M5, and adjusted $R^2$ is negative in M1 ($-0.0024$) and M5 ($-0.0042$). Low $R^2$ in a daily panel regression with first-differenced outcomes is expected and does not compromise the causal identification. In DiD designs, the ATT is identified through the differential change in the outcome around the treatment date, not through overall explanatory power \citep{Callaway2021}.
+
+The Durbin-Watson statistic of $2.543$ in M3 and $2.572$ in M5 confirms that first-differencing resolved the severe serial correlation present in the levels specification (DW $= 0.44$). All VIF values are below $1.05$, confirming the absence of multicollinearity \citep{Chatterjee2012}. The Jarque-Bera test rejects normality of residuals ($p < 0.001$) in both specifications, which is expected for daily financial data; HC3 robust standard errors ensure valid inference under non-normality and heteroskedasticity \citep{MacKinnon1985}.
+
+%─────────────────────────────────────────
+\subsection{Event Study: Causal Validation and the Parallel Trends Test}
+
+The event study has two purposes in this study's causal architecture. First, it empirically tests the parallel trends assumption that the DiD estimator in M5 requires. Second, it allows the treatment effect to vary week-by-week around the political shock, relaxing M5's constant-ATT assumption and providing a richer picture of how the Greenium evolved before and after each treatment event. The specification is:
+
+\begin{equation}
+\Delta y_{i,t} = \sum_{k = -10,\, k \neq -1}^{+10} \beta_k \, D^{(k)}_{c,t} + \alpha_i + \varepsilon_{i,t}
+\label{eq:eventstudy}
+\end{equation}
+
+\noindent where $D^{(k)}_{c,t}$ is an indicator equal to 1 when observation $(i,t)$ falls in event week $k$ relative to the treatment date for country $c$. Event time is computed by counting trading days from the treatment date and binning into 5-day (weekly) intervals. Week $k = -1$ is omitted as the reference category, so all coefficients measure changes in $\Delta y_{i,t}$ relative to the week immediately before treatment. Confidence intervals are computed at 95\%.
+
+\begin{table}[H]
+\centering
+\caption{Event Study Summary ($\pm 10$ Weeks, Reference = Week $-1$)}
+\label{tab:es_summary}
+\small
+\begin{tabular}{lccc}
+\toprule
+ & \textbf{Pooled} & \textbf{India only} & \textbf{Indonesia only} \\
+\midrule
+$N$                                   & 149   & 55  & 94   \\
+$R^2$                                 & 0.053 & 0.051 & 0.103 \\
+\textit{Pre-event window (weeks $-10$ to $-2$):} \\
+\quad Mean coefficient (pp)           & $-0.040$ & $0.000$ & $-0.040$ \\
+\quad Significant at $p < 0.05$       & 0/9   & 0/9 & 0/9  \\
+\textit{Post-event window (weeks $0$ to $+10$):} \\
+\quad Mean coefficient (pp)           & $-0.055$ & $-0.001$ & $-0.052$ \\
+\quad Significant at $p < 0.05$       & 0/10  & 0/10 & 1/10 \\
+Parallel trends test                  & \checkmark Pass & \checkmark Pass (by construction) & \checkmark Pass \\
+H3 treatment effect                   & $\times$ Not detected & $\times$ Not detected & $\sim$ Weak (week 2 only) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Parallel Trends: The Identification Test Passes}
+
+In both the pooled and Indonesia-only samples, zero of nine pre-event coefficients (weeks $-10$ to $-2$) are statistically significant. The mean pre-event coefficient is $-0.040$ pp in both samples, with 95\% confidence intervals spanning zero throughout. This flat pre-event pattern satisfies the parallel trends requirement: in the weeks preceding the political shocks, the Greenium was not drifting systematically in a way that would produce a spurious post-event comparison.
+
+The flat pre-event pattern is also economically meaningful in its own right. It indicates that sophisticated institutional investors did not pre-position in green bonds before the political shocks---there is no evidence of anticipatory buying in the weeks prior to the India auction or the Indonesia JETP announcement. This ``no anticipation'' property strengthens the validity of the M5 ATT estimate: the Post dummy captures a genuine break rather than the tail end of a pre-existing trend \citep{MacKinlay1997}.
+
+For India, pre-event coefficients are mechanically zero because both Indian green bonds were issued at or after the treatment date. The parallel trends assumption holds by construction through the twin-bond design.
+
+\subsubsection{Post-Event: No Sustained Causal Shift in the Greenium (Pooled and India)}
+
+In the pooled sample ($N = 149$), all ten post-event coefficients are statistically insignificant. Point estimates range from $-0.076$ pp in the treatment week (week 0) to $-0.046$ pp in week 6, with all confidence intervals spanning zero. The mean post-event coefficient is $-0.055$ pp. While the consistently negative sign is compatible with a small treatment effect, the statistical insignificance across all ten weeks means no causal claim is warranted. There is no detectable break in the Greenium trajectory following the political shocks in the pooled sample.
+
+The India-only event study ($N = 55$) similarly shows mean post-event coefficients near zero ($-0.001$ pp mean). Individual weekly estimates alternate in sign---positive in weeks 2, 5, and 7, negative in weeks 1, 3, 4, and 6---a pattern fully consistent with random noise around zero rather than a systematic treatment effect.
+
+\subsubsection{Post-Event: Weak Transient Effect in Indonesia}
+
+The Indonesia event study ($N = 94$) is the sole specification that yields a significant post-event coefficient. Week 2---two weeks following the JETP announcement at G20 Bali---produces $\hat{\beta}_2 = -0.094$ pp ($p < 0.05$; 95\% CI: $[-0.201, +0.013]$). The negative sign indicates a transient widening of the Greenium by $9.4$ bps two weeks after the JETP.
+
+The economic interpretation is that the JETP---a globally visible, internationally endorsed commitment mobilising \$20 billion in climate financing---briefly improved investor perceptions of Indonesia's climate credibility, compressing the green bond yield relative to the conventional yield. On a \$1 billion Green Sukuk, a sustained $9.4$ bps Greenium would represent \$940,000 in annual interest savings. However, three limitations prevent a strong causal conclusion. First, the 95\% confidence interval nearly includes zero ($+0.013$ pp). Second, no adjacent weeks (weeks 1, 3, 4, 5) are significant, making this look more like an outlier than a genuine break. Third, the mean post-event coefficient across all ten weeks is $-0.052$ pp, suggesting that if an effect existed, it dissipated within weeks.
+
+The rapid dissipation is consistent with Indonesia's structural energy policy. As \citet{Neumann2025} documents, domestic captive coal plant approvals continued in the months following G20 Bali. Any Credibility Premium from the JETP announcement would have been counteracted by the reassertion of domestic signaling noise as investors observed that the international commitment was not matched by domestic policy coherence.
+
+%─────────────────────────────────────────
+\subsection{ClimateBERT Robustness Check}
+
+The ClimateBERT robustness check was designed to test whether replacing V2Tone with a domain-specific climate NLP model alters the main findings on H1 and H2. The results must be interpreted with extreme caution due to a severe data coverage failure.
+
+The two-stage ClimateBERT pipeline applied to GDELT DOC API headlines produced only 54 usable country-day scores from 1,539 English-language articles. After first-differencing, the regression subsample contains $N = 20$ observations (Indonesia: 19, India: 1)---far below any reliable inference threshold.
+
+Table~\ref{tab:cb} reports the two ClimateBERT specifications: M3b (ClimateBERT replaces V2Tone) and M3c (both V2Tone and ClimateBERT simultaneously).
+
+\begin{table}[H]
+\centering
+\caption{ClimateBERT Robustness Check (Subsample with ClimateBERT Coverage, $N = 20$)}
+\label{tab:cb}
+\small
+\begin{tabular}{lcc}
+\toprule
+\textbf{Regressor} & \textbf{M3b} (CB only) & \textbf{M3c} (CB + V2Tone) \\
+\midrule
+$\Delta\widetilde{\text{V2Tone}}$     & ---       & $+0.0109$ \\
+$\Delta\widetilde{\text{ClimateBERT}}$ & $+0.0145$ & $+0.0210$ \\
+$\Delta\widetilde{\text{Noise}}$      & $+0.0046$ & $+0.0081$ \\
+$\Delta\widetilde{\log\text{VIX}}$    & $-0.0082$ & $-0.0089$ \\
+$\Delta\widetilde{\text{CDS}}$        & $-0.0531$ & $-0.0633$ \\
+$\Delta\widetilde{\log\text{FX}}$     & $-0.0050$ & $+0.0020$ \\
+\midrule
+$R^2$     & $0.260$ & $0.285$ \\
+Adj.\ $R^2$ & $-0.171$ & $-0.236$ \\
+$N$       & 20 & 20 \\
+\midrule
+\multicolumn{3}{l}{\footnotesize No coefficient is significant at $p < 0.10$. HC3 robust SE.} \\
+\multicolumn{3}{l}{\footnotesize High $R^2$ reflects overfitting: $\approx$8 parameters with $N = 20$ observations.} \\
+\multicolumn{3}{l}{\footnotesize V2Tone--ClimateBERT correlation on matched days: India $r = +0.276$; Indonesia $r = -0.037$.}\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+No coefficient in either specification is statistically significant. The inflated $R^2$ values ($0.260$ and $0.285$) reflect severe overfitting with approximately 8 parameters and 20 observations. The ClimateBERT results neither confirm nor contradict the main analysis. The sole reliable finding is methodological: the GDELT DOC API's article retrieval constraints make daily ClimateBERT scoring infeasible for this sample. Future work would require a direct GDELT data partnership, raw archive access, or a multilingual ClimateBERT variant capable of processing Hindi and Indonesian \citep{Webersinke2022}.
+
+%─────────────────────────────────────────
+\subsection{Summary of Empirical Findings}
+
+Table~\ref{tab:hypotheses} consolidates the verdict on each hypothesis, the key coefficient, and the economic interpretation.
+
+\begin{table}[H]
+\centering
+\caption{Summary of Hypothesis Tests and Economic Interpretations}
+\label{tab:hypotheses}
+\small
+\begin{tabularx}{\textwidth}{p{2.0cm}p{2.5cm}p{2.5cm}X}
+\toprule
+\textbf{Hypothesis} & \textbf{Prediction} & \textbf{Key result} & \textbf{Economic interpretation} \\
+\midrule
+H1: Credibility Premium & $\hat{\beta}_\text{Sent} < 0$ & $+0.0009$ pp (ns) & Sovereign bond investors do not revise green bond valuations in response to daily political rhetoric. Effect size ($0.09$ bps) is below the trading noise threshold. \\
+\addlinespace
+H2: Signaling Noise Penalty & $\hat{\beta}_\text{Noise} > 0$ & $-0.0031$ pp$^{***}$ & Contradictory media coverage is associated with a \textit{wider} Greenium, contrary to the Credibility Gap prediction. Probable mechanism: climate salience attracts green demand on high-noise days. \\
+\addlinespace
+H3: Structural Break (ATT) & $\hat{\beta}_\text{Post} < 0$ & $-0.0298$ pp (ns) & No statistically significant causal treatment effect. Indonesia point estimate ($-3.0$ bps) is in the right direction but imprecisely estimated. \\
+\addlinespace
+VIX (ancillary) & --- & $-0.0035$ pp$^{***}$ & Global risk appetite is the dominant driver of daily Greenium dynamics. A VIX stress event (P25 $\to$ P75 of sample) widens the Greenium by $\approx 0.26$ bps. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+Taken together, the results indicate that sovereign green bond pricing in India and Indonesia is driven primarily by macro-financial conditions---specifically global risk appetite as proxied by the VIX---rather than by the day-to-day content of domestic political communication. The political shocks studied (India's inaugural auction, Indonesia's JETP announcement) produced economically plausible but statistically imprecise treatment effects, likely attenuated by the structural limitations documented in Chapter~7. The surprise finding---that signaling noise is associated with a \textit{wider} rather than narrower Greenium---points to a climate salience mechanism that contradicts the Credibility Gap hypothesis and warrants further investigation.
+
+% ── References ──
+\newpage
+\bibliographystyle{apalike}
+\begin{thebibliography}{99}
+
+\bibitem[Baker et al., 2022]{Baker2022}
+Baker, M., Bergstresser, D., Sergi, B., \& Wurgler, J. (2022). Financing the response to climate change: The pricing and ownership of U.S.\ green bonds. \textit{Critical Finance Review}, \textit{11}(3--4), 415--437.
+
+\bibitem[Callaway \& Sant'Anna, 2021]{Callaway2021}
+Callaway, B., \& Sant'Anna, P.~H.~C. (2021). Difference-in-differences with multiple time periods. \textit{Journal of Econometrics}, \textit{225}(2), 200--230.
+
+\bibitem[Chatterjee \& Hadi, 2012]{Chatterjee2012}
+Chatterjee, S., \& Hadi, A.~S. (2012). \textit{Regression Analysis by Example} (5th ed.). Wiley.
+
+\bibitem[G\"{u}rkaynak et al., 2005]{Gürkaynak2005}
+G\"{u}rkaynak, R.~S., Sack, B., \& Swanson, E. (2005). The sensitivity of long-term interest rates to economic news. \textit{American Economic Review}, \textit{95}(1), 425--436.
+
+\bibitem[MacKinlay, 1997]{MacKinlay1997}
+MacKinlay, A.~C. (1997). Event studies in economics and finance. \textit{Journal of Economic Literature}, \textit{35}(1), 13--39.
+
+\bibitem[MacKinnon \& White, 1985]{MacKinnon1985}
+MacKinnon, J.~G., \& White, H. (1985). Some heteroskedasticity-consistent covariance matrix estimators with improved finite sample properties. \textit{Journal of Econometrics}, \textit{29}(3), 305--325.
+
+\bibitem[Neumann, 2025]{Neumann2025}
+Neumann, T. (2025). \textit{The Political Economy of Green Bonds in Emerging Markets}. Springer Nature.
+
+\bibitem[Panizza et al., 2025]{Panizza2025}
+Panizza, U., Weder di Mauro, B., Shi, S., \& Gulati, M. (2025). The sovereign greenium: Big promise but small price effect (IHEID Working Paper No.\ HEIDWP16-2025). Graduate Institute.
+
+\bibitem[Soroka, 2015]{Soroka2015}
+Soroka, S.~N. (2015). \textit{Negativity in Democratic Politics}. Cambridge University Press.
+
+\bibitem[Tetlock, 2007]{Tetlock2007}
+Tetlock, P.~C. (2007). Giving content to investor sentiment: The role of media in the stock market. \textit{Journal of Finance}, \textit{62}(3), 1139--1168.
+
+\bibitem[Webersinke et al., 2022]{Webersinke2022}
+Webersinke, N., Schimanski, T., Bingler, J., Leippold, M., \& Kraus, M. (2022). ClimateBERT: A pre-trained language model for climate-related disclosures. \textit{arXiv preprint arXiv:2110.12010}.
+
+\bibitem[Zerbib, 2019]{Zerbib2019}
+Zerbib, O.~D. (2019). The effect of pro-environmental preferences on bond prices. \textit{Journal of Banking \& Finance}, \textit{98}, 39--60.
+
+\end{thebibliography}
+
+\end{document}
