@@ -1,228 +1,148 @@
-# Do Politicians' Words Have a Dollar Value?
-### Measuring the Impact of Climate Policy Sentiment on Sovereign Green Bond Pricing in India and Indonesia
+# When Governments Say "Green" — Do Bond Markets Believe Them?
 
-**Nahian Ibnat**  
-MA in Economics, Data & Policy — Central European University  
-Supervisor: Zoltán Csaba Tóth | April 2026
+### Political Credibility Signals and the Sovereign Green Bond Greenium in Emerging Markets
+
+**Nahian Ibnat**
+MA in Economics, Data & Policy — Central European University
+Supervisor: Zoltán Csaba Tóth | 2026
 
 ---
 
 ## Overview
 
-This repository contains all data, code, and written chapters for my MA thesis first draft. The content will change as per the Thesis Seminar Comments and Supervisor Comments The study investigates whether daily political climate sentiment influences the **Greenium** — the yield discount on sovereign green bonds relative to maturity-matched conventional twins — in India and Indonesia over 2020–2024.
+This repository contains the data, code, and written chapters for my MA thesis. The study asks whether **political credibility signals** — proxied by the tone and dispersion of climate-related news — shift the **greenium**, the yield discount on a sovereign green bond relative to a maturity-matched conventional twin, in emerging market economies.
 
-The empirical design uses a **Twin-Bond quasi-experimental framework** paired with a **staggered Difference-in-Differences (DiD)** estimator, anchored on two political shocks: India's inaugural green bond auction (January 2023) and Indonesia's JETP announcement at the G20 Bali Summit (November 2022). Climate sentiment is measured using **GDELT V2Tone** scores, with a **ClimateBERT** robustness check.
+The core sample is **India and Indonesia**, with **Germany and Denmark** serving as a developed-market robustness benchmark. The empirical design is a **twin-bond stacked Difference-in-Differences (DiD)** estimator anchored on two political shocks, with climate-news tone measured from **GDELT V2Tone**.
 
-**Key findings:**
-- **H1 (Sentiment → Greenium):** Null. Daily climate sentiment does not predict the Greenium in any specification.
-- **H2 (Signaling Noise → Greenium):** Significant (p < 0.001). Higher within-day media tone dispersion is associated with a wider, not narrower, Greenium — opposite to the hypothesised Credibility Gap direction.
-- **H3 (Political Events → Structural Break):** Null. Neither treatment event produces a significant break, though parallel trends hold in both cases.
-- **VIX** is the only robust predictor of daily Greenium movements (β = −0.0035, p < 0.001), pointing to global risk appetite as the dominant driver.
+**Headline result:** In the Asian sample, the political-credibility channel does not move the greenium. All three hypotheses return null. Global risk appetite (VIX) is the dominant pricing driver. A persistent, statistically meaningful greenium *is* recovered in the European benchmark, suggesting the null is specific to the thin, illiquid emerging-market green bond segment rather than a universal feature of sovereign green debt.
 
 ---
 
-## Repository Structure
+## Key Findings
 
-```
-Thesis/
-│
-├── chapters/                        # Written thesis chapters
-│   ├── tex_code/                    # LaTeX source files
-│   │   ├── Chapter1_Introduction.tex
-│   │   ├── Chapter2_Lit.tex
-│   │   ├── Chapter3_Data.tex
-│   │   ├── Chapter4_Methodology.tex
-│   │   ├── Chapter5_Result.tex
-│   │   └── Chapter7_Limitations.tex
-│   ├── Chapter1_Introduction.pdf
-│   ├── Chapter2_LiteratureReview.pdf
-│   ├── Chapter3_Data.pdf
-│   ├── Chapter4_Methodology.pdf
-│   ├── Chapter5_Results.pdf
-│   ├── Chapter7_Limitation.pdf
-│   ├── Proposal.pdf
-│   └── Thesis_Outline.pdf
-│
-├── data/
-│   ├── raw/
-│   │   ├── bond_yield_data/
-│   │   │   ├── india_bond/          # India sovereign green & conventional twin bond yields (Refinitiv)
-│   │   │   └── indonesia_bond/      # Indonesia sovereign green & conventional twin bond yields (Refinitiv)
-│   │   └── control_variables/
-│   │       ├── vix/                 # CBOE VIX index (FRED)
-│   │       ├── exchange_rate/       # USD/INR & USD/IDR exchange rates (Refinitiv)
-│   │       └── cds/                 # Sovereign CDS spreads (Investing.com)
-│   └── processed/
-│   │   ├── gdelt/
-│   │   │   ├── daily_sentiment_gdelt.csv    # GDELT V2Tone daily climate sentiment
-│   │   │   ├── daily_climatebert.csv        # ClimateBERT sentence-level scores
-│   │   │   └── daily_sentiment_merged.csv   # Merged sentiment panel
-│   │   └── regression/
-│   │       └── regression_panel.csv         # Final analysis-ready panel dataset
-│   └── documentation/
-│       ├── DataCollection.pdf           # Data sourcing documentation
-│       └── GreenBond_DataSources.html   # Interactive data source reference
-│       
-├── notebooks/
-│   ├── databricks/                  # Production notebooks (run on Databricks)
-│   │   ├── GreenBond_Regression.ipynb       # DiD regression & robustness checks
-│   │   └── GreenBond_EventStudy.ipynb       # Event study with leads/lags
-│   └── sentiment_colab/             # NLP notebooks (run on Google Colab)
-│       ├── GreenBond_GDELT_clean.ipynb      # GDELT data collection & V2Tone extraction
-│       └── GreenBond_ClimateBERT_clean.ipynb # ClimateBERT sentiment scoring
-│
-└── output/
-    ├── regression/                  # All figures used in Chapter 5
-    │   ├── plot1_greenium_timeseries.png
-    │   ├── plot2_coefficients.png
-    │   ├── plot3_sentiment_scatter.png
-    │   ├── plot4_noise_quartiles.png
-    │   ├── event_study_india.png
-    │   ├── event_study_indonesia.png
-    │   ├── event_study_pooled.png
-    │   └── event_study_comparison.png
-    ├── gdelt/                       # GDELT raw output files
-    └── html/                        # Interactive HTML visualisations
+| Hypothesis | Channel | Result (Asian sample) |
+| --- | --- | --- |
+| **H1** | Climate-news tone → greenium | **Null** — daily tone does not predict the greenium in any specification |
+| **H2** | Signalling noise (tone dispersion) → greenium | **Null** — no robust relationship between within-day tone dispersion and the greenium |
+| **H3** | Inaugural issuance → structural shift in greenium | **Null** — neither treatment event produces a significant break |
 
-    
-```
+- **VIX is the only robust driver** of daily greenium movements in Asia. The coefficient of roughly **−0.0035 to −0.0048 percentage points** translates to about **0.35–0.48 basis points** per unit change in VIX — an economically modest but statistically robust effect, pointing to global risk appetite rather than domestic climate politics as the pricing anchor.
+- **European robustness check** recovers persistent greeniums of approximately **−1.82 bp (Germany)** and **−2.80 bp (Denmark)**, consistent with the established developed-market green bond literature and indicating the Asian null is not a methodological artifact.
 
----
-
-## Data Sources
-
-| Variable | Source | Frequency |
-|---|---|---|
-| Sovereign green bond yields | Refinitiv Eikon | Daily |
-| Conventional twin bond yields | Refinitiv Eikon | Daily |
-| Climate media sentiment (V2Tone) | GDELT Project | Daily |
-| ClimateBERT sentiment scores | GDELT + ClimateBERT (Hugging Face) | Daily |
-| VIX (volatility index) | FRED | Daily |
-| Exchange rates (USD/INR, USD/IDR) | Refinitiv Eikon | Daily |
-| Sovereign CDS spreads | Investing.com | Daily |
-
-**Coverage:** January 2020 – December 2024  
-**Countries:** India, Indonesia  
-**Note:** Thailand was excluded after no tradeable sovereign green bonds with verifiable secondary-market yield data could be identified on Refinitiv.
+> **Interpretation note:** "Null" here means *precise* nulls — tightly estimated coefficients near zero, not merely statistically insignificant noisy estimates. The distinction matters for how much the result should update priors about the emerging-market greenium.
 
 ---
 
 ## Empirical Design
 
 ### Twin-Bond Framework
-Each sovereign green bond is paired with a **maturity-matched conventional bond** from the same issuer. The Greenium is computed as the daily yield spread between the two (Green Yield − Conventional Yield). For India, two pre-2023 conventional bonds were used to ensure sufficient pre-treatment observations.
 
-### Treatment Events
-| Country | Event | Date |
-|---|---|---|
-| India | Inaugural sovereign green bond auction | January 2023 |
-| Indonesia | JETP announcement at G20 Bali Summit | November 2022 |
+Each sovereign green bond is paired with a single **maturity-matched (10Y) conventional twin** from the same issuer. The greenium is the daily yield spread (Green − Conventional), in basis points. One strict twin pair is used per country:
 
-### Identification Strategy
-- **Staggered DiD** with country and time fixed effects
-- **Event study** with ±8 weekly leads and lags to test pre-trends and dynamic effects
-- **First-differenced** specification as robustness check (Durbin-Watson improved from 0.44 to 2.54)
-- **ClimateBERT** as an alternative sentiment measure (54 climate-relevant daily paragraphs identified)
+| Country | Green bond (ISIN) | Conventional twin (ISIN) |
+| --- | --- | --- |
+| India | IN0020220144 | IN0020190362 |
+| Indonesia | US71567RAV87 | US455780DN36 |
+| Germany | DE0001030708 | DE0001102507 |
+| Denmark | DK0009924375 | DK0009924102 |
+
+### Stacked DiD and Treatment Events
+
+The design stacks two treatment cohorts and estimates a pooled DiD with cohort-specific event windows:
+
+| Stack | Country | Event | Date |
+| --- | --- | --- | --- |
+| A | Indonesia | JETP announcement (G20 Bali Summit) | November 2022 |
+| B | India | 2nd sovereign green bond auction | October 2023 |
+
+> **Why the 2nd auction for India, not the inaugural?** India's inaugural green bond auction (January 2023) leaves effectively no pre-treatment trading history for the green leg. The October 2023 second auction provides roughly **120 trading days of pre-treatment variation**, which is required for credible parallel-trends testing.
+
+### Identification and Inference
+
+- **Five model specifications (M1–M5)**, building from a baseline greenium regression to fully controlled stacked DiD.
+- **HC3 heteroskedasticity-robust** and **panel-corrected (PCSE)** standard errors.
+- **Event study** with leads and lags to test pre-trends and dynamic effects.
+- **European benchmark** (Germany, Denmark) as out-of-sample robustness on the same twin-bond logic.
 
 ### Key Variables
+
 | Variable | Description |
-|---|---|
-| `Greenium` | Daily yield spread (Green − Conventional), in basis points |
-| `V2Tone` | GDELT average daily climate media sentiment score |
-| `Signaling Noise` | Within-day standard deviation of V2Tone (proxy for credibility gap) |
-| `Δlog(VIX)` | Log-differenced CBOE VIX |
-| `ΔCDS` | First-differenced sovereign CDS spread |
-| `ΔFX` | First-differenced log exchange rate |
+| --- | --- |
+| `greenium` | Daily yield spread (Green − Conventional), in basis points |
+| `tone` (V2Tone) | GDELT average daily climate-news tone |
+| `signalling_noise` | Within-day standard deviation of V2Tone (credibility-gap proxy) |
+| `dlog_vix` | Log-differenced CBOE VIX |
+| `dcds` | First-differenced sovereign CDS spread |
+| `dfx` | First-differenced log exchange rate |
+
+> **Note on ClimateBERT:** ClimateBERT was evaluated as an alternative tone measure but **dropped from the main analysis**. Applied to GDELT output it scored theme codes rather than natural-language sentences, producing degenerate results. GDELT V2Tone is the primary and reported tone proxy.
 
 ---
 
-## Notebooks
+## Data Sources
 
-### Databricks / VSCode (Production)
-| Notebook | Description |
-|---|---|
-| `GreenBond_Regression.ipynb` | Main DiD panel regressions, fixed effects, robustness checks, coefficient plots |
-| `GreenBond_EventStudy.ipynb` | Event study leads/lags, parallel trends tests, country-level and pooled plots |
+| Variable | Source | Frequency |
+| --- | --- | --- |
+| Sovereign green & conventional bond yields | Refinitiv / LSEG Workspace | Daily |
+| Climate-news tone (V2Tone) | GDELT Project (BigQuery) | Daily |
+| VIX (volatility index) | FRED | Daily |
+| Exchange rates (USD/INR, USD/IDR) | Refinitiv / LSEG Workspace | Daily |
+| Sovereign CDS spreads | Investing.com | Daily |
 
-### Google Colab (NLP)
-| Notebook | Description |
-|---|---|
-| `GreenBond_GDELT_clean.ipynb` | GDELT API queries, V2Tone extraction, Signaling Noise construction |
-| `GreenBond_ClimateBERT_clean.ipynb` | ClimateBERT inference on GDELT text, V2Tone correlation analysis |
+**Countries:** India, Indonesia (core); Germany, Denmark (robustness).
+**Note:** Thailand was excluded — no tradeable sovereign green bond with verifiable secondary-market yield data could be identified.
+
+---
+
+## Repository Structure
+
+> Confirm the tree below against the live repo before publishing — the chapter sources and notebook subfolders may have been reorganised since this README was last regenerated.
+
+```
+Thesis/
+├── data/
+│   ├── raw/                         # Bond yields, VIX, FX, CDS (sourced; not all redistributable)
+│   └── processed/                   # GDELT tone panel + analysis-ready regression panel
+├── notebooks/                       # Regression, event study, GDELT/tone pipelines
+├── output/                          # Figures and tables used in Chapters 4–5
+├── presentation/                    # Thesis defence slides
+├── AI_Declaration_Nahian_Ibnat.pdf
+├── requirements.txt
+└── thesis_latex.zip                 # LaTeX source of the written thesis
+```
 
 ---
 
 ## Environment
 
-### Requirements
-
 - Python 3.10+
-- See [`requirements.txt`](requirements.txt) for full dependencies
+- Install dependencies: `pip install -r requirements.txt`
 
-### Cloud Environments Used
+| Package | Purpose |
+| --- | --- |
+| `pandas`, `numpy` | Panel construction and data manipulation |
+| `statsmodels` / `linearmodels` | DiD, panel regression, HC3/PCSE standard errors |
+| `matplotlib` | Thesis figures |
+| `requests` / BigQuery client | GDELT V2Tone extraction |
+| `openpyxl` | Excel I/O for raw bond data |
 
-| Environment | Runtime | Used For |
-|---|---|---|
-| Google Colab | GPU (T4) | NLP notebooks — GDELT extraction, ClimateBERT inference |
-| Databricks Community Edition | Apache Spark | Regression notebooks — DiD panel, event study |
-
-### Local Reproduction
-
-```bash
-pip install -r requirements.txt
-```
-
-Key packages:
-
-| Package | Version | Purpose |
-|---|---|---|
-| `pandas`, `numpy` | ≥1.5, ≥1.23 | Data manipulation and panel construction |
-| `statsmodels` | ≥0.13 | OLS regression, DiD, Durbin-Watson, VIF |
-| `transformers`, `torch` | ≥4.30, ≥2.0 | ClimateBERT sentiment classification |
-| `requests` | ≥2.28 | GDELT DOC API queries |
-| `matplotlib` | ≥3.6 | All thesis figures |
-| `openpyxl` | ≥3.0 | Excel I/O for raw bond data |
-| `tqdm` | ≥4.64 | Progress bars for NLP inference |
-
-> **Note:** The ClimateBERT model (`climatebert/distilroberta-base-climate-sentiment`) is downloaded automatically via Hugging Face `transformers` on first run. A GPU runtime is strongly recommended for the ClimateBERT notebook.
+Notebooks were developed across VS Code, Kaggle, and Google Colab; bond data was accessed via Refinitiv (LSEG Workspace) through CEU.
 
 ---
 
 ## How to Reproduce
 
-1. **Sentiment data:** Run `GreenBond_GDELT_clean.ipynb` and `GreenBond_ClimateBERT_clean.ipynb` on Google Colab to regenerate processed GDELT files.
-2. **Panel construction:** Bond yield and control variable data were sourced from Refinitiv, FRED, and Investing.com. Place raw files under `data/raw/` following the existing folder structure.
-3. **Regressions:** Run `GreenBond_Regression.ipynb` on Databricks (or a local PySpark/pandas environment) to reproduce all regression tables and coefficient plots.
-4. **Event study:** Run `GreenBond_EventStudy.ipynb` to reproduce all event study figures.
+1. **Tone data:** Run the GDELT notebook to regenerate the daily V2Tone climate-news panel from BigQuery.
+2. **Panel construction:** Place raw bond/VIX/FX/CDS files under `data/raw/` following the existing structure, then build the merged regression panel.
+3. **Regressions:** Run the regression notebook to reproduce M1–M5, robustness checks, and coefficient plots.
+4. **Event study:** Run the event study notebook to reproduce leads/lags figures and parallel-trends diagnostics.
+5. **European benchmark:** Run the European comparison notebook to reproduce the Germany/Denmark greenium estimates.
 
-All outputs are saved to `output/`.
-
----
-
-## Thesis Chapters
-
-| Chapter | Status | Description |
-|---|---|---|
-| 1 — Introduction | Complete | Research question, Credibility Premium/Gap framework, case selection |
-| 2 — Literature Review | Complete | Green bond pricing literature, political sentiment, emerging market finance |
-| 3 — Data | Complete | Bond data, GDELT, ClimateBERT, control variables |
-| 4 — Methodology | Complete | Twin-Bond design, staggered DiD, event study, identification strategy |
-| 5 — Results | Complete | Regression results, event study, robustness checks |
-| 6 — Discussion | In progress | Interpretation of null results, policy implications |
-| 7 — Limitations | Complete | Liquidity constraints, GDELT noise, data coverage |
+All outputs are written to `output/`.
 
 ---
 
 ## Contact
 
-**Nahian Ibnat**  
-MA in Economics, Data & Policy  
-Central European University
-
-## Feedback & Questions
-
-Scan the QR code below to share your thoughts or ask questions about this thesis:
-
-![Feedback Form QR Code](feedback_qr.png)
-
-Or click here: [Open Feedback Form](https://forms.gle/YMKYULpfnAX5dyV4A)
+**Nahian Ibnat**
+MA in Economics, Data & Policy — Central European University
