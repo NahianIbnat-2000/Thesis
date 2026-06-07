@@ -3,3 +3,6 @@ data/processed/gdelt/gdelt_climatebert_scored.csv
 data/processed/gdelt/gdelt_raw_articles_europe.csv
 data/processed/gdelt/gdelt_climatebert_scored_europe.csvdata/processed/gdelt/gdelt_climatebert_scored_europe.csv
 data/processed/gdelt/gdelt_raw_articles_europe.csv
+data/processed/gdelt/*.csv
+data/processed/gdelt/gdelt_climatebert_scored_europe.csv
+data/processed/gdelt/gdelt_climatebert_scored_europe.csv
