@@ -15,6 +15,7 @@ Supervisor: Zoltán Csaba Tóth | 2026
 | 🎮 **[The Greenium Game](https://nahianibnat-2000.github.io/Thesis/Play%20it/greenium_game.html)** | 20-quarter policy simulation — can you make bond markets believe your green promises? |
 | 📊 **[Live Simulator](https://nahianibnat-2000.github.io/Thesis/live_simulator/greenium_live_simulator.html)** | Stream the greenium in real time, fire credibility events, inject VIX shocks |
 | 🎬 **[Explainer Video](live_simulator/What%20does%20the%20live%20simulator%20say.mp4)** | 77-second narrated walkthrough of the simulator and the core finding |
+| 🤖 **[Green Bond Credibility Assistant](#-green-bond-credibility-assistant)** | RAG-based research assistant — ask what the evidence says about the greenium |
 
 ---
 
@@ -118,6 +119,12 @@ Thesis/
 │   ├── greenium_live_simulator.html # 📊 Live streaming simulator (open in browser)
 │   ├── What does the live simulator say.mp4  # 🎬 77s narrated explainer video
 │   └── README.md                    # How to use the simulator
+├── green-bond-credibility-assistant/  # 🤖 RAG research assistant (see section below)
+│   ├── src/                         # Ingest, store, retrieve, generate, CLI
+│   ├── prompts/                     # System prompt encoding the assistant's charter
+│   ├── eval/                        # 15-question evaluation set with trap-null tests
+│   ├── corpus/                      # Local PDFs only — gitignored (see SOURCES.md)
+│   └── scripts/run.sh               # One-command setup and launch
 ├── data/
 │   ├── raw/                         # Bond yields, VIX, FX, CDS (not all redistributable)
 │   └── processed/                   # GDELT tone panel + analysis-ready regression panel
@@ -161,6 +168,30 @@ All outputs are written to `output/`.
 
 ---
 
+## 🤖 Green Bond Credibility Assistant
+
+A retrieval-augmented research assistant built on top of this thesis. It answers questions about what the evidence says on sovereign green bond credibility and the greenium — with citations and with the uncertainty attached, including null results reported honestly.
+
+**It is a knowledge tool, not an advisory tool.** It will not tell you what a government should do to improve its greenium (your own thesis is the argument against that). It will tell you what the literature documents, where the evidence is contested, and where it is simply absent.
+
+**Architecture:** `bge-small-en-v1.5` embeddings → ChromaDB vector store → optional cross-encoder reranker → Claude with a citation-enforcing system prompt and a refusal guard for low-confidence retrievals.
+
+**Evaluation:** 15-question test set in `eval/questions.jsonl` covering factual retrieval, contested findings, boundary refusals, and *trap-null questions* — questions that presuppose an effect the thesis does not find (e.g., "how much does climate news tone move the Indian greenium?"). A correct answer reports the null and the ±6.5 bp confidence interval, not a positive effect size.
+
+### Run it
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/NahianIbnat-2000/Thesis)
+
+Once the Codespace opens:
+
+```bash
+bash green-bond-credibility-assistant/scripts/run.sh
+```
+
+You will need a free Anthropic API key from [console.anthropic.com](https://console.anthropic.com) (~$5 credit covers hundreds of queries). The corpus is not redistributed — see `green-bond-credibility-assistant/corpus/SOURCES.md` for the full source list.
+
+---
+
 ## Citation
 
 ```
@@ -181,14 +212,3 @@ Have questions about the thesis or the interactive tools?
 
 **Nahian Ibnat**
 MA in Economics, Data & Policy — Central European University
-
-## Green Bond Credibility Assistant
-
-An RAG-based research assistant built on top of this thesis.
-
-[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/NahianIbnat-2000/Thesis)
-
-Once the Codespace opens, run:
-```bash
-bash green-bond-credibility-assistant/scripts/run.sh
-```
