@@ -181,3 +181,14 @@ Have questions about the thesis or the interactive tools?
 
 **Nahian Ibnat**
 MA in Economics, Data & Policy — Central European University
+
+## Green Bond Credibility Assistant
+
+An RAG-based research assistant built on top of this thesis.
+
+[![Open in GitHub Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/NahianIbnat-2000/Thesis)
+
+Once the Codespace opens, run:
+```bash
+bash green-bond-credibility-assistant/scripts/run.sh
+```

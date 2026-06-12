@@ -1,0 +1,11 @@
+{
+  "name": "Green Bond Credibility Assistant",
+  "image": "mcr.microsoft.com/devcontainers/python:3.12",
+  "postCreateCommand": "pip install -r green-bond-credibility-assistant/requirements.txt -q",
+  "secrets": {
+    "ANTHROPIC_API_KEY": {
+      "description": "Your Anthropic API key from console.anthropic.com",
+      "documentationUrl": "https://console.anthropic.com/settings/keys"
+    }
+  }
+}
