@@ -1,0 +1,12 @@
+# corpus is local-only (copyright)
+corpus/*
+!corpus/SOURCES.md
+
+# derived data
+data/
+
+# env & python
+.env
+__pycache__/
+*.pyc
+.venv/

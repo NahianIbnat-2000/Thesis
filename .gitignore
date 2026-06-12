@@ -6,3 +6,9 @@ data/processed/gdelt/gdelt_raw_articles_europe.csv
 data/processed/gdelt/*.csv
 data/processed/gdelt/gdelt_climatebert_scored_europe.csv
 data/processed/gdelt/gdelt_climatebert_scored_europe.csv
+
+
+# chatbot — local-only data
+green-bond-credibility-assistant/corpus/*
+!green-bond-credibility-assistant/corpus/SOURCES.md
+green-bond-credibility-assistant/data/
