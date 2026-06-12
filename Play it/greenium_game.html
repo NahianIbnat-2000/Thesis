@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Greenium Game — Can You Make Bond Markets Believe You?</title>
+<style>
+  :root{
+    --ink:#1B2A4A;          /* sovereign certificate ink */
+    --paper:#F7F5EE;        /* bond paper */
+    --paper-deep:#EFEBDF;
+    --bond-green:#1E6B4F;   /* green label */
+    --risk-red:#A93B2A;     /* risk-off */
+    --gold:#9A7B2D;         /* seal accent */
+    --rule:#C9C2AE;
+    --mono:"SF Mono","Cascadia Mono",Consolas,Menlo,monospace;
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--paper);color:var(--ink);font-family:var(--serif);line-height:1.45}
+  button{font-family:inherit;cursor:pointer}
+  button:focus-visible,[tabindex]:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+
+  .frame{max-width:1060px;margin:0 auto;padding:18px 20px 60px;
+    border-left:1px solid var(--rule);border-right:1px solid var(--rule);min-height:100vh;background:var(--paper)}
+
+  /* ---- masthead, security-printing style ---- */
+  header{border:2px solid var(--ink);padding:18px 22px 14px;position:relative;margin-bottom:16px}
+  header::before{content:"";position:absolute;inset:4px;border:1px solid var(--ink);pointer-events:none}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--gold)}
+  h1{font-size:clamp(26px,4.4vw,42px);letter-spacing:.02em;font-weight:600;margin:2px 0 4px}
+  h1 .gr{color:var(--bond-green);font-style:italic}
+  .tagline{font-size:15px;font-style:italic;color:#4a5470}
+
+  /* ---- status strip ---- */
+  .strip{display:grid;grid-template-columns:repeat(5,1fr);gap:0;border:1.5px solid var(--ink);
+    margin-bottom:16px;background:var(--paper-deep)}
+  .cell{padding:10px 12px;border-right:1px solid var(--rule)}
+  .cell:last-child{border-right:none}
+  .cell .lbl{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#5a6280}
+  .cell .val{font-family:var(--mono);font-size:22px;font-weight:700;margin-top:2px}
+  .val.neg{color:var(--bond-green)} .val.pos{color:var(--risk-red)}
+  .sub{font-family:var(--mono);font-size:10px;color:#6a7088;margin-top:1px}
+
+  /* depth meter */
+  .meter{height:9px;background:#ddd6c2;border:1px solid var(--ink);margin-top:6px;position:relative}
+  .meter .fill{height:100%;background:var(--ink);transition:width .5s ease}
+  .meter .thresh{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--gold);left:60%}
+  .meter .thresh::after{content:"threshold";position:absolute;top:-13px;left:-26px;
+    font-family:var(--mono);font-size:8px;letter-spacing:.08em;color:var(--gold);text-transform:uppercase}
+
+  main{display:grid;grid-template-columns:1.4fr 1fr;gap:16px}
+  @media(max-width:820px){main{grid-template-columns:1fr}.strip{grid-template-columns:repeat(2,1fr)}.cell{border-bottom:1px solid var(--rule)}}
+
+  /* ---- chart card (the signature element: the strip chart) ---- */
+  .card{border:1.5px solid var(--ink);background:#fff;}
+  .card h2{font-size:13px;font-family:var(--mono);letter-spacing:.16em;text-transform:uppercase;
+    padding:8px 12px;border-bottom:1px solid var(--rule);background:var(--paper-deep);font-weight:700}
+  .chartwrap{padding:8px 6px 2px}
+  svg{display:block;width:100%;height:auto}
+  .ledger{padding:10px 12px;height:188px;overflow-y:auto;font-size:13.5px;background:#fff}
+  .ledger p{margin-bottom:8px;padding-left:10px;border-left:3px solid var(--rule)}
+  .ledger p.market{border-left-color:#9aa3bd;color:#3d4763;font-style:italic}
+  .ledger p.good{border-left-color:var(--bond-green)}
+  .ledger p.bad{border-left-color:var(--risk-red)}
+  .ledger p.gold{border-left-color:var(--gold);background:#faf6ea}
+  .ledger .q{font-family:var(--mono);font-size:10px;color:var(--gold);letter-spacing:.1em}
+
+  /* ---- actions ---- */
+  .actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px}
+  .act{border:1.5px solid var(--ink);background:var(--paper);text-align:left;padding:9px 10px;
+    transition:transform .08s ease, background .15s}
+  .act:hover:not(:disabled){background:#fff;transform:translate(-1px,-1px);box-shadow:2px 2px 0 var(--ink)}
+  .act:disabled{opacity:.38;cursor:not-allowed}
+  .act .name{font-weight:700;font-size:14px}
+  .act .kind{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase}
+  .act .kind.sig{color:var(--bond-green)} .act .kind.infra{color:var(--ink)}
+  .act .fx{font-family:var(--mono);font-size:10.5px;color:#5a6280;margin-top:3px}
+  .endq{width:calc(100% - 20px);margin:2px 10px 12px;padding:11px;border:2px solid var(--ink);
+    background:var(--ink);color:var(--paper);font-size:15px;font-weight:700;letter-spacing:.06em}
+  .endq:hover{background:#0f1c38}
+  .ap{font-family:var(--mono);font-size:11px;padding:8px 12px 0;color:#5a6280}
+  .ap b{color:var(--ink)}
+
+  /* ---- modals ---- */
+  .veil{position:fixed;inset:0;background:rgba(27,42,74,.55);display:flex;align-items:center;
+    justify-content:center;padding:18px;z-index:50}
+  .modal{background:var(--paper);border:2px solid var(--ink);max-width:560px;width:100%;
+    padding:26px 28px;position:relative;max-height:88vh;overflow-y:auto}
+  .modal::before{content:"";position:absolute;inset:5px;border:1px solid var(--ink);pointer-events:none}
+  .modal h2{font-size:24px;margin-bottom:10px}
+  .modal p{margin-bottom:10px;font-size:15px}
+  .modal .fact{font-family:var(--mono);font-size:12px;background:var(--paper-deep);
+    border-left:3px solid var(--gold);padding:8px 10px;margin:10px 0}
+  .modal button{margin-top:8px;padding:10px 22px;border:2px solid var(--ink);background:var(--ink);
+    color:var(--paper);font-size:15px;font-weight:700}
+  .hidden{display:none}
+
+  footer{margin-top:22px;font-size:11.5px;color:#5a6280;border-top:1px solid var(--rule);padding-top:10px}
+  footer em{color:var(--ink)}
+  @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="frame">
+
+<header>
+  <div class="eyebrow">A playable model of sovereign green bond pricing</div>
+  <h1>THE <span class="gr">GREENIUM</span> GAME</h1>
+  <div class="tagline">You run the debt office of an emerging market. Can you make bond markets believe your green promises?</div>
+</header>
+
+<div class="strip" role="status" aria-live="polite">
+  <div class="cell"><div class="lbl">Quarter</div><div class="val" id="qVal">1 / 20</div><div class="sub" id="dateVal">Q1 · Year 1</div></div>
+  <div class="cell"><div class="lbl">Greenium</div><div class="val" id="gVal">+0.5 bp</div><div class="sub">goal: hold ≤ −2.0 bp for 4 qtrs</div></div>
+  <div class="cell"><div class="lbl">Market depth</div><div class="val" id="dVal" style="font-size:16px">25</div>
+    <div class="meter"><div class="fill" id="dFill" style="width:25%"></div><div class="thresh"></div></div></div>
+  <div class="cell"><div class="lbl">Credibility</div><div class="val" id="cVal" style="font-size:16px">10</div><div class="sub">signals sent so far</div></div>
+  <div class="cell"><div class="lbl">VIX</div><div class="val" id="vVal">17.0</div><div class="sub" id="vMood">calm</div></div>
+</div>
+
+<main>
+  <section>
+    <div class="card">
+      <h2>Daily Greenium — your twin-bond spread (bp)</h2>
+      <div class="chartwrap">
+        <svg id="chart" viewBox="0 0 640 300" role="img" aria-label="Greenium time series chart"></svg>
+      </div>
+    </div>
+    <div class="card" style="margin-top:12px">
+      <h2>Market ledger</h2>
+      <div class="ledger" id="ledger"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="card">
+      <h2>Policy desk</h2>
+      <div class="ap">Action points this quarter: <b id="apVal">2</b> — signals are cheap; infrastructure is slow.</div>
+      <div class="actions" id="actionGrid"></div>
+      <button class="endq" id="endQ">SETTLE THE QUARTER →</button>
+    </div>
+    <div class="card" style="margin-top:12px">
+      <h2>How to read this market</h2>
+      <div style="padding:12px;font-size:13.5px">
+        <p style="margin-bottom:8px"><b style="color:var(--bond-green)">Green</b> actions send credibility <i>signals</i>. <b>Navy</b> actions build the <i>receiver</i> — the institutional investors who can actually price your signals.</p>
+        <p style="margin-bottom:8px">Below the <span style="color:var(--gold);font-weight:700">depth threshold</span>, your greenium is a noisy residual of thin trading: VIX moves it, your announcements don't.</p>
+        <p>Cross the threshold, and mandate-driven demand anchors a stable greenium — then credibility starts to pay.</p>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <em>Disclaimer for the econometrically inclined:</em> this is a stylized model of <em>one interpretation</em> — the market development threshold argument — from Ibnat, N. (2026), <em>When Governments Say 'Green' — Do Bond Markets Believe Them?</em>, MA Thesis, Central European University. The thesis finds null effects of credibility signals on the greenium in India and Indonesia (with VIX as the dominant pricing driver, 0.35–0.48 bp per SD) and stable greeniums of −1.82/−2.80 bp in Germany/Denmark. The threshold mechanism is consistent with that evidence but is not directly identified in the research design. Replication: github.com/NahianIbnat-2000/Thesis
+</footer>
+</div>
+
+<!-- intro modal -->
+<div class="veil" id="introVeil">
+  <div class="modal">
+    <div class="eyebrow">Briefing · Ministry of Finance</div>
+    <h2>Minister, the bond desk is waiting.</h2>
+    <p>Your country just labelled a sovereign bond <b style="color:var(--bond-green)">green</b>. If investors believe you, they'll accept a lower yield — a negative <b>greenium</b> — cutting your borrowing costs.</p>
+    <p>You have <b>20 quarters</b> and <b>2 action points</b> per quarter. Win by holding the greenium at <b>−2.0 bp or better for 4 consecutive quarters</b> — roughly what Germany earns.</p>
+    <div class="fact">Real-world starting condition: India's mean greenium was <b>+0.5 bp</b> — investors demanded a yield <i>pick-up</i> to hold the green bond. Indonesia's was −6.9 bp, but with ±4.1 bp daily swings: noise, not belief.</div>
+    <p>One warning: shouting "green" louder may not be the answer.</p>
+    <button id="startBtn">OPEN THE MARKET</button>
+  </div>
+</div>
+
+<!-- end modal -->
+<div class="veil hidden" id="endVeil">
+  <div class="modal">
+    <div class="eyebrow" id="endEyebrow">Final settlement</div>
+    <h2 id="endTitle"></h2>
+    <div id="endBody"></div>
+    <button onclick="location.reload()">PLAY AGAIN</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+const S = {
+  q:1, maxQ:20, ap:2,
+  depth:25, cred:10, vix:17.0,
+  greenium:0.5,           // bp
+  series:[0.5],
+  crossed:false, winStreak:0, over:false,
+  pledgeUsed:false
+};
+const THRESH = 60;
+
+const ACTIONS = [
+  {id:"auction", kind:"sig", name:"Hold a green bond auction", fx:"+6 credibility",
+    run(){S.cred+=6; return "Second sovereign green auction completed. Oversubscribed by domestic banks holding to maturity.";}},
+  {id:"pledge", kind:"sig", name:"Land an international climate pledge", fx:"+12 credibility (G20 stage)",
+    run(){S.cred+=12; return "USD 20bn transition partnership announced at the summit. Global headlines. Cameras everywhere.";}},
+  {id:"framework", kind:"sig", name:"Publish a verified green framework", fx:"+8 credibility",
+    run(){S.cred+=8; return "ICMA-aligned framework with external verification published. The documentation is genuinely excellent.";}},
+  {id:"mandates", kind:"infra", name:"Mandate pension &amp; insurer ESG allocations", fx:"+12 market depth",
+    run(){S.depth+=12; return "Domestic pension funds now carry explicit green mandates. Structural demand is forming.";}},
+  {id:"mm", kind:"infra", name:"Fund a market-making program", fx:"+10 market depth",
+    run(){S.depth+=10; return "Primary dealers commit to two-way quotes in the green line. Bid-ask spreads tighten.";}},
+  {id:"roadshow", kind:"infra", name:"Run index-inclusion roadshow", fx:"+8 depth · +3 credibility",
+    run(){S.depth+=8;S.cred+=3; return "Foreign ESG institutions begin due diligence after the index announcement.";}},
+];
+
+const $ = id=>document.getElementById(id);
+function log(msg, cls="", q=S.q){
+  const p=document.createElement("p"); if(cls)p.className=cls;
+  p.innerHTML=`<span class="q">Q${q}</span> &nbsp;${msg}`;
+  const L=$("ledger"); L.prepend(p);
+}
+
+function renderActions(){
+  const grid=$("actionGrid"); grid.innerHTML="";
+  ACTIONS.forEach(a=>{
+    const b=document.createElement("button"); b.className="act";
+    b.disabled = S.ap<1 || S.over || (a.id==="pledge"&&S.pledgeUsed);
+    b.innerHTML=`<div class="kind ${a.kind}">${a.kind==="sig"?"credibility signal":"market infrastructure"}</div>
+      <div class="name">${a.name}</div><div class="fx">${a.fx} · 1 AP</div>`;
+    b.onclick=()=>{
+      S.ap--; if(a.id==="pledge")S.pledgeUsed=true;
+      log(a.run());
+      // immediate market reaction commentary
+      if(a.kind==="sig"){
+        if(S.depth<THRESH){
+          const ps=(0.4+Math.random()*0.5).toFixed(2);
+          log(`Bond desk check: no detectable repricing in the green leg. Your post-event coefficient, if you ran the DiD: p = ${ps}.`,"market");
+        } else {
+          log(`Mandate-driven investors reprice the green leg within the session. The signal reached the price.`,"good");
+        }
+      } else if(S.depth>=THRESH && !S.crossed){
+        S.crossed=true;
+        log(`<b>Threshold crossed.</b> An institutional investor base now anchors demand for the green label. Credibility signals can finally reach daily prices.`,"gold");
+      }
+      refresh();
+    };
+    grid.appendChild(b);
+  });
+}
+
+function vixStep(){
+  // mean-reverting with shocks
+  let shockMsg=null;
+  if(Math.random()<0.22){
+    const jump=6+Math.random()*12; S.vix+=jump;
+    shockMsg=`Global risk-off: VIX jumps to ${S.vix.toFixed(1)}. Investors exit the less-liquid green leg first.`;
+  } else {
+    S.vix += (17-S.vix)*0.3 + (Math.random()-0.5)*3;
+  }
+  S.vix=Math.max(11,Math.min(55,S.vix));
+  return shockMsg;
+}
+
+function priceGreenium(){
+  const vixDev=(S.vix-17)/5; // ~1 SD units
+  if(S.depth<THRESH){
+    // thin market: macro-dominated noise; signals ~powerless
+    const noiseScale = 1.0 + (THRESH-S.depth)/18;        // thinner = noisier
+    const noise=(Math.random()-0.5)*2*2.6*noiseScale;
+    return 0.5 - 0.45*vixDev - 0.02*S.cred + noise;       // VIX ≈ 0.45 bp/SD, cred ≈ nothing
+  }
+  // mature market: stable level set by credibility, small noise, VIX muted
+  const target = -(1.0 + 0.045*S.cred);
+  const noise=(Math.random()-0.5)*1.0;
+  return 0.6*S.greenium + 0.4*target + noise - 0.05*vixDev;
+}
+
+function settleQuarter(){
+  if(S.over)return;
+  const shock=vixStep();
+  if(shock)log(shock,"bad");
+  S.greenium=priceGreenium();
+  S.series.push(S.greenium);
+
+  if(S.greenium<=-2.0){S.winStreak++;
+    log(`Greenium settles at ${fmt(S.greenium)}. ${S.winStreak>=2?`Stable for ${S.winStreak} consecutive quarters.`:""}`, S.depth>=THRESH?"good":"market");
+  } else {S.winStreak=0;
+    log(`Greenium settles at ${fmt(S.greenium)}. ${S.depth<THRESH?"The series is noise around zero — risk appetite, not belief.":""}`,"market");
+  }
+
+  if(S.winStreak>=4) return endGame(true);
+  S.q++;
+  if(S.q>S.maxQ) return endGame(false);
+  S.ap=2;
+  refresh();
+}
+
+function fmt(g){return (g>0?"+":"")+g.toFixed(1)+" bp";}
+
+function endGame(win){
+  S.over=true; refresh();
+  $("endVeil").classList.remove("hidden");
+  $("endTitle").textContent = win? "The market believes you." : "Twenty quarters. The market never blinked.";
+  $("endBody").innerHTML = win?
+    `<p>You held a stable greenium of −2 bp or better for a full year — the equilibrium Germany (−1.82 bp) and Denmark (−2.80 bp) enjoy. Notice <i>how</i> you got there: the signals only started pricing after you built the receiver.</p>
+     <div class="fact">The research insight: in mature markets the greenium is established at inaugural issuance by mandate-driven investors and then barely moves. Market depth precedes credibility signalling — not the other way round.</div>`:
+    `<p>Every pledge, auction, and framework — and the greenium never stabilised below −2 bp. If this felt unfair: that is the finding. In India and Indonesia (2022–24), no credibility event produced a detectable shift; only global risk appetite (VIX) moved daily prices.</p>
+     <div class="fact">The lesson you just played: credibility signals need a receiver. Below a threshold of institutional depth and liquidity, governments cannot manufacture a greenium by signalling louder.</div>
+     <p>Strategy hint: spend early action points on navy (infrastructure) cards.</p>`;
+}
+
+/* ---------- chart ---------- */
+function drawChart(){
+  const svg=$("chart"); const W=640,H=300,padL=46,padR=14,padT=16,padB=30;
+  const yMin=-8,yMax=6;
+  const y=v=>padT+(yMax-v)/(yMax-yMin)*(H-padT-padB);
+  const n=Math.max(S.series.length,2);
+  const x=i=>padL+i/(S.maxQ)*(W-padL-padR);
+  let el=`<rect x="0" y="0" width="${W}" height="${H}" fill="#ffffff"/>`;
+  // gridlines + labels
+  for(let v=yMax;v>=yMin;v-=2){
+    el+=`<line x1="${padL}" x2="${W-padR}" y1="${y(v)}" y2="${y(v)}" stroke="#E6E1D2" stroke-width="1"/>
+         <text x="${padL-8}" y="${y(v)+4}" text-anchor="end" font-family="monospace" font-size="10" fill="#5a6280">${v>0?"+":""}${v}</text>`;
+  }
+  // zero line + win line
+  el+=`<line x1="${padL}" x2="${W-padR}" y1="${y(0)}" y2="${y(0)}" stroke="#1B2A4A" stroke-width="1.4"/>`;
+  el+=`<line x1="${padL}" x2="${W-padR}" y1="${y(-2)}" y2="${y(-2)}" stroke="#1E6B4F" stroke-width="1.4" stroke-dasharray="6 4"/>
+       <text x="${W-padR}" y="${y(-2)-5}" text-anchor="end" font-family="monospace" font-size="10" fill="#1E6B4F">TARGET −2.0 bp (Germany-grade)</text>`;
+  // threshold crossing marker
+  if(S.crossed){
+    const ci=S.series.length-1, cx=x(ci);
+    el+=`<line x1="${cx}" x2="${cx}" y1="${padT}" y2="${H-padB}" stroke="#9A7B2D" stroke-width="1.4" stroke-dasharray="3 3"/>
+         <text x="${cx+4}" y="${padT+10}" font-family="monospace" font-size="9" fill="#9A7B2D">DEPTH ≥ 60</text>`;
+    S.crossX=cx;
+  } else if(S.crossX){
+    el+=`<line x1="${S.crossX}" x2="${S.crossX}" y1="${padT}" y2="${H-padB}" stroke="#9A7B2D" stroke-width="1.4" stroke-dasharray="3 3"/>
+         <text x="${S.crossX+4}" y="${padT+10}" font-family="monospace" font-size="9" fill="#9A7B2D">DEPTH ≥ 60</text>`;
+  }
+  // series
+  let pts=S.series.map((v,i)=>`${x(i)},${y(Math.max(yMin,Math.min(yMax,v)))}`).join(" ");
+  el+=`<polyline points="${pts}" fill="none" stroke="${S.greenium<=-2?"#1E6B4F":"#1B2A4A"}" stroke-width="2.4" stroke-linejoin="round"/>`;
+  const li=S.series.length-1;
+  el+=`<circle cx="${x(li)}" cy="${y(Math.max(yMin,Math.min(yMax,S.greenium)))}" r="4.5" fill="${S.greenium<=-2?"#1E6B4F":"#A93B2A"}" stroke="#fff" stroke-width="1.5"/>`;
+  // x label
+  el+=`<text x="${(padL+W-padR)/2}" y="${H-8}" text-anchor="middle" font-family="monospace" font-size="10" fill="#5a6280">QUARTERS →</text>`;
+  svg.innerHTML=el;
+}
+// persist cross marker x
+S.crossX=null;
+const origDraw=drawChart;
+
+/* ---------- refresh ---------- */
+function refresh(){
+  S.depth=Math.min(100,S.depth); S.cred=Math.min(99,S.cred);
+  $("qVal").textContent=`${Math.min(S.q,S.maxQ)} / ${S.maxQ}`;
+  $("dateVal").textContent=`Q${((S.q-1)%4)+1} · Year ${Math.ceil(S.q/4)}`;
+  const g=$("gVal"); g.textContent=fmt(S.greenium);
+  g.className="val "+(S.greenium<0?"neg":"pos");
+  $("dVal").textContent=S.depth + (S.depth>=THRESH?" ✦":"");
+  $("dFill").style.width=S.depth+"%";
+  $("cVal").textContent=S.cred;
+  $("vVal").textContent=S.vix.toFixed(1);
+  $("vMood").textContent=S.vix>30?"risk-off panic":S.vix>22?"jittery":"calm";
+  $("apVal").textContent=S.ap;
+  $("endQ").disabled=S.over;
+  renderActions(); drawChart();
+}
+
+$("endQ").onclick=settleQuarter;
+$("startBtn").onclick=()=>{
+  $("introVeil").classList.add("hidden");
+  log("Inaugural sovereign green bond begins trading. Mean greenium: +0.5 bp. Investors currently demand a yield pick-up to hold your green label.","market",1);
+};
+refresh();
+</script>
+</body>
+</html>
