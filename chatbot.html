@@ -266,6 +266,7 @@
     <span class="badge">RESEARCH TOOL</span>
   </div>
   <div class="header-right">
+    <a href="#" onclick="newChat(); return false;" style="margin-right:16px;">↻ New chat</a>
     <a href="index.html">← Back to thesis</a>
   </div>
 </header>
@@ -305,6 +306,7 @@
   const inputEl = document.getElementById('input');
   const sendBtn = document.getElementById('sendBtn');
   let   busy    = false;
+  let   history = [];   // session memory: [{role, content}], lives in browser only
 
   // auto-resize textarea
   inputEl.addEventListener('input', () => {
@@ -355,6 +357,13 @@
     document.getElementById('typing-indicator')?.remove();
   }
 
+  function newChat() {
+    if (busy) return;
+    history = [];
+    chatEl.innerHTML = '';
+    location.reload();
+  }
+
   async function send(text) {
     const q = (text || inputEl.value).trim();
     if (!q || busy) return;
@@ -370,7 +379,7 @@
       const res = await fetch(`${BACKEND}/chat`, {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ question: q }),
+        body:    JSON.stringify({ question: q, history: history }),
       });
 
       removeTyping();
@@ -392,6 +401,11 @@
         bub.innerHTML = formatText(raw);
         chatEl.scrollTop = chatEl.scrollHeight;
       }
+
+      // update session memory (browser only)
+      history.push({ role: 'user', content: q });
+      history.push({ role: 'assistant', content: raw });
+      if (history.length > 16) history = history.slice(-16);  // cap ~8 turns
     } catch (e) {
       removeTyping();
       addMsg('bot', `Network error — is the backend running?\n${e}`);

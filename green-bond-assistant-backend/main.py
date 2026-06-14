@@ -2,8 +2,10 @@
 
 Uses scikit-learn TF-IDF for retrieval (no PyTorch, fits 512MB free tier).
 The thesis corpus is bundled as thesis_corpus.txt and indexed automatically on
-startup — no persistent disk and no manual upload required. Additional PDFs can
-still be uploaded at runtime via /upload (they last until the instance restarts).
+startup — no persistent disk and no manual upload required.
+
+Session memory: the frontend sends recent conversation history with each request.
+History lives in the user's browser only; the backend stores nothing.
 """
 
 import os
@@ -27,6 +29,7 @@ CHUNK_OVERLAP     = 80
 TOP_K             = 5
 MIN_SIMILARITY    = 0.04
 LLM_MODEL         = "claude-sonnet-4-6"
+MAX_HISTORY       = 8          # cap conversation turns sent to the model
 
 SYSTEM_PROMPT = """You are a research assistant specialised in sovereign green bond
 credibility and the greenium literature. You answer questions strictly from the
@@ -44,9 +47,14 @@ HARD RULES:
 1. No policy advice. Never tell governments or issuers what they should do.
 2. No price predictions.
 3. No investment advice.
-4. Every factual claim must carry an inline [n] citation.
+4. Every factual claim must carry an inline [n] citation referring to the context
+   passages provided with the LATEST question.
 5. If context is insufficient, say so - do not speculate.
 6. Represent genuine disagreement in the literature when sources conflict.
+
+You may use the conversation history to understand follow-up questions (e.g. "why
+is that?"), but you must still grow every factual claim from the cited context
+passages, not from memory of earlier turns.
 
 Be concise, plain academic English. State quantities with units (basis points, etc).
 Distinguish statistical insignificance from a true zero effect when sources do so."""
@@ -59,7 +67,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# in-memory index: {"chunks": [...], "sources": [...], "vectorizer": ..., "matrix": ...}
 _index = {"chunks": [], "sources": [], "vectorizer": None, "matrix": None}
 
 
@@ -94,7 +101,6 @@ def add_text(text: str, source: str) -> int:
     new_chunks = list(chunk(clean(text)))
     if not new_chunks:
         return 0
-    # clean re-add: drop existing chunks from this source
     keep = [i for i, s in enumerate(_index["sources"]) if s != source]
     _index["chunks"]  = [_index["chunks"][i]  for i in keep]
     _index["sources"] = [_index["sources"][i] for i in keep]
@@ -105,7 +111,6 @@ def add_text(text: str, source: str) -> int:
 
 
 def load_bundled_corpus():
-    """Index every .txt and .pdf shipped alongside the app on startup."""
     for txt in glob.glob(str(BASE_DIR / "*.txt")):
         if Path(txt).name == "requirements.txt":
             continue
@@ -144,8 +149,23 @@ def retrieve(question: str):
     return hits, confident
 
 
+class Turn(BaseModel):
+    role: str       # "user" or "assistant"
+    content: str
+
+
 class ChatRequest(BaseModel):
     question: str
+    history: list[Turn] = []     # prior turns, oldest first; optional
+
+
+def retrieval_query(question: str, history: list[Turn]) -> str:
+    """For follow-ups like 'why is that?', blend the last user turn into the
+    retrieval query so TF-IDF still finds the right passages."""
+    prior_user = [t.content for t in history if t.role == "user"]
+    if len(question.split()) <= 4 and prior_user:
+        return prior_user[-1] + " " + question
+    return question
 
 
 @app.get("/health")
@@ -176,7 +196,9 @@ async def chat(req: ChatRequest):
     if not question:
         raise HTTPException(400, "Question cannot be empty.")
 
-    hits, confident = retrieve(question)
+    history = req.history[-MAX_HISTORY:] if req.history else []
+    rquery  = retrieval_query(question, history)
+    hits, confident = retrieve(rquery)
 
     if not confident:
         if not _index["chunks"]:
@@ -193,13 +215,19 @@ async def chat(req: ChatRequest):
         f"[{i+1}] (source: {h['source']})\n{h['text']}"
         for i, h in enumerate(hits)
     )
-    user_msg = (
-        f"Context passages:\n\n{context}\n\n"
-        f"Question: {question}\n\n"
-        "Answer using ONLY the context above. Cite passages inline as [1], [2], etc. "
-        "If the context reports a null or insignificant result, state that explicitly. "
-        "If context is insufficient, say so instead of speculating."
-    )
+
+    # build the messages list: prior turns, then the current question with context
+    messages = [{"role": t.role, "content": t.content} for t in history]
+    messages.append({
+        "role": "user",
+        "content": (
+            f"Context passages for THIS question:\n\n{context}\n\n"
+            f"Question: {question}\n\n"
+            "Answer using ONLY the context above. Cite passages inline as [1], [2], etc. "
+            "If the context reports a null or insignificant result, state that explicitly. "
+            "If context is insufficient, say so instead of speculating."
+        ),
+    })
 
     client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 
@@ -208,7 +236,7 @@ async def chat(req: ChatRequest):
             model      = LLM_MODEL,
             max_tokens = 1200,
             system     = SYSTEM_PROMPT,
-            messages   = [{"role": "user", "content": user_msg}],
+            messages   = messages,
         ) as s:
             for text in s.text_stream:
                 yield text
