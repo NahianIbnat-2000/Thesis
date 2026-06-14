@@ -177,7 +177,7 @@ def retrieval_query(question: str, history: list[Turn]) -> str:
     return question
 
 
-@app.get("/health")
+@app.api_route("/health", methods=["GET", "HEAD"])
 def health():
     return {"status": "ok"}
 
