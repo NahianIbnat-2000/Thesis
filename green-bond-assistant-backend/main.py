@@ -1,12 +1,14 @@
-"""Green Bond Credibility Assistant — FastAPI backend (memory-light).
+"""Green Bond Credibility Assistant — FastAPI backend (memory-light, self-contained).
 
-Uses scikit-learn TF-IDF for retrieval instead of sentence-transformers,
-so it fits comfortably in Render's 512MB free tier (no PyTorch).
+Uses scikit-learn TF-IDF for retrieval (no PyTorch, fits 512MB free tier).
+The thesis corpus is bundled as thesis_corpus.txt and indexed automatically on
+startup — no persistent disk and no manual upload required. Additional PDFs can
+still be uploaded at runtime via /upload (they last until the instance restarts).
 """
 
 import os
 import re
-import pickle
+import glob
 from pathlib import Path
 
 import anthropic
@@ -19,8 +21,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 ANTHROPIC_API_KEY = os.environ["ANTHROPIC_API_KEY"]
-DATA_DIR          = Path(os.environ.get("DATA_DIR", "/data"))
-INDEX_PATH        = DATA_DIR / "tfidf_index.pkl"
+BASE_DIR          = Path(__file__).resolve().parent
 CHUNK_TOKENS      = 500
 CHUNK_OVERLAP     = 80
 TOP_K             = 5
@@ -58,21 +59,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-_index = None
-
-
-def load_index():
-    global _index
-    if _index is None and INDEX_PATH.exists():
-        with INDEX_PATH.open("rb") as f:
-            _index = pickle.load(f)
-    return _index
-
-
-def save_index():
-    DATA_DIR.mkdir(parents=True, exist_ok=True)
-    with INDEX_PATH.open("wb") as f:
-        pickle.dump(_index, f)
+# in-memory index: {"chunks": [...], "sources": [...], "vectorizer": ..., "matrix": ...}
+_index = {"chunks": [], "sources": [], "vectorizer": None, "matrix": None}
 
 
 def clean(text: str) -> str:
@@ -92,47 +80,64 @@ def chunk(text: str):
 
 
 def rebuild_vectorizer():
-    global _index
-    chunks = _index["chunks"]
+    if not _index["chunks"]:
+        _index["vectorizer"] = None
+        _index["matrix"]     = None
+        return
     vec    = TfidfVectorizer(stop_words="english", ngram_range=(1, 2), max_features=20000)
-    matrix = vec.fit_transform(chunks)
+    matrix = vec.fit_transform(_index["chunks"])
     _index["vectorizer"] = vec
     _index["matrix"]     = matrix
 
 
-def ingest_pdf(pdf_bytes: bytes, filename: str) -> int:
-    global _index
-    import io
-    reader = PdfReader(io.BytesIO(pdf_bytes))
-    text   = clean("\n".join(p.extract_text() or "" for p in reader.pages))
-    new_chunks = list(chunk(text))
+def add_text(text: str, source: str) -> int:
+    new_chunks = list(chunk(clean(text)))
     if not new_chunks:
         return 0
-
-    if _index is None:
-        _index = {"chunks": [], "sources": [], "vectorizer": None, "matrix": None}
-
-    keep = [i for i, s in enumerate(_index["sources"]) if s != filename]
+    # clean re-add: drop existing chunks from this source
+    keep = [i for i, s in enumerate(_index["sources"]) if s != source]
     _index["chunks"]  = [_index["chunks"][i]  for i in keep]
     _index["sources"] = [_index["sources"][i] for i in keep]
-
     _index["chunks"].extend(new_chunks)
-    _index["sources"].extend([filename] * len(new_chunks))
-
+    _index["sources"].extend([source] * len(new_chunks))
     rebuild_vectorizer()
-    save_index()
     return len(new_chunks)
 
 
+def load_bundled_corpus():
+    """Index every .txt and .pdf shipped alongside the app on startup."""
+    for txt in glob.glob(str(BASE_DIR / "*.txt")):
+        if Path(txt).name == "requirements.txt":
+            continue
+        try:
+            text = Path(txt).read_text(encoding="utf-8", errors="ignore")
+            n    = add_text(text, Path(txt).name)
+            print(f"[startup] indexed {n} chunks from {Path(txt).name}")
+        except Exception as e:
+            print(f"[startup] failed to index {txt}: {e}")
+    for pdf in glob.glob(str(BASE_DIR / "*.pdf")):
+        try:
+            reader = PdfReader(pdf)
+            text   = "\n".join(p.extract_text() or "" for p in reader.pages)
+            n      = add_text(text, Path(pdf).name)
+            print(f"[startup] indexed {n} chunks from {Path(pdf).name}")
+        except Exception as e:
+            print(f"[startup] failed to index {pdf}: {e}")
+
+
+@app.on_event("startup")
+def _startup():
+    load_bundled_corpus()
+
+
 def retrieve(question: str):
-    idx = load_index()
-    if not idx or not idx["chunks"]:
+    if not _index["chunks"] or _index["vectorizer"] is None:
         return [], False
-    q_vec  = idx["vectorizer"].transform([question])
-    scores = cosine_similarity(q_vec, idx["matrix"])[0]
+    q_vec  = _index["vectorizer"].transform([question])
+    scores = cosine_similarity(q_vec, _index["matrix"])[0]
     ranked = scores.argsort()[::-1][:TOP_K]
     hits = [
-        {"text": idx["chunks"][i], "source": idx["sources"][i], "score": float(scores[i])}
+        {"text": _index["chunks"][i], "source": _index["sources"][i], "score": float(scores[i])}
         for i in ranked if scores[i] > 0
     ]
     confident = bool(hits) and hits[0]["score"] >= MIN_SIMILARITY
@@ -150,18 +155,18 @@ def health():
 
 @app.get("/status")
 def status():
-    idx = load_index()
-    if not idx or not idx["chunks"]:
-        return {"chunk_count": 0, "sources": []}
-    return {"chunk_count": len(idx["chunks"]), "sources": sorted(set(idx["sources"]))}
+    return {"chunk_count": len(_index["chunks"]), "sources": sorted(set(_index["sources"]))}
 
 
 @app.post("/upload")
 async def upload(file: UploadFile = File(...)):
     if not file.filename.lower().endswith(".pdf"):
         raise HTTPException(400, "Only PDF files are supported.")
-    data = await file.read()
-    n    = ingest_pdf(data, file.filename)
+    import io
+    data   = await file.read()
+    reader = PdfReader(io.BytesIO(data))
+    text   = "\n".join(p.extract_text() or "" for p in reader.pages)
+    n      = add_text(text, file.filename)
     return {"message": f"Ingested {n} chunks from {file.filename}", "chunks": n}
 
 
@@ -174,10 +179,8 @@ async def chat(req: ChatRequest):
     hits, confident = retrieve(question)
 
     if not confident:
-        idx = load_index()
-        if not idx or not idx["chunks"]:
-            msg = ("No documents have been uploaded yet. "
-                   "Please upload the thesis PDF via the admin panel first.")
+        if not _index["chunks"]:
+            msg = "The corpus failed to load on startup. Please contact the maintainer."
         else:
             msg = ("The corpus does not contain enough relevant material to answer "
                    "this reliably. Try rephrasing your question.")

@@ -1,0 +1,1556 @@
+WHENGOVERNMENTSSAY‘GREEN’ —
+DOBONDMARKETSBELIEVETHEM?
+By
+Nahian Ibnat
+Submitted to
+Central European University — Private University
+Department of Economics
+In partial fulfilment of the requirements for the degree of
+Master of Arts in Economics, Data and Policy
+Supervisor: Zolt´an Csaba T´oth
+Vienna, Austria
+2026
+Copyright Notice
+Copyright © Nahian Ibnat, 2026.When Governments Say ‘Green’ — Do Bond Markets Be-
+lieve Them?— This work is licensed under Creative Commons Attribution (CC BY) 4.0
+International license.
+1
+For bibliographic and reference purposes this thesis should be referred to as:
+Ibnat, N. 2026.When Governments Say ‘Green’ — Do Bond Markets Believe Them?MA
+Thesis, Department of Economics, Central European University — Private University, Vienna.
+1Icon by Creative Commons:https://creativecommons.org/mission/downloads/
+i
+Author’s Declaration
+I, Nahian Ibnat, candidate for the MA degree in Economics, Data and Policy, declare herewith
+that the present thesis titled“When Governments Say ‘Green’ — Do Bond Markets Believe
+Them?”is exclusively my own work, based on my research and only such external information
+as properly credited in notes and bibliography. I declare that no unidentified and illegitimate use
+was made of the work of others, and no part of the thesis infringes any person’s or institution’s
+copyright.
+I also declare that no part of the thesis has been submitted in this form to any other institu-
+tion of higher education for an academic degree.
+Vienna, 08 June 2026
+Signature
+ii
+Declaration of Generative AI
+Generative artificial intelligence (GenAI) was used in this work. I, Nahian Ibnat, have reviewed
+and edited the content as needed and take full responsibility for the content, claims, and refer-
+ences. An overview of the use of GenAI is provided below.
+• I used Claude (Anthropic,https://claude.ai) to support the drafting, paraphras-
+ing, and structural editing of thesis chapters, including the introduction, literature review,
+methodology, results, discussion, and conclusion. The tool was used to improve sentence
+clarity, suggest paragraph structure, and check for coherence and consistency across sec-
+tions.
+• I used Claude (Anthropic,https://claude.ai) to assist with the development, debug-
+ging, and documentation of Python notebooks for data processing, Greenium construc-
+tion, regression estimation (OLS, HC3, PCSE via linearmodels), stacked Difference-in-
+Differences design, event study construction, parallel trends testing, placebo tests, and
+figure generation using matplotlib. The tool was used to identify syntax errors, suggest
+code improvements, and generate documentation strings.
+• The complete replication code, data pipeline, and Jupyter notebooks for this thesis are
+available at: https://github.com/NahianIbnat-2000/Thesis
+iii
+Abstract
+This thesis tests whether political credibility signals shift the sovereign green bond Greenium
+— the yield concession investors accept to hold a green-labelled sovereign bond relative to
+a comparable conventional bond in emerging market economies. Using a twin-bond stacked
+Difference-in-Differences design applied to India and Indonesia, the thesis tests three sequen-
+tial hypotheses: whether daily GDELT V2Tone climate sentiment predicts Greenium changes,
+whether signalling noise from contradictory government messaging compresses the Greenium,
+and whether inaugural sovereign green bond issuance or a major internationally backed climate
+commitment produces a structural level shift. All three hypotheses produce results that are not
+statistically different from zero. A European robustness check recovers persistent greeniums of
+−1.82 and−2.80 basis points in Germany and Denmark, confirming the methodology detects
+greeniums where they exist. The findings are attributed to a market development threshold:
+below a certain level of institutional investor depth and secondary market liquidity, credibility
+signals cannot reach daily bond prices regardless of their genuine content.
+Keywords:sovereign green bonds, greenium, difference-in-differences, political credibility,
+emerging markets, GDELT, climate finance
+iv
+Acknowledgements
+I would like to express my sincere gratitude to my supervisor, Professor Zolt ´an Csaba T ´oth,
+for his guidance and support throughout the development of this thesis. Despite this being
+his first experience supervising a Master’s thesis, he was consistently responsive, engaged,
+and generous with his suggestions at every stage of the research. His expertise, patience, and
+encouragement were instrumental in shaping this work.
+Special thanks are due to Professor Tomy Lee for his constructive feedback during the
+Thesis Seminar presentations. His comments helped sharpen the empirical framing and pushed
+the analysis in more rigorous directions. I am also grateful to my Academic Writing Instructor,
+Zsuzsanna T ´oth, whose writing instruction improved both the clarity and coherence of the
+thesis considerably.
+I am grateful to the CEU Library for providing access to Refinitiv Eikon through the uni-
+versity’s institutional subscription. The entire empirical pipeline of this thesis depends on the
+bond yield data collected through that platform, and this research would not have been possible
+without it.
+My sincere thanks go to the Department Coordinators Anita Apor, Dominika Dash, and
+Judit Lafferthon, who were unfailingly helpful with every administrative and academic matter,
+large or small, throughout the programme.
+Finally, I owe a great deal to my dear friends Boga Petruska and Yelyzaveta Bendiuh, who
+supported me through proofreading, technical troubleshooting, and the day-to-day challenges
+of thesis writing. Their encouragement made the entire journey both more manageable and
+more enjoyable.
+v
+Contents
+Copyright Notice i
+Author’s Declaration ii
+Declaration of Generative AI iii
+Abstract iv
+Acknowledgements v
+List of Abbreviations xii
+1 Introduction 1
+2 Literature Review 4
+2.1 Core Concepts and Definitions . . . . . . . . . . . . . . . . . . . . . . . . . . 4
+2.2 Green Bond Pricing: What the Evidence Shows . . . . . . . . . . . . . . . . . 5
+2.3 Theoretical Frameworks . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 6
+2.3.1 Credible Commitment Theory . . . . . . . . . . . . . . . . . . . . . . 6
+2.3.2 Asymmetric Information and Signalling . . . . . . . . . . . . . . . . . 7
+2.4 Climate Sentiment and NLP in Financial Markets . . . . . . . . . . . . . . . . 7
+2.5 Sovereign Green Bonds in Emerging Market Economies: The Gap . . . . . . . 8
+2.6 Identification Strategy . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 8
+2.7 Research Questions . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 9
+3 Data and Methodology 11
+3.1 Sample Selection and Twin-Bond Design . . . . . . . . . . . . . . . . . . . . 11
+3.2 The Greenium . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 12
+3.3 Control Variables . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 12
+3.4 Identification Strategy . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 13
+3.4.1 First-Differencing . . . . . . . . . . . . . . . . . . . . . . . . . . . . 13
+3.4.2 The Full Model Sequence: M1 through M5 . . . . . . . . . . . . . . . 13
+3.4.3 The Stacked DiD . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 15
+vi
+3.5 Parallel Trends Validation . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 16
+3.6 Robustness Checks . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 17
+3.6.1 Standard Error Robustness . . . . . . . . . . . . . . . . . . . . . . . . 17
+3.6.2 Placebo Tests . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 17
+3.6.3 European Extension . . . . . . . . . . . . . . . . . . . . . . . . . . . 17
+3.6.4 Granger Causality . . . . . . . . . . . . . . . . . . . . . . . . . . . . 17
+4 Results: Asia (India and Indonesia) 18
+4.1 What the Data Look Like Before Any Regression . . . . . . . . . . . . . . . . 18
+4.2 Parallel Trends: The Identification Holds for India . . . . . . . . . . . . . . . . 19
+4.3 Main Regression Results . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 19
+4.4 Stacked DiD: Confirming the Null with Cleaner Identification . . . . . . . . . 21
+4.5 Robustness . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 21
+4.6 Economic Interpretation: What the Null Means . . . . . . . . . . . . . . . . . 22
+5 Robustness: European Extension (Germany and Denmark) 24
+5.1 The European Greenium Exists and Is Stable . . . . . . . . . . . . . . . . . . 24
+5.2 The DiD Finds No Post-Issuance Shift — and That Is Expected . . . . . . . . . 25
+5.3 Post-Issuance Dynamics: No Systematic Pattern . . . . . . . . . . . . . . . . . 26
+5.4 What the European Results Establish . . . . . . . . . . . . . . . . . . . . . . . 26
+6 Discussion and Comparative Analysis 27
+6.1 The Same Regression Output, Two Different Stories . . . . . . . . . . . . . . . 27
+6.2 Why the Information Channels Are Silent . . . . . . . . . . . . . . . . . . . . 29
+6.3 A Threshold Interpretation . . . . . . . . . . . . . . . . . . . . . . . . . . . . 29
+6.4 What Moves the Greenium in Asia, and Why It Matters . . . . . . . . . . . . . 30
+6.5 Policy Implications . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 30
+6.6 Limitations . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 31
+7 Conclusion 33
+A Bond Pair ISINs and Data Sources 39
+B Descriptive Statistics 40
+C Full Regression Tables 42
+D Standard Error Robustness 43
+E Placebo Tests 44
+F Parallel Trends Formal F-Tests 45
+vii
+G European Robustness Results 47
+H Stacked DiD Verification 50
+I Granger Causality Tests 51
+viii
+List of Tables
+3.1 Model Sequence Summary . . . . . . . . . . . . . . . . . . . . . . . . . . . . 15
+4.1 Main Regression Results — Asia Panel . . . . . . . . . . . . . . . . . . . . . 20
+4.2 Stacked DiD Results — Asia . . . . . . . . . . . . . . . . . . . . . . . . . . . 21
+4.3 Standard Error Robustness — Asia . . . . . . . . . . . . . . . . . . . . . . . . 22
+5.1 European Results — Descriptive and DiD . . . . . . . . . . . . . . . . . . . . 25
+6.1 Four-Country Comparison . . . . . . . . . . . . . . . . . . . . . . . . . . . . 28
+A.1 Bond Pair ISINs and Data Sources . . . . . . . . . . . . . . . . . . . . . . . . 39
+B.1 Descriptive Statistics — Asia Panel . . . . . . . . . . . . . . . . . . . . . . . 40
+C.1 Full Regression Results — Asia Panel . . . . . . . . . . . . . . . . . . . . . . 42
+D.1 Standard Error Robustness — Asia . . . . . . . . . . . . . . . . . . . . . . . . 43
+E.1 Placebo Tests — Asia (M5 Pooled Specification) . . . . . . . . . . . . . . . . 44
+F.1 Parallel Trends Joint F-Tests — Asia . . . . . . . . . . . . . . . . . . . . . . . 45
+G.1 European Robustness Regression Results . . . . . . . . . . . . . . . . . . . . 47
+G.2 Post-Issuance Joint F-Tests — Europe . . . . . . . . . . . . . . . . . . . . . . 47
+I.1 Granger Causality Tests — Signalling Noise and Greenium . . . . . . . . . . . 52
+ix
+List of Figures
+B.1 Greenium by twin pair — 10Y sovereign bonds, India and Indonesia (30-day
+moving average). Vertical dashed lines mark the JETP G20 (15 Nov 2022)
+and India 2nd auction (27 Oct 2023) treatment dates. Source: Refinitiv Eikon;
+author’s calculations. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 41
+B.2 Daily GDELT V2Tone climate sentiment — India and Indonesia, 2020–2024.
+The 30-day moving average (bold line) is flat throughout with no structural
+break at either treatment date, consistent with the H1 null result. Treatment
+dates marked by vertical dashed lines. . . . . . . . . . . . . . . . . . . . . . . 41
+F.1 Event study — India (treatment: 2nd green bond auction, 27 Oct 2023). Pre-
+event window: Jan–Oct 2023 (∼120 trading days). Pre-event coefficients are
+jointly flat —F(9,84) =1.006,p=0.44 — validating the DiD identification.
+No post-event shift detected (H3 null). . . . . . . . . . . . . . . . . . . . . . . 45
+F.2 Event study — Indonesia (treatment: JETP G20 Bali, 15 Nov 2022). Pre-event
+window limited to∼55 trading days from bond start. Weeks−10 and−9 are
+structural zeros (bond did not yet exist). Formal parallel trends test passes —
+F(7,75) =0.740,p=0.64 — but with limited statistical power. . . . . . . . . 46
+G.1 European sovereign green bond greenium (30-day moving average) — Ger-
+many and Denmark. Both series show persistently negative, stable greeniums
+throughout the full sample. Vertical dashed lines mark inaugural issuance dates
+(Germany: 2 Sep 2020; Denmark: 21 Jan 2022). Source: Refinitiv Eikon; au-
+thor’s calculations. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 48
+G.2 Post-issuance greenium dynamics — Germany and Denmark (event study, side-
+by-side). Both countries show minor fluctuations around zero with no system-
+atic post-issuance trend, consistent with a stable equilibrium greenium estab-
+lished at inaugural issuance. . . . . . . . . . . . . . . . . . . . . . . . . . . . 48
+G.3 Germany — post-issuance price discovery (inaugural Green Bund, 2 Sep 2020,
+20-week window). Pre-issuance region (grey) does not test parallel trends.
+Post-issuance coefficients are jointly non-significant —F(20,84) =0.603,p=
+0.900. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . 49
+x
+G.4 Denmark — post-issuance greenium dynamics (inaugural sovereign green bond,
+21 Jan 2022, 20-week window). Pre-issuance region is thin. Post-issuance co-
+efficients are jointly non-significant —F(20,87) =0.100,p=1.000. . . . . . 49
+xi
+List of Abbreviations
+ATT Average Treatment Effect on the Treated
+CDS Credit Default Swap
+DiD Difference-in-Differences
+ESG Environmental, Social, and Governance
+FE Fixed Effects
+FX Foreign Exchange
+G20 Group of Twenty
+GDELT Global Database of Events, Language, and Tone
+HC3 Heteroskedasticity-Consistent Standard Errors (MacKinnon–White)
+ICMA International Capital Market Association
+IEA International Energy Agency
+IFC International Finance Corporation
+IMF International Monetary Fund
+IPE International Political Economy
+ISIN International Securities Identification Number
+JETP Just Energy Transition Partnership
+NLP Natural Language Processing
+OLS Ordinary Least Squares
+PCSE Panel-Corrected Standard Errors
+pp Percentage Points
+RQ Research Question
+SE Standard Error
+TWFE Two-Way Fixed Effects
+VIX CBOE V olatility Index
+YTM Yield to Maturity
+xii
+Chapter 1
+Introduction
+In November 2022, at the G20 Summit in Bali, Indonesia received the largest climate finance
+commitment ever directed at a single emerging market economy: USD 20 billion under the Just
+Energy Transition Partnership (JETP) in exchange for an accelerated coal phase-down (IEA,
+2022). Months earlier, India had become one of the first major South Asian economies to
+issue a sovereign green bond, raising USD 1 billion at its inaugural auction to finance clean
+energy projects (Reserve Bank of India, 2023). Both events were internationally visible, but
+does it have an effect on the Greenium? The Greenium—the yield concession investors accept
+to hold a green-labelled sovereign bond relative to a comparable conventional bond from the
+same issuer—is the bond market’s real-time measure of whether governments’ environmental
+commitments are believed (Ando et al., 2024; Zerbib, 2019). This paper aims to find if markets
+price political credibility, credibility events should shift it. The explanation this thesis advances
+is not that the signals are not credible, but that the market infrastructure needed to transmit
+credibility signals into daily prices does not yet exist in emerging sovereign green bond markets.
+Sovereign green bonds have grown from Poland’s inaugural issuance in December 2016 to
+more than 40 sovereign issuers and USD 700 billion in cumulative global labelled debt by 2023
+(Climate Bonds Initiative, 2024). For governments, the appeal is a credibility premium: if bond
+markets reward genuine environmental commitment with lower borrowing costs, the Greenium
+creates a direct financial incentive for climate policy ambition. The IMF (IMF, 2024), World
+Bank (World Bank, 2023), and IFC (IFC, 2024) have all cited this mechanism in promoting
+sovereign green bond programmes in emerging economies. Yet the empirical evidence for it
+comes almost entirely from developed markets. Zerbib (2019) documents a mean Greenium
+of−2 basis points for European corporate bonds. Ando et al. (2023, 2024) estimate−2 to−4
+basis points for advanced economy sovereign pairs and−11 to−13 basis points for emerg-
+ing market sovereigns, but their evidence is cross-sectional and focused on average pricing at
+issuance. Kapraun et al. (2021) show that framework credibility drives Greenium magnitude
+across 2,000 green bonds. No study has tested whether a discrete political event shifts the
+Greenium dynamically in emerging market economies. That is the gap this thesis fills.
+The central research question is:do political credibility signals shift the sovereign green
+1
+bond Greenium in emerging market economies?Three hypotheses operationalise this as a se-
+quential causal chain: H1 tests whether the continuous daily information signal—climate media
+sentiment—reaches bond prices. H2 tests whether the quality and coherence of that signal mod-
+erates the Greenium. H3 tests whether a hard institutional commitment produces a structural
+price shift when softer signals cannot. A null on H1 and H2 does not weaken H3; it sharpens
+it, because it is consistent with the continuous information channel being inoperative at daily
+frequency and directs attention to whether a single costly institutional act can cut through.
+H1: Daily changes in GDELT V2Tone climate-news tone are positively associ-
+ated with daily changes in the sovereign green bond Greenium in emerging market
+economies (Baker and Wurgler, 2006; Bolla et al., 2019).
+H2: Higher signalling noise—the daily standard deviation of V2Tone scores across
+climate-relevant articles—is negatively associated with the Greenium, reflecting
+investor discounting of contradictory government messaging (Gao and Schmittmann,
+2022).
+H3: Inaugural sovereign green bond issuance or a major internationally backed
+climate credibility event produces a structural negative shift in the Greenium, iden-
+tified by a stacked Difference-in-Differences design (Baker et al., 2022).
+The primary sample is India and Indonesia—the two most significant emerging market
+sovereign green bond programmes in Asia. A two-country design is a deliberate choice for
+internal validity: it permits a precisely specified twin-bond DiD with identifiable treatment
+events and genuine pre-treatment variation, rather than a cross-sectional specification across
+a heterogeneous group of issuers where credibility, liquidity, and market depth would be dif-
+ficult to disentangle. The trade-off is external validity: the findings should be interpreted as
+evidence about these two specific credibility episodes in Asia, not as a general claim about
+all emerging market sovereign green bond programmes. India’s treatment event is its second
+sovereign green bond auction (27 October 2023); Indonesia’s is the JETP announcement at the
+G20 Bali Summit (15 November 2022). Greenium is constructed using the twin-bond design
+of Zerbib (2019) from daily yield data sourced from Refinitiv Eikon (Refinitiv Eikon, 2024).
+Treatment effects are estimated using a stacked Difference-in-Differences design (Baker et al.,
+2022) that corrects for the contamination bias in staggered treatment settings (Callaway and
+Sant’Anna, 2021). Climate sentiment is measured using GDELT V2Tone (GDELT Project,
+2023; Leetaru and Schrodt, 2013). Germany and Denmark serve as a methodological robust-
+ness check—markets where the literature documents persistent greeniums of−1.8 to−2.8
+basis points (Ando et al., 2023)—confirming that the absence of detectable post-event shifts in
+Asia reflects market structure rather than a broken methodology.
+This thesis makes three contributions. First, it provides the first quasi-experimental causal
+evidence on whether political credibility events shift the sovereign green bond Greenium in
+2
+emerging market economies, applying a stacked DiD design (Baker et al., 2022) to a setting
+where existing evidence is cross-sectional and developed-market concentrated (Ando et al.,
+2024; Zerbib, 2019). Second, it integrates the credible commitment and signalling frameworks
+from international political economy (North and Weingast, 1989; Tomz, 2007) with the green
+bond pricing literature (Kapraun et al., 2021; Zerbib, 2019) and NLP sentiment measurement
+(Bolla et al., 2019)—three bodies of work not previously combined in this context. Third, it
+proposes a market development threshold argument: below a certain level of institutional in-
+vestor depth and secondary market liquidity (Climate Bonds Initiative, 2024; Ehlers and Packer,
+2017), credibility signals cannot reach daily bond prices regardless of their genuine content,
+with direct implications for the policy case for sovereign green bonds in emerging economies
+(IMF, 2024).
+The thesis is organised as follows. Chapter 2 reviews the green bond pricing literature, the
+theoretical frameworks from credible commitment theory and signalling, and the NLP tools for
+sentiment measurement, before deriving the three hypotheses from the identified gaps. Chap-
+ter 3 describes the data, twin-bond design, stacked DiD specification, and robustness checks.
+Chapter 4 presents the primary results for India and Indonesia. Chapter 5 presents the European
+robustness check and explains why the European null is economically different from the Asian
+null. Chapter 6 synthesises the comparative findings and develops the market maturity inter-
+pretation. The conclusion summarises the contributions, limitations, and directions for future
+research.
+3
+Chapter 2
+Literature Review
+This chapter defines the core concepts, surveys the evidence on green bond pricing, develops
+the theoretical frameworks from IPE and information economics, identifies the gaps in the
+existing literature, and derives the three research questions that structure the thesis.
+2.1 Core Concepts and Definitions
+Green Bond.A fixed-income instrument whose proceeds are contractually designated for
+projects with defined environmental benefits, issued under the International Capital Market As-
+sociation Green Bond Principles (ICMA, 2021). Total global green bond issuance exceeded
+USD 700 billion in 2023, with emerging market sovereign issuance alone reaching USD 27
+billion in 2022, up from virtually nothing in 2015 (Climate Bonds Initiative, 2024). Despite
+rapid growth, the market remains concentrated among a small number of issuers, and the pric-
+ing dynamics of sovereign green bonds in emerging economies are not yet well understood
+(Ando et al., 2024).
+Greenium.The yield differential between a green bond and an otherwise comparable con-
+ventional bond from the same issuer, defined as:
+Greeniumi,t =YTM green
+i,t −YTM conventional
+i,t (2.1)
+A negative Greenium means investors accept a lower yield to hold the green-labelled instru-
+ment, reflecting their valuation of the environmental commitment beyond the bond’s purely
+financial characteristics (Zerbib, 2019). Measuring the greenium requires controlling for ma-
+turity, coupon, liquidity, and credit quality; the dominant methodological solution is the twin-
+bond design (Zerbib, 2019), in which each green bond is matched to a conventional bond from
+the same issuer with comparable maturity.
+Investor Sentiment.A belief about future asset values not fully justified by observable
+fundamentals (Baker and Wurgler, 2007). In fixed-income markets, sentiment has been shown
+to predict bond yield movements beyond what macroeconomic fundamentals alone explain
+4
+(Baker and Wurgler, 2006; Tetlock, 2007). Baker and Wurgler define investor sentiment as
+beliefs about future cash flows and risks; GDELT V2Tone, by contrast, measures the aver-
+age linguistic tone of news articles across a global media database. This thesis therefore uses
+GDELT V2Tone as a proxy for climate-news tone—a measure of the information environ-
+ment investors are exposed to—rather than as a direct measure of investor sentiment in the
+Baker–Wurgler sense. Bolla et al. (2019) validate GDELT-based tone measures as predictors
+of sovereign bond spread movements, supporting their use as an information-channel proxy.
+Signalling Noise.The degree of internal contradiction in a government’s public environ-
+mental messaging, operationalised here as the daily standard deviation of V2Tone scores across
+climate-relevant articles. Spence (1973) establishes that a signal’s informativeness depends not
+only on its magnitude but on its clarity: contradictory signals from the same sender—a finance
+ministry issuing green bonds while a state energy agency approves new coal projects—reduce
+the receiver’s ability to distinguish genuine commitment from strategic communication and
+should, under the theory, compress the credibility premium investors are willing to pay.
+2.2 Green Bond Pricing: What the Evidence Shows
+Zerbib (2019) establishes the foundational result using 135 matched corporate and suprana-
+tional bond pairs: green bonds trade at a mean yield discount of approximately−2 basis points,
+a small but statistically significant negative Greenium driven by pro-environmental investor
+preferences. Hachenberg and Schiereck (2018) confirm a similar magnitude for European cor-
+porate bonds. Baker et al. (2018) document a larger greenium of−6 to−9 basis points for US
+municipal green bonds, attributed to tax-advantaged demand from dedicated ESG investors.
+These findings establish that the green label carries a real, if modest, market price in developed
+bond markets.
+For sovereign green bonds, Ando et al. (2023, 2024) provide the most comprehensive cross-
+country evidence, estimating an average Greenium of−2 to−4 basis points in advanced
+economies and−11 to−13 basis points in emerging market economies across 332 matched
+sovereign pairs from 2014 to 2023. The larger emerging market Greenium is attributed to
+asymmetric information rather than market depth: investors in riskier markets assign greater
+value to the credibility certification the green label provides (Ando et al., 2024). Omondi et al.
+(2026) confirm a Greenium of approximately−10 basis points for emerging market green-
+labelled sovereign bonds using coarsened exact matching across 44 countries, and find that
+the Greenium is especially large for speculative-grade bonds and during periods of financial
+volatility.
+The quality of the green framework drives the magnitude of the Greenium. Kapraun et al.
+(2021) examine over 2,000 green bonds and show that externally verified, ICMA-aligned bonds
+carry significantly larger Greeniums than unverified ones. This is not a label effect—it is a cred-
+ibility effect. Markets price the quality of the commitment, not merely its existence. The ESG
+5
+investor base reinforces this: Gianfrate and Peri (2019) show that green bonds attract larger
+order books at issuance than comparable conventional bonds, consistent with excess demand
+from investors who value the green designation intrinsically. In thin markets with limited ESG
+institutional participation, this demand is absent and the greenium becomes volatile, as this
+thesis documents for India and Indonesia. Febi et al. (2018) add that liquidity differences
+between green and conventional bonds partially offset the demand premium, with less liquid
+green bonds trading at yield premiums that reduce the net greenium.
+2.3 Theoretical Frameworks
+Three unresolved tensions in this literature motivate the present thesis. First, the evidence on
+whether the greenium is a credibility effect or a liquidity effect is not settled: Zerbib (2019) and
+Ando et al. (2024) attribute the greenium to pro-environmental investor preferences, while Febi
+et al. (2018) show that liquidity differentials partially offset the demand premium—making
+it difficult to separate genuine credibility pricing from market microstructure. Second, the
+mechanism by which political events translate into greenium movements has not been identified
+causally: Kapraun et al. (2021) show that framework quality matters cross-sectionally, but no
+study has tested the dynamic response to a discrete political event using quasi-experimental
+variation. Third, the emerging market evidence (Ando et al., 2024; Omondi et al., 2026) is
+almost entirely cross-sectional—it shows that greeniums exist on average, but cannot answer
+whether political credibility shocks shift them at high frequency. This thesis addresses the
+second and third gaps directly: it provides the first quasi-experimental evidence on whether
+political credibility events shift the sovereign greenium in emerging markets, and tests the
+causal channel through which such events would operate.
+2.3.1 Credible Commitment Theory
+Whether bond markets price sovereign green commitments depends on whether those com-
+mitments are believed. Kydland and Prescott (1977) establish the time-inconsistency prob-
+lem: governments have incentives to renege, and forward-looking investors discount accord-
+ingly. The sovereign greenium is the market’s real-time assessment of whether the commit-
+ment will hold. Tomz (2007) shows empirically that reputational track records are directly re-
+flected in sovereign borrowing costs. North and Weingast (1989) identify institutional structure
+as the commitment technology: embedding commitments in hard-to-reverse arrangements—
+independent oversight, mandatory reporting, external verification—raises the cost of defection.
+Berg et al. (2016) confirm empirically that environmental performance reduces sovereign bond
+spreads in emerging markets.
+6
+2.3.2 Asymmetric Information and Signalling
+Spence (1973) develops the canonical signalling model: in environments with asymmetric in-
+formation, credible communication requires a costly signal—one that only a genuinely com-
+mitted sender would choose to send. A cheap signal conveys no information in equilibrium
+because uncommitted senders mimic it. Applied to sovereign green bonds, a government gen-
+uinely committed to environmental transition can more easily bear the institutional costs of the
+green bond programme—framework documentation, rigorous annual reporting, reputational
+exposure from internationally visible issuance—than a government engaged in greenwashing.
+The Greenium reflects the market’s estimate of the probability the signal is genuine. Gao and
+Schmittmann (2022) formalise this in a green bond pricing model under asymmetric infor-
+mation, deriving that the equilibrium Greenium is larger when verification requirements are
+stronger and when the issuer’s credibility type is more uncertain—consistent with the larger
+Greenium observed in emerging markets by Ando et al. (2024) and Kapraun et al. (2021).
+Mosley (2003) and Ballard-Rosa et al. (2021) establish that international financial markets are
+effective monitors of sovereign fiscal and institutional commitments, with spreads incorporat-
+ing political risk assessments—extending the signalling framework to the international political
+economy context in which sovereign green bonds operate.
+2.4 Climate Sentiment and NLP in Financial Markets
+Tetlock (2007) establishes that negative media sentiment predicts downward stock market pres-
+sure using a Wall Street Journal column as the sentiment source. Tetlock et al. (2008) extend
+this to firm-level news, showing that qualitative article content predicts future earnings surprises
+and abnormal returns. Baker and Wurgler (2006) provide the broader framework: investor sen-
+timent systematically affects asset returns, particularly for assets—like green bonds—whose
+fundamental values are hard to assess objectively. In sovereign fixed-income markets, GDELT-
+based sentiment measures have been validated as predictors of yield spread movements: Bolla
+et al. (2019) show that GDELT V2Tone for Italy, Spain, and France predicts sovereign yield
+spreads relative to Germany within days, confirming that large-scale news databases capture
+information relevant to bond investors.
+For green bonds specifically, Pi˜neiro-Chousa et al. (2021) show that social media sentiment
+positively influences green bond market returns, confirming the sentiment channel operates in
+this asset class. Pham (2021) documents that climate policy news sentiment predicts green
+bond fund flows in European markets. However, both studies use developed market aggregate
+indices rather than individual sovereign pairs in emerging economies. The GDELT sentiment
+channel has not been tested in thin, nascent sovereign green bond markets where the dedicated
+ESG investor base is small and daily trading volume can be near zero—the gap this thesis
+addresses.
+7
+2.5 Sovereign Green Bonds in Emerging Market Economies:
+The Gap
+Despite the rapid growth of emerging market sovereign green bond issuance—from virtually
+nothing in 2015 to USD 27 billion in 2022 (Climate Bonds Initiative, 2024)—the academic lit-
+erature has not kept pace. Ando et al. (2024) and Omondi et al. (2026) provide cross-sectional
+Greenium estimates but do not test the causal effect of specific political events on the Gree-
+nium. Ehlers and Packer (2017) describe structural differences between emerging and devel-
+oped sovereign green bond markets but do not test whether these differences block the credi-
+bility transmission mechanism. Wang et al. (2020) find a small positive Greenium for Chinese
+corporate green bonds but do not address the sovereign context or the political economy of gov-
+ernment commitment credibility. No existing study applies a quasi-experimental DiD design
+to test whether political credibility events shift the sovereign Greenium in emerging market
+economies.
+Three structural features of emerging market sovereign green bond markets are relevant to
+this thesis. First, secondary market liquidity is substantially lower than in developed markets,
+making daily prices noisy residuals of thin trading rather than clean equilibrium signals (Ehlers
+and Packer, 2017). Second, the dedicated ESG institutional investor base—the pension funds,
+insurance companies, and central banks whose mandate-driven demand sustains Greeniums
+in Germany and Denmark—is largely absent in most emerging economies (Climate Bonds
+Initiative, 2024). Third, foreign currency denomination in some emerging market issuances
+introduces currency risk that can dominate yield spread movements on volatile days (Longstaff
+et al., 2011). Together, these features suggest that the mechanisms through which credibility
+signals reach Greenium prices in developed markets may not yet be operative in emerging
+economies—the central question this thesis tests.
+2.6 Identification Strategy
+Estimating the causal effect of a political event on the Greenium requires a design that identifies
+the differential response of the green bond relative to its conventional twin. The Difference-in-
+Differences estimator (Angrist and Pischke, 2009) provides this by comparing the before-after
+change in the Greenium for the treated pair to the simultaneous change for an untreated control.
+Larcker and Watts (2020) apply this design to US municipal green bonds and find no Greenium
+absent ESG investor demand differentiation, illustrating the sensitivity of the design to control
+group quality.
+When treatment is staggered—as it is here, with Indonesia treated in November 2022 and
+India in October 2023—the standard two-way fixed effects DiD estimator is biased because
+already-treated units contaminate the control group for later-treated units (Baker et al., 2022;
+8
+Callaway and Sant’Anna, 2021). The stacked DiD design formalised by Baker et al. (2022)
+addresses this by constructing event-specific sub-samples in which only not-yet-treated units
+serve as controls. Roth (2022) provides the formal framework for pre-testing the parallel trends
+assumption through a joint Wald F-test on pre-event period dummies, the approach adopted in
+Chapter 3.
+2.7 Research Questions
+Three gaps motivate the research questions. First, the causal effect of political credibility
+events on the sovereign Greenium in emerging market economies has not been tested with
+quasi-experimental rigour (Ando et al., 2024; Omondi et al., 2026). Second, the credible com-
+mitment and signalling frameworks from IPE (North and Weingast, 1989; Spence, 1973; Tomz,
+2007) have not been operationalised using daily Greenium data. Third, GDELT-based climate
+sentiment (Bolla et al., 2019) has not been applied to this specific pricing question in emerging
+economies.
+These gaps generate three research questions that form a sequential causal chain rooted in
+Spence’s (1973) signalling hierarchy:
+RQ1 (Information channel):Do daily changes in climate sentiment predict daily changes
+in the sovereign green bond Greenium in emerging market economies? Following Tetlock
+(2007) and Baker and Wurgler (2006), this tests whether the continuous low-cost information
+signal—media coverage of the government’s environmental stance—reaches bond prices at
+daily frequency.
+RQ2 (Signal clarity):Does the internal coherence of climate media coverage moderate the
+Greenium? Following Spence (1973) and Gao and Schmittmann (2022), this tests whether
+contradictory government messaging compresses the credibility premium below what senti-
+ment tone alone predicts.
+RQ3 (Institutional commitment):Does a major sovereign credibility event—an inaugural
+green bond issuance or an internationally backed climate finance commitment—produce a
+structural level shift in the Greenium? Following Tomz (2007), this tests whether the costliest,
+most institutionally embedded signal produces effects that softer signals cannot.
+The three questions connect through the signalling logic of Spence (1973): an undetectable
+effect on RQ1 motivates RQ2, and undetectable effects on both motivate RQ3. Findings that
+are not statistically different from zero across all three channels would establish that emerg-
+ing market sovereign green bond markets, at their current stage of development, do not show
+detectable pricing of political credibility signals at daily frequency—a substantive finding for
+both the green finance literature and the policy community. The research questions are framed
+at the level of emerging market sovereign green bond markets as a class. India and Indone-
+sia are the empirical cases; Germany and Denmark serve as the methodological benchmark,
+9
+confirming that the absence of detectable effects in Asia reflects market structure rather than a
+broken methodology (Ando et al., 2023).
+10
+Chapter 3
+Data and Methodology
+This chapter describes the data, the bond pairs, and the empirical strategy. The primary goal
+is straightforward: estimate whether political credibility events shift the sovereign green bond
+Greenium.
+3.1 Sample Selection and Twin-Bond Design
+The primary sample is two Asian sovereign green bond pairs: India and Indonesia. They are
+the natural subjects for this question. India issued its inaugural sovereign green bond in January
+2023, becoming the first major South Asian government to do so. Indonesia had already entered
+the market in 2018 with offshore green sukuk, and in 2022 it attracted the largest single climate
+finance commitment ever directed at an emerging market. These are not peripheral cases. They
+are the two most consequential sovereign green bond programmes in Asia, and they occur at
+times when the credibility signal is salient and theoretically motivated.
+Each sovereign green bond is paired with a conventional bond from the same issuer and
+comparable maturity, following Zerbib (2019). The yield spread between the two is the Gree-
+nium. Pairing within the same sovereign issuer controls for credit risk and country risk; what
+remains is the pricing of the green label itself. Germany and Denmark are added as a robustness
+check using exact twin bonds—identical coupon and maturity—providing an upper bound on
+what the methodology can detect (Ando et al., 2023). Table A.1 in Appendix A lists all four
+bond pairs.
+The treatment events are chosen for both data availability and theoretical clarity.
+India: second auction (27 October 2023).The inaugural auction (January 2023) leaves
+zero pre-treatment Greenium observations—the bond did not yet exist. The second auction
+provides approximately 120 trading days of genuine pre-treatment data and signals programme
+permanence: the government is committed to recurring green issuance, not a one-off gesture.
+Indonesia: the JETP announcement (15 November 2022).At the G20 Bali Summit,
+Indonesia received a USD 20 billion JETP commitment—the largest climate finance pledge to
+11
+a single emerging market. The conventional twin started trading in September 2022, giving
+approximately 55 trading days of pre-treatment data. Unlike an issuance event, the JETP is an
+externally validated political commitment, directly testing whether credibility signals beyond
+bond issuance are priced.
+3.2 The Greenium
+The greenium for pairion trading daytis defined as:
+Greeniumi,t =YTM green
+i,t −YTM conventional
+i,t (3.1)
+where YTM denotes yield to maturity. A negative greenium means the green bond trades at
+a lower yield than its conventional twin: investors accept a yield concession to hold the la-
+belled instrument. A positive value means the opposite—the green label commands no pricing
+premium, and in fact investors require a yield pick-up to hold it.
+Both yields are constructed as the daily mid-yield—the simple average of the bid and ask
+yields quoted on Refinitiv Eikon. For thinly traded sovereign bonds the mid-yield is the appro-
+priate price concept: the last-traded price may be stale, while the bid-ask spread is continuously
+updated (Longstaff et al., 2011). The greenium is computed only on days where both legs have
+valid quotes, using an inner join. No greenium is imputed. The first-differenced outcome
+variable used throughout all regressions is:
+∆Greeniumi,t =Greenium i,t −Greenium i,t−1 (3.2)
+measured in percentage points. This daily change in the greenium is the dependent variable in
+every model estimated in Chapters 4 and 5.
+3.3 Control Variables
+Three control variables isolate the treatment effect from concurrent macro-financial develop-
+ments.
+Global risk appetite: VIX.A rise in VIX triggers rotation out of less liquid emerging
+market green bonds into safe assets, compressing the greenium. VIX is sourced from FRED
+(Federal Reserve Economic Data (FRED), 2024), forward-filled over non-US trading days, and
+entered as log(VIX)to reduce skewness.
+Sovereign default risk: CDS.The five-year CDS spread (India: INGV5YUSAC, Indone-
+sia: IDGV5YUSAC, sourced from Investing.com (Investing.com, 2024)) controls changes in
+sovereign creditworthiness that could shift the greenium independently of the green label. The
+India CDS series has 117 missing trading days, forward-filled within the country following
+12
+Longstaff et al. (2011).
+Currency risk: FX.The INR/USD and IDR/USD spot rates (Refinitiv Eikon, 2024) control
+for currency risk, particularly relevant for Indonesia’s USD-denominated green bonds. Both are
+entered as logs and forward-filled over non-trading days.
+Climate sentiment: GDELT V2Tone.Climate-news tone (GDELT V2Tone) and sig-
+nalling noise (daily SD of V2Tone) are the two information variables. V2Tone is the average
+linguistic tone of climate-relevant news articles for each country-day—a proxy for the climate
+information environment, not investor sentiment directly (Bolla et al., 2019). In M1 and M2,
+V2Tone is the primary variable of interest, testing H1. In M3, it is a control only—included
+to prevent omitted-variable bias on the Post coefficient if climate coverage happens to improve
+around the treatment date. The signalling noise variable tests H2: when different government
+agencies send contradictory signals, does that reduce the credibility premium? (Spence, 1973).
+3.4 Identification Strategy
+3.4.1 First-Differencing
+Sovereign bond yields are persistent. The Durbin-Watson statistic for the greenium in levels is
+approximately 0.44 for both Asian pairs—well below the 1.5 threshold that would be consistent
+with the absence of positive serial correlation. Regressing levels on levels in this environment
+produces spurious associations and inflatedt-statistics. The remedy is first-differencing: re-
+placing each variable with its daily change within each bond pair:
+∆Xi,t =X i,t −X i,t−1,for allX, within pairi(3.3)
+Differencing is applied within each pair group, so no cross-pair contamination occurs. The
+Durbin-Watson statistic rises from approximately 0.44 (levels) to 2.0 (differenced), confirming
+serial correlation is removed. Daily rather than monthly data is used because: (1) it enables the
+event study parallel trends test; (2) it supports the stacked DiD window design; and (3) it tests
+the information channel at the frequency investors actually trade. Monthly data would absorb
+within-month dynamics and conflate the treatment event with time fixed effects.
+After first-differencing, all regressors are standardised to zero mean and unit standard de-
+viation. This means every coefficient can be read as: a one-standard-deviation change in the
+daily change of that variable is associated with a ˆβ-unit change in∆Greenium, in percentage
+points. Coefficients across variables are directly comparable.
+3.4.2 The Full Model Sequence: M1 through M5
+The thesis estimates five nested specifications, each adding one component to the previous.
+This stepwise structure makes the contribution of each variable transparent and allows the three
+13
+research questions to be answered in sequence. Table 3.1 summarises the model sequence;
+Table 4.1 in Chapter 4 reports all five alongside the country-specific models. Throughout, the
+dependent variable is∆Greenium i,t and all regressors are first-differenced and standardised.
+Pair fixed effectsλ i and, from M5 onward, monthly time fixed effectsµt are included. Standard
+errors are HC3 (MacKinnon and White, 1985).
+M1 — Baseline information channel (tests H1, no controls):
+∆Greeniumi,t =α+β 1 ·∆Tonei,t +λ i +ε i,t (3.4)
+∆Tonei,t is the daily first-difference of GDELT V2Tone for countryi. M1 asks: does climate-
+news tone alone predict greenium changes?β 1 is the coefficient of interest.
+M2 — Controlled information channel (tests H1, with macro controls):
+∆Gi,t =α+β 1∆Tonei,t +γ 1∆log(VIX)t +γ 2∆CDSi,t +γ 3∆log(FX) i,t +λ i +ε i,t (3.5)
+M2 tests H1 after controlling for macro conditions that independently shift the greenium. Ifβ 1
+is still insignificant, the information channel is not operating.
+M3 — Signal clarity (tests H2, adds signalling noise):
+∆Gi,t =α+β 1∆Tonei,t +β 2∆Noisei,t
++γ 1∆log(VIX)t +γ 2∆CDSi,t +γ 3∆log(FX) i,t +λ i +ε i,t (3.6)
+∆Noisei,t is the daily standard deviation of V2Tone scores. M3 tests H2: does contradictory
+coverage compress the greenium? A negativeβ 2 means noisier coverage is associated with a
+smaller green premium.
+M4 — Tone-noise interaction (exploratory):
+∆Gi,t =α+β 1∆Tonei,t +β 2∆Noisei,t +β 3[∆Tonei,t ×∆Noise i,t]
++γ 1∆log(VIX)t +γ 2∆CDSi,t +γ 3∆log(FX) i,t +λ i +ε i,t (3.7)
+β3 tests whether the tone-greenium association is stronger when coverage is coherent. M4 is
+exploratory and not tied to a pre-registered hypothesis.
+M5 — Main DiD specification (tests H3, preferred specification):
+∆Gi,t =α+β·Post i,t +β 1∆Tonei,t +γ 1∆log(VIX)t
++γ 2∆CDSi,t +γ 3∆log(FX) i,t +λ i +µ t +ε i,t (3.8)
+Posti,t =1 from the treatment date onward for countryi(November 2022 for Indonesia, October
+14
+2023 for India).µ t are monthly time fixed effects.∆Tone is a control in M5 only—H1 is tested
+in M1/M2. It is not interacted with Post because H1 does not claim the relationship changes
+post-treatment.βis the H3 parameter of interest: the Average Treatment Effect on the Treated
+(ATT).
+M5 is equivalent to the textbook DiD formulaY=β 0 +β 1(Time) +β2(Group) +β3(Time×
+Group) +ε: Post i,t is the Time×Group interaction, pair fixed effectsλ i replace the Group
+dummy, and monthly time fixed effectsµ t replace the Time dummy. The design is more robust
+because it handles persistent financial data and global macro shocks through first-differencing
+and time fixed effects rather than simple pre/post dummies.
+Table 3.1 summarises the complete model sequence.
+Table 3.1: Model Sequence Summary
+Model Hypothesis Key addition Variables included
+M1 H1 (baseline)∆Tone∆Tone +λ i
+M2 H1 (controlled) Macro controls∆Tone +∆logVIX +∆CDS +
+∆logFX +λ i
+M3 H2∆Noise M2 +∆Noise +λ i
+M4 Exploratory Tone×Noise M3 +[∆Tone×∆Noise]+λ i
+M5 H3 (main DiD) Post + monthly FE Post +∆Tone [ctrl] +
+∆logVIX +∆CDS +∆logFX
++λ i +µ t
+M5-India / M5-Indo H3 (country) Per country Same as M5 within each
+country
+Notes:All regressors first-differenced and standardised.λ i = pair FE;µ t = monthly time FE. HC3 SE throughout.
+[ctrl] = included as control variable only, not tested.
+3.4.3 The Stacked DiD
+The pooled M5 specification uses Indonesia—already treated in November 2022—as a de-facto
+control for India in the post-October 2023 window. This is the contamination bias documented
+by Baker et al. (2022): already-treated units bias the treatment effect when used as controls for
+later-treated units.
+The stacked DiD addresses this cleanly. Following Baker et al. (2022), two event-specific
+sub-datasets are constructed, each covering a window of±180 calendar days around the re-
+spective treatment date. Each sub-dataset—called a stack—uses only not-yet-treated units as
+controls.
+Stack A: the valid DiD.The window is May 2022 to May 2023, centred on Indonesia’s
+treatment in November 2022. Indonesia is the treated unit. India has not yet received its
+treatment event (that occurs in October 2023, well outside this window), so India is a clean,
+not-yet-treated control. Stack A is a valid DiD in the Callaway and Sant’Anna (2021) sense:
+15
+the parallel trends assumption can be assessed, the control group is uncontaminated, and the
+Stack A ATT is a credible causal estimate for Indonesia.
+Stack B: an acknowledged limitation.By October 2023, Indonesia has been treated for
+eleven months and cannot serve as a clean control. Stack B contains India alone and is a pre-
+post comparison, not a DiD. It is reported for transparency only.
+Within each stack, first-differencing is re-applied within stack×pair groups, ensuring that
+differences are never computed across the window boundary. The estimating equation for Stack
+A is:
+∆Greeniumi,t,s =α s +β s ·PostStack i,t,s +γ ′
+s ·∆X i,t
++λ i,s +µ t,s +ε i,t,s (3.9)
+wheresindexes stacks,λ i,s are pair-by-stack fixed effects, andµ t,s are month-by-stack fixed
+effects.
+The pair-by-stack and month-by-stack fixed effects ensure that confounders are absorbed
+within each event window separately, preventing global macro trends from being attributed to
+the treatment across stacks that span different calendar periods.
+3.5 Parallel Trends Validation
+The event study pre-tests the parallel trends assumption underlying Stack A: it checks whether
+India’s greenium was already trending before Indonesia’s treatment in November 2022. If pre-
+treatment coefficients are flat and jointly zero, the identifying assumption is supported. Event
+time is measured in trading days relative to the treatment date and binned into five-day weekly
+intervals. A dummy is constructed for each event week from−10 to+10, with week−1
+omitted as the reference:
+EventWeeki,t =
+EventTimei,t
+5
+
+∆Greeniumi,t =α+ ∑
+k̸=−1
+βkDk(i,t) +εi,t (3.10)
+whereD k(i,t) =1 when observation(i,t)falls in event weekk. Pre-event coefficients (k<−1)
+are the parallel trends test (Roth, 2022). If they are jointly zero, the design is credible.
+India:F(9,84) =1.006,p=0.44—strong support across 120 trading days of genuine pre-
+treatment data. Pre-event coefficients lie within±0.011 percentage points of zero throughout.
+Indonesia:F(7,75) =0.740,p=0.64—the test passes formally but the 55-day window limits
+power. The Indonesia result is treated as supportive but not conclusive. Results are discussed
+in Chapter 4 alongside the regression output.
+16
+3.6 Robustness Checks
+3.6.1 Standard Error Robustness
+Three SE specifications are compared: HC3 (baseline) (MacKinnon and White, 1985), PCSE
+(Beck and Katz, 1995) via linearmodels with Bartlett kernel HAC, and pair-level clustering.
+With onlyN=2 pairs, clustered SEs are severely downward-biased—well below the 20 to 30
+clusters asymptotic validity requires (Cameron and Miller, 2015)—and are reported as sensi-
+tivity checks only.
+Consistency of the null H3 finding across all three SE specifications is the robustness crite-
+rion.
+3.6.2 Placebo Tests
+The placebo test shifts both treatment dates simultaneously by−3,+3, and+6 months. All
+placebo Post coefficients should be insignificant if the null is genuine. Placebo dates are re-
+stricted to windows where both countries have observed greenium data.
+3.6.3 European Extension
+Germany and Denmark are included as a methodological check: does the pipeline detect a
+greenium when one is known to exist? Their exact twin-bond design—identical coupon and
+maturity—means any yield spread is attributable solely to the green label. Because neither
+green bond existed before inaugural issuance, parallel trends cannot be assessed; the European
+results serve as a benchmark, not a primary estimate. Details in Chapter 5.
+3.6.4 Granger Causality
+Granger (1969) causality tests examine whether daily tone changes predict future greenium
+changes (results in Appendix I; supplementary only).
+17
+Chapter 4
+Results: Asia (India and Indonesia)
+The central question of this thesis is whether bond markets price political credibility signals
+in sovereign green bond greeniums. The answer, for India and Indonesia, is No—not under
+any specification tested. But a null result is not an empty result. The data tell a coherent story:
+Asian sovereign green bond markets are priced by global risk appetite, not by domestic political
+commitment. This chapter works through that story from the raw descriptive patterns through
+the main regressions, the stacked DiD, and the robustness checks.
+4.1 What the Data Look Like Before Any Regression
+Before fitting a single model, it is worth noting two key numbers. Two numbers stand out
+immediately. India’s mean greenium over the sample period is+0.50 basis points—positive,
+meaning Indian investors did not, on average, accept a yield concession to hold the green-
+labelled bond. Indonesia’s mean is−6.91 basis points—a genuine persistent negative gree-
+nium, but one that comes with a standard deviation of 4.12 basis points. Seven basis points of
+average compression, with daily swings of four basis points in either direction. That is not a
+stable pricing signal. It is a noisy series dominated by something other than the green label.
+The greenium correlates at−0.249 with log(VIX)and−0.474 with log(FX rate). Global
+macro conditions, not the green label, are driving daily variation—consistent with a thin market
+where risk appetite determines whether investors hold the green instrument at all.
+Figure B.1 in Appendix B shows the 30-day moving average greenium for both pairs over
+the full sample. The Indonesia series has a visible downward drift through mid-2023, a partial
+recovery, and then renewed compression into 2024. The India series oscillates around a slightly
+positive level throughout, with no discernible structural break at the October 2023 treatment
+date. Neither series shows the sharp, persistent level shift that a credibility signal would produce
+in a liquid, informationally efficient market.
+18
+4.2 Parallel Trends: The Identification Holds for India
+Before reading the regression coefficients, the identification assumption must be assessed. Ta-
+ble A6 and Figures F.1 and F.2 in Appendix F present the event study evidence.
+For India, the parallel trends test is clean. The joint F-test on the nine pre-event week
+dummies yieldsF(9,84) =1.006,p=0.44. Every pre-event coefficient lies within±0.011
+percentage points of zero. There is no detectable pre-trend in the 120 trading days before the
+second auction. The India DiD identification stands.
+For Indonesia, the picture is more complicated. The joint F-test yieldsF(7,75) =0.740,
+p=0.64—a passing result, but one that must be qualified. The pre-treatment window runs to
+approximately 55 trading days, covering the period from the conventional twin’s September
+2022 launch to the November 2022 JETP announcement. The pre-event coefficients show
+a downward drift from−0.029 to−0.064 percentage points that the F-test cannot statistically
+distinguish from zero, but that looks economically meaningful. The identification for Indonesia
+is weaker than for India, and the results should be read with that caveat in mind.
+4.3 Main Regression Results
+Table 4.1 presents the full regression sequence. M1 includes sentiment only, testing H1 at base-
+line. M2 adds macro controls. M3 adds signalling noise, testing H2. M4 adds the interaction
+of sentiment and noise. M5 is the main DiD specification. M5-India and M5-Indonesia are
+country-specific DiD models that relax the homogeneity restriction imposed by M5.
+Sentiment: null at daily frequency.M1 and M2 test whether daily changes in climate-
+news tone predict daily changes in the greenium. Across both specifications and across both
+countries, the coefficient on∆V2Tone is approximately 0.0002 percentage points per stan-
+dard deviation—never significant at any conventional level. The information channel is not
+detectable in either Asian market at daily frequency.
+Signalling noise: null.The coefficient on∆Signalling Noise in M3 is+0.0011 (SE =
+0.0016,p=0.516). The sign is counter-intuitive relative to the hypothesis—higher noise is
+associated with a slightly wider, not narrower, greenium—but the estimate is so imprecise
+that no directional conclusion can be drawn. Under pair-level clustered standard errors, the
+coefficient reaches marginal significance (p=0.045), but withN=2 clusters this cannot be
+taken at face value. The signal clarity channel does not operate detectably in either Asian
+market.
+VIX: the dominant driver.The coefficient on∆log(VIX)is−0.0035 to−0.0036 percent-
+age points per standard deviation across M2 through M5, significant at the five percent level
+throughout. In the country-specific models it is−0.0019 for India (p<0.05) and−0.0048
+for Indonesia (p<0.1). Under the thesis’s unit convention—greenium measured in percentage
+points—these estimates correspond to 0.35 to 0.48 basis points of greenium compression per
+19
+Table 4.1: Main Regression Results — Asia Panel
+M1 M2 M3 M4 M5 M5-India M5-Indonesia
+Panel A: Coefficient estimates
+∆Sentiment 0.0002 0.0002 0.0002 0.0002 0.0002 0.0003 0.0001
+(0.0002) (0.0002) (0.0002) (0.0002) (0.0002) (0.0002) (0.0003)
+∆Signalling Noise 0.0011 0.0011
+(0.0016) (0.0016)
+∆logVIX−0.0035 ∗∗ −0.0035∗∗ −0.0035∗∗ −0.0036∗∗ −0.0019−0.0048 ∗
+(0.0015) (0.0015) (0.0015) (0.0016) (0.0018) (0.0027)
+∆CDS Spread−0.0001−0.0001−0.0001−0.0001−0.0002−0.0003
+(0.0003) (0.0003) (0.0003) (0.0003) (0.0004) (0.0006)
+∆logFX Rate−0.0001−0.0001−0.0001−0.0001−0.0004−0.0001
+(0.0003) (0.0003) (0.0003) (0.0003) (0.0006) (0.0004)
+Post Treatment (ATT)−0.0032−0.0149−0.0311
+(0.0060) (0.0584) (0.0331)
+Panel B: Model fit
+N(obs) 1,097 1,097 1,097 1,097 1,097 502 595
+R2 0.0002 0.0183 0.0185 0.0186 0.0212 0.0252 0.0371
+Pair FE Yes Yes Yes Yes Yes Absorbed Absorbed
+Monthly FE No No No No Yes Yes Yes
+SE type HC3 HC3 HC3 HC3 HC3 HC3 HC3
+Notes:Dependent variable is∆Greenium i,t, the daily first-difference of the greenium in percentage points. All
+regressors first-differenced and standardised to zero mean and unit standard deviation. HC3 heteroskedasticity-
+robust SE in parentheses. ∗ p<0.1, ∗∗ p<0.05, ∗∗∗ p<0.01.
+standard-deviation increase in the daily change of log(VIX). Equivalently, a 10 percent single-
+day rise in VIX is associated with a 0.35 to 0.48 basis point compression of the greenium, all
+else equal. This result is robust across HC3, PCSE, and clustered standard errors. VIX is the
+dominant pricing factor in both Asian green bond markets. If climate-news tone does not move
+the greenium and signalling noise does not move the greenium, perhaps a hard institutional
+commitment can. That is the question M5 answers.
+Post Treatment (H3): null.The M5 pooled coefficient on Post is−0.0032 percentage
+points, with a standard error of 0.0060 and ap-value of 0.593. The country-specific estimates
+are−0.0132 for India (p=0.824) and−0.0311 for Indonesia (p=0.349). These coeffi-
+cients are statistically indistinguishable from zero. This does not prove the true effect is exactly
+zero—it means the study cannot detect a post-event shift of this magnitude in these data. India’s
+second sovereign green bond auction and Indonesia’s JETP announcement are both associated
+with post-event coefficients that are not statistically distinguishable from zero at any conven-
+tional significance level.
+20
+4.4 Stacked DiD: Confirming the Null with Cleaner Identifi-
+cation
+Table 4.2 reports the stacked DiD results. Stack A—the valid DiD, with Indonesia as the treated
+unit and India as the clean, not-yet-treated control in a 360-day window around November
+2022—yields a Post coefficient of−0.0284 percentage points with a standard error of 0.0337
+(p=0.400). Stack B contains India alone and is a pre-post comparison (p=0.741); it is
+reported for transparency, not for causal inference.
+Table 4.2: Stacked DiD Results — Asia
+Stack A Stack B
+(Indonesia DiD) (India pre-post)
+Post Treatment (ATT)−0.0284−0.0192
+(0.0337) (0.0582)
+∆logVIX+0.0002−0.0041 ∗
+(0.0004) (0.0022)
+∆Sentiment−0.0007+0.0002
+(0.0004) (0.0006)
+∆CDS Spread−0.0004 ∗ +0.0006
+(0.0002) (0.0009)
+N(obs) 127 257
+R2 0.0922 0.0315
+Pair×Stack FE Yes Yes
+Month×Stack FE Yes Yes
+Valid DiD?Yes No — see text
+Notes:Stack A: Indonesia treated, India is the clean (not-yet-treated) control. Stack B: India only; no valid control
+group available.∆FX omitted from Stack A due to insufficient variation. HC3 SE in parentheses. ∗ p<0.1, ∗∗
+p<0.05, ∗∗∗ p<0.01.
+The Stack A result is the most credibly identified estimate in the primary sample. It does
+not detect a statistically distinguishable post-event shift. The JETP announcement—USD 20
+billion, G20 stage, international backing—is not associated with a detectable change in Indone-
+sia’s greenium relative to India’s over the six months surrounding the event.
+4.5 Robustness
+Standard errors.Table 4.3 compares HC3, PCSE, and pair-clustered standard errors for the
+key specifications. The VIX coefficient is significant at the five percent level under all three.
+The Post coefficient is insignificant under HC3 and PCSE—the two credible specifications—
+and spuriously significant under pair-level clustering (p=0.004, marked with three stars). This
+is exactly the downward bias that Cameron and Miller (2015) warn about withN=2 clusters.
+21
+Table 4.3: Standard Error Robustness — Asia
+M3 (Asia pooled) M5 (Asia pooled)
+Variable HC3 PCSE HC3 PCSE Clustered
+∆Sentiment 0.0002 0.0002 0.0002 0.0002 0.0002
+(0.0002) (0.0002) (0.0002) (0.0002) (0.0002)
+∆logVIX−0.0035 ∗∗ −0.0035∗∗ −0.0036∗∗ −0.0036∗∗ −0.0036∗∗
+(0.0015) (0.0015) (0.0016) (0.0016) (0.0015)
+∆CDS Spread−0.0001−0.0001−0.0001−0.0001−0.0001
+(0.0003) (0.0003) (0.0003) (0.0003) (0.0003)
+Post Treatment−0.0032−0.0032−0.0032 ∗∗∗
+(0.0060) (0.0060) (0.0009)
+Notes:HC3 = MacKinnon–White (1985). PCSE = Panel-Corrected SE via linearmodels with Bartlett kernel
+HAC (Beck and Katz, 1995). Clustered = pair-level (N=2—interpret with caution). ∗ p<0.1, ∗∗ p<0.05, ∗∗∗
+p<0.01.
+Placebo tests.The placebo Post coefficients across the three shifted treatment dates are:−3
+months (p=0.719),+3 months (p=0.622), and+6 months (p=0.589). The real treatment
+coefficient hasp=0.593. The preferred specification produces estimates that are not statisti-
+cally distinguishable from zero at every treatment date tested—real or fake—and the placebo
+pattern is indistinguishable from the real one. This consistency across real and placebo dates is
+evidence that the result is not a model artefact.
+4.6 Economic Interpretation: What the Null Means
+A null result carries information. The null H3 finding for India and Indonesia does not mean
+nothing happened after these treatment events. It means bond markets did not price what hap-
+pened. That distinction is important for both economics and policy.
+Asian sovereign green bond markets in 2022 to 2024 appear to be thin, globally integrated,
+and macro-dominated. The institutional investor base is small and secondary market liquidity
+is limited, based on available evidence. In this environment, the daily greenium is driven by
+the global risk cycle—captured by VIX—not by domestic political developments. When VIX
+rises, investors exit the less liquid green leg first and the greenium compresses. This is a story
+about risk appetite and market depth, not about the green label.
+The treatment events are credible political signals by any reasonable standard. But credi-
+bility signals require a receiver—investors who monitor these events and trade on them. The
+evidence suggests that investor base in both Asian markets was not doing this at daily frequency.
+This is a substantive null finding for the green finance literature. It is consistent with the
+interpretation that the credibility premium—the yield concession investors accept for a credible
+green commitment—may require a minimum level of market development before it manifests
+22
+in observable prices. Whether India and Indonesia had reached that threshold, or whether
+the null reflects other factors such as measurement limitations or insufficient statistical power,
+cannot be determined from this design alone.
+23
+Chapter 5
+Robustness: European Extension
+(Germany and Denmark)
+If the methodology is broken, Chapter 4 proves nothing. If the twin-bond pipeline, the first-
+differencing procedure, and the DiD specification are all producing noise, the null H3 finding
+in Asia could be an artifact. Chapter 5 tests this. Germany and Denmark are markets where the
+literature consistently finds sovereign greeniums of two to four basis points (Ando et al., 2023).
+If the methodology finds nothing here, the Asian null is uninformative—it equally reflects a
+broken instrument. If it recovers the expected European patterns, the Asian null is credible.
+5.1 The European Greenium Exists and Is Stable
+The first thing to establish is that the European greenium is real. Germany’s mean greenium
+over the sample period is−1.82 basis points. Denmark’s is−2.80 basis points. Both are per-
+sistently negative throughout the sample. Figure G.1 in Appendix G shows the 30-day moving
+average greenium for both pairs: a stable series, fluctuating within a narrow band, with no ob-
+vious structural breaks or volatile episodes. This is what a mature sovereign green bond market
+looks like. The green label carries a consistent, modest pricing premium. Investors in both mar-
+kets are accepting a small but measurable yield concession to hold the green instrument. These
+numbers are consistent with Ando et al. (2023), confirming the pipeline detects the expected
+signal in mature markets.
+The contrast with Asia is already informative at the descriptive level. India’s mean gree-
+nium is+0.50 basis points—positive, not negative. Indonesia’s is−6.91 basis points, nearly
+three times the magnitude of Denmark’s, with a standard deviation of 4.12 basis points com-
+pared to Denmark’s 1.99 basis points. The Asian greenium is not just smaller or absent; it is
+fundamentally noisier. That noise reflects market immaturity: thin trading, a small institutional
+investor base, and price discovery driven by global macro conditions rather than by the green
+label itself.
+24
+5.2 The DiD Finds No Post-Issuance Shift — and That Is Ex-
+pected
+Table 5.1 reports the European regression results. Every Post coefficient is null:−0.0071
+(p=0.743) in the pooled specification,−0.0009 (p=0.252) for Germany alone,−0.0023 (p=
+0.925) for Denmark alone, and−0.0010 (p=0.216) in Stack A. Not one of these estimates
+comes close to conventional significance thresholds.
+Table 5.1: European Results — Descriptive and DiD
+M5 Pooled M5-Germany M5-Denmark Stack A
+Post Treatment (ATT)−0.0071−0.0009−0.0023−0.0010
+(0.0218) (0.0008) (0.0241) (0.0008)
+∆logVIX−0.0000+0.0002−0.0004+0.0002
+(0.0003) (0.0002) (0.0006) (0.0004)
+∆Sentiment+0.0002+0.0003 ∗ +0.0001−0.0007
+(0.0003) (0.0002) (0.0006) (0.0004)
+N(obs) 2,572 1,464 1,108 127
+R2 0.0020 0.0097 0.0032 0.0922
+Mean greenium (pp)−0.0224−0.0182−0.0280 —
+Notes:Dependent variable is∆Greenium i,t. All regressors first-differenced and standardised. HC3 SE in paren-
+theses. Mean greenium is the sample-period average in percentage points. M5 pooled uses both Germany and
+Denmark; country-specific models use pair and monthly time FE. Stack A uses Germany as treated and Denmark
+as control in a±180-day window around 2 September 2020. ∗ p<0.1, ∗∗ p<0.05, ∗∗∗ p<0.01.
+This null is not a failure. It is what the design predicts. The first-difference DiD tests for a
+structural break in the daily change in the greenium around the treatment event. The European
+greenium is a level feature—it is established at inaugural issuance and then stable. When the
+green Bund began trading on 2 September 2020, it immediately traded at a small discount
+to its conventional twin. That discount persisted. First-differencing removes this level. The
+DiD coefficientβestimates the change in the daily greenium change following the treatment
+event. If the greenium is stable—which it is—that coefficient will be zero. The methodology
+is working correctly.
+One marginal finding.The only coefficient that approaches significance in the European
+regressions is∆Sentiment in the Germany-only model:+0.0003 per standard deviation,p=
+0.077. This is the only H1-type signal in the entire thesis across all four countries. Its economic
+interpretation is modest: in Germany’s deep, liquid market, daily changes in climate media tone
+have a very small positive association with daily changes in the greenium—approximately 0.03
+basis points per standard deviation of daily sentiment change. This is consistent with H1 as
+a general proposition, but it is a single marginal result in a robustness sample. It warrants a
+footnote, not a headline.
+25
+5.3 Post-Issuance Dynamics: No Systematic Pattern
+The joint F-tests on post-event dummies confirm stability: GermanyF(20,84) =0.603,p=
+0.900; DenmarkF(20,87) =0.100,p=1.000. There is no structured dynamic in the gree-
+nium in the weeks after inaugural issuance. The greenium does not drift upward, does not drift
+downward, does not exhibit a reversal. It simply exists, at a level established on the first trad-
+ing day, and persists. Figures G.2–G.4 in Appendix G display the post-issuance event study
+coefficients.
+For Germany, the pre-event weeks in the event study chart show zeros—the green bond did
+not exist before 2 September 2020, so there are no pre-event observations. For Denmark, the
+same applies. The absence of pre-event data is the European identification constraint, discussed
+in Section??. The post-issuance dynamics confirm that this constraint is not hiding anything
+interesting: the greenium was stable after issuance, and the event study would have found
+nothing even with a pre-event window.
+5.4 What the European Results Establish
+Two things, and only two things.
+First: the methodology works.The twin-bond pipeline correctly identifies and measures
+persistent greeniums of 1.8 to 2.8 basis points in Germany and Denmark, consistent with what
+Ando et al. (2023) find using independent methods. The Asia null cannot be attributed to a
+broken pipeline.
+Second: the European null is economically different from the Asian null.In Europe,
+the null arises because the greenium is a stable equilibrium established at inaugural issuance.
+The DiD correctly finds no post-issuance dynamic shift because there was none. In Asia, the
+null arises because there is no stable greenium to detect—the greenium is volatile, macro-
+dominated, and structurally thin. These are two different nulls with two different economic
+explanations. The distinction matters for how the findings should be interpreted and what
+policy implications follow. Chapter 6 develops this interpretation in full.
+26
+Chapter 6
+Discussion and Comparative Analysis
+This chapter asks what those zeros mean taken together. The zeros in Europe and in Asia look
+identical in a regression table—coefficients near zero,p-values well above 0.05—but they arise
+from entirely different mechanisms and tell opposite stories about the state of sovereign green
+bond markets. Making that distinction, and drawing out what it implies for the green finance
+literature, is the central analytical contribution of this thesis.
+6.1 The Same Regression Output, Two Different Stories
+Table 6.1 places all four countries side by side on the dimensions that matter most.
+27
+Table 6.1: Four-Country Comparison
+Germany Denmark India Indonesia
+Mean greenium−1.82 bp−2.80 bp+0.50 bp−6.91 bp
+Greenium SD 1.98 bp 1.99 bp 2.34 bp 4.12 bp
+Post DiD significant? No No No No
+Dominant daily driver Structural level Structural level VIX VIX
+Parallel trends testable? No a Noa F(9,84) =1.01,p=
+0.44
+F(7,75) =0.74,p=
+0.64b
+Interpretation of null Stable level; no
+dynamic shift
+Stable level; no
+dynamic shift
+No stable greenium;
+macro-dominated
+No stable greenium;
+macro-dominated
+a Green bond did not pre-exist the treatment date; no pre-event greenium observations available.
+b Pre-treatment window of∼55 trading days limits statistical power; interpret with caution.
+Notes:Mean greenium and SD computed over the full sample period. Post DiD significance from M5 country-specific specification (HC3 SE). Parallel trends testability
+refers to availability of pre-treatment greenium data within the event study window.
+28
+Start with what is the same. The Post Treatment coefficient is statistically indistinguish-
+able from zero in every country and every specification. No government action tested in this
+thesis—not an inaugural issuance, not a second auction, not a USD 20 billion international
+climate finance pledge—produced a detectable structural shift in the daily greenium. That is a
+consistent finding across four sovereign pairs, two continents, and six years of data.
+Now look at what is different. Germany and Denmark have mean greeniums of−1.82
+and−2.80 basis points, with standard deviations of roughly 2 basis points. The green label is
+persistently and stably priced. India has a positive mean greenium—investors require a yield
+pick-up, on average, to hold the green bond. Indonesia has a large mean of−6.91 basis points
+but a standard deviation of 4.12 basis points: daily swings nearly as large as the mean itself.
+VIX is the dominant driver in both Asian markets. It is not significant in either European model.
+These are structurally distinct environments that happen to produce the same DiD output for
+entirely different reasons.
+The European null is the null of a stable equilibrium. The Asian null is the null of an absent
+signal. There is no stable greenium to break. Daily prices are overwhelmingly determined
+by global risk appetite—when VIX rises, investors rotate out of the less liquid green leg first,
+compressing or eliminating the greenium. A political commitment has no channel through
+which to shift an equilibrium that does not exist.
+6.2 Why the Information Channels Are Silent
+Before turning to the H3 null, it is worth accounting for the M1 and M2 results, which test the
+information and signal clarity channels. Sentiment is null in both Asian markets. Signalling
+noise is null. Neither the tone of climate media coverage nor the contradictoriness of that
+coverage predicts daily greenium changes in India or Indonesia. The answer is the same market
+structure argument that explains the H3 null, applied at finer temporal resolution.
+For climate-news tone to move the greenium, investors must observe, update, and trade
+within the same day. In a market where daily volume can be zero and the marginal buyer has no
+green mandate, this chain breaks. Signalling noise follows the same logic: monitoring cross-
+agency contradictions requires dedicated ESG institutions who actively trade on credibility
+assessments. Both channels are theoretically sound. One interpretation is that the market is not
+yet sufficiently structured to reveal them at daily frequency—though measurement limitations
+in the GDELT proxy cannot be ruled out as an alternative explanation.
+6.3 A Threshold Interpretation
+The pattern across all three channels—sentiment, noise, and institutional commitment—points
+to a single explanation. One interpretation consistent with the findings is that the credibility
+29
+premium in sovereign green bond markets may not be a smooth function of political credibility
+that rises continuously as governments say and do more credible things. The results are con-
+sistent with a threshold level of market development being required before credibility signals
+manifest in observable daily prices—though the design cannot directly test this mechanism or
+rule out alternatives such as differences in investor composition, political salience, or media
+coverage quality across markets.
+Below the threshold—if it exists—the investor base may be too thin and undifferentiated
+to transmit daily tone signals, monitor cross-agency coherence, or sustain a stable greenium
+against global risk shocks. Above the threshold—consistent with what is observed in Germany
+and Denmark—the greenium appears to be established at inaugural issuance by ESG-mandated
+institutional investors whose demand is structural, not tactical. The dominant daily driver in
+Europe is consistent with mandate rather than VIX.
+The two nulls therefore carry different meanings. In Asia, undetectable effects tell us about
+market structure, not signal quality—the signals may be genuine but the market cannot price
+them yet. In Europe, the null means the credibility question was resolved at programme launch;
+subsequent signals add nothing because the inaugural issuance already incorporated everything
+the market needed.
+6.4 What Moves the Greenium in Asia, and Why It Matters
+The one consistently significant finding in the Asian regressions is the VIX coefficient:−0.0035
+to−0.0048 percentage points per standard deviation, significant at the five percent level across
+every specification and robust across all three standard error assumptions. Asian sovereign
+green bond markets are globally integrated at the liquidity level but not at the credibility level.
+A one-standard-deviation increase in the daily change of log(VIX)is associated with a 0.35
+to 0.48 basis point compression of the greenium; domestic political commitments leave no de-
+tectable trace. The evidence is consistent with the marginal investor being risk-sensitive rather
+than mandate-driven—holding the green bond for yield in calm times and exiting when fear
+rises.
+The evidence suggests that ESG investors who would reprice in response to a second auc-
+tion or a JETP announcement are not yet present in sufficient numbers. The investor who does
+appear to be present responds to VIX rather than credibility signals, consistent with risk-driven
+rather than mandate-driven participation.
+6.5 Policy Implications
+The findings support two policy conclusions, each tied directly to a specific result.
+Conclusion 1: market depth must precede credibility signalling.The VIX dominance
+result implies that the marginal Asian green bond investor is risk-sensitive and not credibility-
+30
+responsive. Governments in India, Indonesia, and similarly positioned emerging markets can-
+not manufacture a credibility premium by signalling more loudly or more credibly: the market
+infrastructure needed to price credibility signals does not yet exist. The productive policy pri-
+ority is building the receiver—expanding the domestic institutional investor base through green
+bond purchase programmes, creating explicit ESG mandates for pension funds and insurance
+companies, supporting market-making to improve secondary market liquidity, and developing
+the price discovery mechanisms that allow dedicated green investors to form a stable demand
+base.
+Conclusion 2: inaugural issuance is the credibility event that matters in mature mar-
+kets.The European results show that the greenium is established at inaugural issuance and
+then stable. Subsequent political commitments, additional auctions, and ongoing programme
+communications do not shift it. This implies that the marginal return to credibility investment
+is highest at programme launch—when the market is forming its view of the programme for the
+first time—and falls sharply thereafter. Governments in more developed markets, or emerging
+market governments designing future programmes, should invest heavily in the pre-issuance
+institutional framework: the green bond framework document, the allocation reporting pro-
+cess, the independent verification mechanism. These determine the inaugural greenium. What
+comes after cannot easily move it.
+6.6 Limitations
+Four limitations qualify the findings and must be stated plainly alongside the results.
+Indonesia’s short pre-treatment window.The conventional twin bond began trading in
+September 2022, leaving approximately 55 trading days before the November 2022 JETP treat-
+ment. The formal parallel trends test passes atF(7,75) =0.740,p=0.64, but the pre-event
+coefficients show a downward drift that the test lacks the power to distinguish from zero. The
+null H3 finding for Indonesia should be read with this caveat.
+No pre-issuance greenium data for Germany and Denmark.Both European green bonds
+were issued for the first time at the treatment date. The parallel trends assumption cannot be
+empirically assessed. European identification rests entirely on the exact twin-bond design and
+the assumption that issuance dates were exogenous to prevailing market conditions.
+N=2clusters in all pooled specifications.The cluster-robust variance estimator is asymp-
+totically invalid with fewer than 20 to 30 clusters (Cameron and Miller, 2015). The spuri-
+ously significant Post coefficient under pair-level clustering—p=0.004 in Table 4.3, against
+p=0.593 under HC3—illustrates the severity of the downward bias withN=2. Future work
+on this question will require data from more sovereign green bond pairs before valid clustered
+inference is possible.
+GDELT V2Tone as a climate sentiment proxy.V2Tone measures the average linguistic
+tone of news articles mentioning climate-related themes for a given country-day. It is a climate-
+31
+news tone proxy, not a measure of investor sentiment, ESG fund positioning, or green bond-
+specific news flow. The absence of detectable H1 and H2 effects may reflect the limitations
+of this proxy as much as the absence of a true information-channel effect. A purpose-built in-
+vestor sentiment measure—institutional survey data, ESG fund flow indices, or climate-specific
+financial news sentiment scores targeted at fixed-income desks—would permit a more precise
+test.
+Finally, the market development threshold interpretation, while consistent with the Euro-
+pean comparison, is not directly identified in this design. The two-country Asian sample can-
+not distinguish the threshold explanation from alternative accounts—including differences in
+investor composition, political salience of green commitments, media coverage quality, or the
+possibility that the treatment events themselves were not sufficiently salient to generate a de-
+tectable price response. Distinguishing these mechanisms would require cross-sectional varia-
+tion in market depth across a larger sample of sovereign green bond issuers, which this thesis
+does not attempt. The threshold argument is therefore offered as a direction for future research
+rather than a directly tested causal claim.
+32
+Chapter 7
+Conclusion
+This thesis tested whether political credibility signals shift the sovereign green bond greenium
+in emerging market economies. Across all three hypotheses and all specifications, the post-
+event coefficients are not statistically distinguishable from zero at conventional significance
+levels. Daily climate-news tone does not predict greenium changes in India or Indonesia (H1).
+Signalling noise is not detectably associated with the greenium (H2). Neither India’s second
+sovereign green bond auction nor Indonesia’s USD 20 billion JETP commitment produced a
+statistically detectable structural shift in the greenium (H3). These results do not prove the true
+effects are exactly zero; they establish that, given this sample, frequency, and measurement, the
+study does not recover clear evidence of a repricing effect.
+The one consistently significant result is VIX. A one-standard-deviation increase in the
+daily change of log(VIX)is associated with a 0.35 to 0.48 basis point compression of the
+Asian greenium, significant at the five percent level across all specifications and robust to HC3,
+PCSE, and pair-level clustering. Global risk appetite—not domestic political commitment—is
+the dominant pricing force in both Asian sovereign green bond markets.
+The European robustness check confirms the methodology works. Germany’s mean gree-
+nium is−1.82 basis points and Denmark’s is−2.80 basis points, consistent with Ando et al.
+(2023). The European DiD also finds no post-issuance dynamic shift—but for a different rea-
+son: the greenium is a stable level established at inaugural issuance, and first-differencing
+removes it. The Asian null and the European null look the same in a regression table but arise
+from entirely different market structures.
+The central argument is a market development threshold. In Asian sovereign green bond
+markets, the dedicated ESG institutional investor base is limited, secondary market liquidity is
+thin, and prices are dominated by global risk conditions (Climate Bonds Initiative, 2024; Ehlers
+and Packer, 2017). Credibility signals cannot reach the greenium not because they are weak,
+but because the market infrastructure to price them does not yet exist. In Europe, the greenium
+is established at inaugural issuance by a deep, mandate-driven investor base and then stable.
+The VIX dominance result and the two distinct nulls together tell the same story: credibility
+can only be priced where investors are positioned to price it.
+33
+Three contributions follow. First, this thesis provides the first quasi-experimental evidence
+on whether political credibility events shift the sovereign green bond greenium in emerging
+markets, using a stacked DiD (Baker et al., 2022). Second, it integrates credible commitment
+and signalling theory from IPE (Spence, 1973; Tomz, 2007) with the green bond pricing lit-
+erature (Ando et al., 2024; Zerbib, 2019) and NLP measurement (Bolla et al., 2019). Third,
+it distinguishes two economically distinct nulls—the European stable-equilibrium null and the
+Asian absent-infrastructure null—with direct implications for how null results in emerging mar-
+ket green bond studies should be interpreted.
+Two policy conclusions follow directly from the results. The VIX dominance finding im-
+plies that market depth must precede credibility signalling: governments seeking a greenium
+should first build the receiver—domestic ESG investor mandates, market-making programmes,
+secondary market liquidity—before optimising the signal. The European evidence implies that
+the inaugural issuance is the credibility event that matters most once that infrastructure exists;
+subsequent political signals add little because the market has already priced the commitment at
+programme launch. Four limitations qualify these conclusions: Indonesia’s short 55-day pre-
+treatment window; the absence of pre-issuance greenium data for Europe;N=2 bond pairs
+making clustered inference unreliable; and GDELT V2Tone as a climate-news proxy rather
+than a direct investor sentiment measure. Future research should test whether the credibility
+premium emerges as Asian markets mature, and whether corporate green bonds in the same
+markets show a different pattern.
+34
+Bibliography
+Ando, S., Fu, C., Roch, F., and Wiriadinata, U. (2023). How large is the sovereign greenium?
+IMF Working Paper No. 2023/080.
+Ando, S., Fu, C., Roch, F., and Wiriadinata, U. (2024). How large is the sovereign greenium?
+Oxford Bulletin of Economics and Statistics, 86(3):512–540.
+Angrist, J. D. and Pischke, J.-S. (2009).Mostly Harmless Econometrics: An Empiricist’s
+Companion. Princeton University Press.
+Baker, A. C., Larcker, D. F., and Wang, C. C. W. (2022). How much should we trust staggered
+difference-in-differences estimates?Journal of Financial Economics, 144(2):370–395.
+Baker, M., Bergstresser, D., Serafeim, G., and Wurgler, J. (2018). Financing the response to
+climate change: The pricing and ownership of u.s. green bonds. Technical Report Working
+Paper No. 25194, National Bureau of Economic Research.
+Baker, M. and Wurgler, J. (2006). Investor sentiment and the cross-section of stock returns.
+The Journal of Finance, 61(4):1645–1680.
+Baker, M. and Wurgler, J. (2007). Investor sentiment in the stock market.Journal of Economic
+Perspectives, 21(2):129–152.
+Ballard-Rosa, C., Mosley, L., and Wellhausen, R. L. (2021). Contingent advantage? sovereign
+borrowing, democratic institutions, and global capital cycles.British Journal of Political
+Science, 51(1):353–373.
+Beck, N. and Katz, J. N. (1995). What to do (and not to do) with time-series cross-section data.
+American Political Science Review, 89(3):634–647.
+Berg, F., Margaretic, P., and Pouget, S. (2016). Sovereign bond spreads and extra-financial
+performance: An empirical analysis of emerging markets. Technical Report Working Paper
+No. 789, Central Bank of Chile.
+Bolla, L., Kohler, A., and Wittern, A. (2019). Big data financial sentiment analysis in the
+european bond markets.GDELT Project Research Note.
+35
+Callaway, B. and Sant’Anna, P. H. C. (2021). Difference-in-differences with multiple time
+periods.Journal of Econometrics, 225(2):200–230.
+Cameron, A. C. and Miller, D. L. (2015). A practitioner’s guide to cluster-robust inference.
+Journal of Human Resources, 50(2):317–372.
+Climate Bonds Initiative (2024). Sustainable debt: Global state of the market 2023. Technical
+report, Climate Bonds Initiative.
+Ehlers, T. and Packer, F. (2017). Green bond finance and certification.BIS Quarterly Review,
+pages 89–104.
+Febi, W., Sch¨afer, D., Stephan, A., and Sun, C. (2018). The impact of liquidity risk on the yield
+spread of green bonds.Finance Research Letters, 27:53–59.
+Federal Reserve Economic Data (FRED) (2024). CBOE V olatility Index (VIXCLS).
+Gao, Y . and Schmittmann, J. (2022). Green bond pricing and greenwashing under asymmetric
+information. Technical Report Working Paper No. 2022/180, International Monetary Fund.
+GDELT Project (2023). Global database of events, language, and tone (GDELT) global knowl-
+edge graph.
+Gianfrate, G. and Peri, M. (2019). The green advantage: Exploring the convenience of issuing
+green bonds.Journal of Cleaner Production, 219:127–135.
+Granger, C. W. J. (1969). Investigating causal relations by econometric models and cross-
+spectral methods.Econometrica, 37(3):424–438.
+Hachenberg, B. and Schiereck, D. (2018). Are green bonds priced differently from conventional
+bonds?Journal of Asset Management, 19(6):371–383.
+ICMA (2021). Green bond principles: V oluntary process guidelines for issuing green bonds
+(2021 edition). Technical report, International Capital Market Association.
+IEA (2022). Indonesia’s energy transition: JETP and the path to net zero. Technical report,
+International Energy Agency.
+IFC (2024). Emerging market green bonds: 2023 annual report. Technical report, International
+Finance Corporation.
+IMF (2024). Sovereign green bonds: A catalyst for sustainable debt market development.
+Technical Report Working Paper No. 2024/120, International Monetary Fund.
+Investing.com (2024). Historical CDS and FX data.
+36
+Kapraun, J., Latino, C., Scheins, C., and Schlag, C. (2021). (in)-credibly green: Which bonds
+trade at a green bond premium?SSRN Working Paper No. 3347337.
+Kydland, F. E. and Prescott, E. C. (1977). Rules rather than discretion: The inconsistency of
+optimal plans.Journal of Political Economy, 85(3):473–491.
+Larcker, D. F. and Watts, E. M. (2020). Where’s the greenium?Journal of Accounting and
+Economics, 69(2–3):101312.
+Leetaru, K. and Schrodt, P. A. (2013). GDELT: Global data on events, location, and tone,
+1979–2012. InInternational Studies Association Annual Conference, San Francisco.
+Longstaff, F. A., Pan, J., Pedersen, L. H., and Singleton, K. J. (2011). How sovereign is
+sovereign credit risk?American Economic Journal: Macroeconomics, 3(2):75–103.
+MacKinnon, J. G. and White, H. (1985). Some heteroskedasticity-consistent covariance matrix
+estimators with improved finite sample properties.Journal of Econometrics, 29(3):305–325.
+Mosley, L. (2003).Global Capital and National Governments. Cambridge University Press.
+North, D. C. and Weingast, B. R. (1989). Constitutions and commitment: The evolution of in-
+stitutions governing public choice in seventeenth-century england.The Journal of Economic
+History, 49(4):803–832.
+Omondi, A., Kibaru, F., and Muriithi, M. (2026). Sovereign green bonds: Risk-mitigating
+sustainability instruments in emerging markets.Energy Economics, 142:107891.
+Pham, L. (2021). COVID-19 lockdowns and green bond markets.International Review of
+Financial Analysis, 76:101851.
+Pi˜neiro-Chousa, J., Lopez-Cabarcos, M. A., Caby, J., and ˇSevi´c, A. (2021). The influence of
+investor sentiment on the green bond market.Technological Forecasting and Social Change,
+162:120351.
+Refinitiv Eikon (2024). Bond yield data: India, indonesia, germany, denmark. London Stock
+Exchange Group.
+Reserve Bank of India (2023). Sovereign green bonds framework and issuance circular.
+Roth, J. (2022). Pretest with caution: Event-study estimates after testing for parallel trends.
+American Economic Review: Insights, 4(3):305–322.
+Spence, A. M. (1973). Job market signaling.The Quarterly Journal of Economics, 87(3):355–
+374.
+37
+Tetlock, P. C. (2007). Giving content to investor sentiment: The role of media in the stock
+market.The Journal of Finance, 62(3):1139–1168.
+Tetlock, P. C., Saar-Tsechansky, M., and Macskassy, S. (2008). More than words: Quantifying
+language to measure firms’ fundamentals.The Journal of Finance, 63(3):1437–1467.
+Tomz, M. (2007).Reputation and International Cooperation: Sovereign Debt Across Three
+Centuries. Princeton University Press.
+Wang, J., Chen, X., Li, X., Yu, J., and Zhong, R. (2020). The market reaction to green bond
+issuance: Evidence from china.Pacific-Basin Finance Journal, 60:101294.
+World Bank (2023). Sovereign green bond issuance guide for emerging market and developing
+economies. Technical report, World Bank Group.
+Zerbib, O. D. (2019). The effect of pro-environmental preferences on bond prices: Evidence
+from green bonds.Journal of Banking and Finance, 98:39–60.
+38
+Appendix A
+Bond Pair ISINs and Data Sources
+Table A.1 lists all four bond pairs used in the thesis, including ISINs, coupon rates, maturity
+dates, treatment dates, and the role each pair plays in the analysis. All bond yield data are
+sourced from Refinitiv Eikon via CEU institutional access. Treatment dates are defined as the
+date of the treatment event for each country: the second sovereign green bond auction for India
+(27 October 2023) and the JETP G20 Bali announcement for Indonesia (15 November 2022).
+For Germany and Denmark, the treatment date is the inaugural green bond issuance date.
+Table A.1: Bond Pair ISINs and Data Sources
+Country Green ISIN Conv. ISIN Coupon Maturity Treatment Date Role
+India IN0020220144 IN0020190362 7.26% 22 Jan 2033 27 Oct 2023 Primary
+Indonesia US71567RA V87 US455780DN36 4.45% 20 Apr 2032 15 Nov 2022 Primary
+Germany DE0001030708 DE0001102507 0% 15 Aug 2030 2 Sep 2020 Robustness
+Denmark DK0009924375 DK0009924102 0% 15 Nov 2031 21 Jan 2022 Robustness
+Notes:All yield data from Refinitiv Eikon (Refinitiv Eikon, 2024) via CEU institutional access. Mid-YTM =
+(BidYld + AskYld) / 2. VIX from FRED (Federal Reserve Economic Data (FRED), 2024). CDS spreads from
+Investing.com (Investing.com, 2024). FX rates from Refinitiv Eikon (Refinitiv Eikon, 2024). Climate sentiment
+from GDELT Project (GDELT Project, 2023). Germany and Denmark included as robustness check only.
+39
+Appendix B
+Descriptive Statistics
+Table B.1 presents descriptive statistics for the greenium and all control variables for the pri-
+mary Asian sample, separately for India (Panel A) and Indonesia (Panel B). All statistics are
+computed over the sample period ending 31 December 2024, restricted to trading days where
+both legs of each bond pair have valid bid and ask quotes.
+Table B.1: Descriptive Statistics — Asia Panel
+Variable N Mean SD Min P25 Median Max
+Panel A: India (27 Jan 2023 – 31 Dec 2024)
+Greenium (pp) 502+0.0050 0.0234−0.0389−0.0089+0.0043+0.1201
+GDELT V2Tone 502−0.082 0.065−0.312−0.128−0.080+0.198
+VIX 502 17.84 4.21 12.07 14.45 16.91 38.57
+CDS 5Y (bp) 502 83.4 14.2 62.1 72.8 81.3 134.5
+INR/USD 502 83.2 1.48 81.1 82.4 83.4 86.7
+Panel B: Indonesia (6 Jun 2022 – 31 Dec 2024)
+Greenium (pp) 595−0.0691 0.0412−0.2184−0.0891−0.0624+0.0381
+GDELT V2Tone 595−0.094 0.078−0.368−0.143−0.091+0.229
+VIX 595 18.91 5.62 11.86 14.91 17.43 52.33
+CDS 5Y (bp) 595 91.2 18.7 57.4 76.1 88.3 152.1
+IDR/USD 595 15,284 412 14,274 15,001 15,244 16,411
+Notes:Greenium in percentage points (pp). CDS is the 5-year credit default swap spread in basis points. VIX is
+the CBOE V olatility Index (daily close). Exchange rates are units of local currency per US dollar.
+40
+Figure B.1: Greenium by twin pair — 10Y sovereign bonds, India and Indonesia (30-day
+moving average). Vertical dashed lines mark the JETP G20 (15 Nov 2022) and India 2nd
+auction (27 Oct 2023) treatment dates. Source: Refinitiv Eikon; author’s calculations.
+Figure B.2: Daily GDELT V2Tone climate sentiment — India and Indonesia, 2020–2024. The
+30-day moving average (bold line) is flat throughout with no structural break at either treatment
+date, consistent with the H1 null result. Treatment dates marked by vertical dashed lines.
+41
+Appendix C
+Full Regression Tables
+Table C.1 presents the complete regression results for the primary Asian sample across all
+specifications.
+Table C.1: Full Regression Results — Asia Panel
+M1 M2 M3 M3-India M3-Indonesia Stack A
+Panel A: Key coefficients
+Post Treatment (ATT)−0.0032−0.0149−0.0311−0.0284
+(0.0060) (0.0584) (0.0331) (0.0337)
+∆logVIX−0.0035 ∗∗ −0.0036∗∗ −0.0019−0.0048 ∗ +0.0002
+(0.0015) (0.0016) (0.0018) (0.0027) (0.0004)
+∆Sentiment 0.0002 0.0002 0.0002 0.0003 0.0001−0.0007
+(0.0002) (0.0002) (0.0002) (0.0002) (0.0003) (0.0004)
+∆CDS Spread−0.0001−0.0001−0.0002−0.0003−0.0004 ∗
+(0.0003) (0.0003) (0.0004) (0.0006) (0.0002)
+∆logFX Rate−0.0001−0.0001−0.0004−0.0001 —
+(0.0003) (0.0003) (0.0006) (0.0004)
+Panel B: Model fit
+N(obs) 1,097 1,097 1,097 502 595 127
+R2 0.0002 0.0183 0.0212 0.0252 0.0371 0.0922
+Pair FE Yes Yes Yes Absorbed Absorbed Yes
+Monthly FE No No Yes Yes Yes Yes
+SE type HC3 HC3 HC3 HC3 HC3 HC3
+Notes:Dependent variable is∆Greenium i,t in percentage points.∆FX omitted from Stack A. ∗ p<0.1, ∗∗
+p<0.05, ∗∗∗ p<0.01. HC3 SE in parentheses.
+42
+Appendix D
+Standard Error Robustness
+Table D.1 compares three standard error specifications.
+Table D.1: Standard Error Robustness — Asia
+M3 (pooled) M5 (DiD, pooled)
+VariableHC3 PCSE HC3 PCSE Clustered (N=2)
+∆Sentiment 0.0002 0.0002 0.0002 0.0002 0.0002
+(0.0002) (0.0002) (0.0002) (0.0002) (0.0002)
+∆logVIX−0.0035 ∗∗ −0.0035∗∗ −0.0036∗∗ −0.0036∗∗ −0.0036∗∗
+(0.0015) (0.0015) (0.0016) (0.0016) (0.0015)
+Post Treatment−0.0032−0.0032−0.0032 ∗∗∗
+(0.0060) (0.0060) (0.0009)
+Notes:HC3 = MacKinnon–White (1985). PCSE = Panel-Corrected SE via linearmodels with Bartlett kernel HAC.
+Clustered = pair-level (N=2—severely downward biased; see text). ∗ p<0.1, ∗∗ p<0.05, ∗∗∗ p<0.01.
+43
+Appendix E
+Placebo Tests
+Table E.1 presents the placebo test results. All placebo Post coefficients are small and statisti-
+cally insignificant, withp-values between 0.589 and 0.719.
+Table E.1: Placebo Tests — Asia (M5 Pooled Specification)
+Specification Post ˆβSEp-valueN
+Placebo:−3 months−0.0009 (0.0012) 0.719 1,097
+Placebo:+3 months−0.0014 (0.0021) 0.622 1,097
+Placebo:+6 months−0.0010 (0.0019) 0.589 1,097
+Real treatment dates−0.0032 (0.0060) 0.593 1,097
+Notes:Each row re-estimates M5 with shifted treatment dates applied simultaneously to India and Indonesia. All
+other controls, FE, and SE assumptions identical to M5. HC3 SE in parentheses.
+44
+Appendix F
+Parallel Trends Formal F-Tests
+Table F.1 reports the joint Wald F-tests on all pre-event week dummies for the primary Asian
+sample, following Roth (2022).
+Table F.1: Parallel Trends Joint F-Tests — Asia
+Country Pre-event weeks F-statistic dfp-value Result
+India 9 1.006 (9, 84) 0.440 Pass
+Indonesia 7 0.740 (7, 75) 0.638 Pass ∗
+H0: all pre-event week dummies jointly equal to zero. Test follows Roth (2022).∗ Indonesia pre-treatment window
+is∼55 trading days; limited power.
+Figure F.1: Event study — India (treatment: 2nd green bond auction, 27 Oct 2023). Pre-
+event window: Jan–Oct 2023 (∼120 trading days). Pre-event coefficients are jointly flat —
+F(9,84) =1.006,p=0.44 — validating the DiD identification. No post-event shift detected
+(H3 null).
+45
+Figure F.2: Event study — Indonesia (treatment: JETP G20 Bali, 15 Nov 2022). Pre-event
+window limited to∼55 trading days from bond start. Weeks−10 and−9 are structural zeros
+(bond did not yet exist). Formal parallel trends test passes —F(7,75) =0.740,p=0.64 —
+but with limited statistical power.
+46
+Appendix G
+European Robustness Results
+Table G.1 presents the European DiD regression results. All Post Treatment coefficients are
+statistically indistinguishable from zero.
+Table G.1: European Robustness Regression Results
+M5 Pooled M5-Germany M5-Denmark Stack A
+Post Treatment (ATT)−0.0071−0.0009−0.0023−0.0010
+(0.0218) (0.0008) (0.0241) (0.0008)
+∆logVIX−0.0000+0.0002−0.0004+0.0002
+(0.0003) (0.0002) (0.0006) (0.0004)
+N(obs) 2,572 1,464 1,108 127
+R2 0.0020 0.0097 0.0032 0.0922
+Mean greenium (pp)−0.0224−0.0182−0.0280 —
+Notes:HC3 SE in parentheses. Stack A uses Germany as treated and Denmark as control (±180 days around 2
+Sep 2020). ∗ p<0.1, ∗∗ p<0.05, ∗∗∗ p<0.01.
+Table G.2 reports joint F-tests on post-event dummies for the European event study.
+Table G.2: Post-Issuance Joint F-Tests — Europe
+Country Post-event weeks F-statistic dfp-value Result
+Germany 20 0.603 (20, 84) 0.900 Null
+Denmark 20 0.100 (20, 87) 1.000 Null
+H0: all post-event week dummies jointly equal to zero. A null result confirms the greenium is stable after inaugural
+issuance.
+47
+Figure G.1: European sovereign green bond greenium (30-day moving average) — Germany
+and Denmark. Both series show persistently negative, stable greeniums throughout the full
+sample. Vertical dashed lines mark inaugural issuance dates (Germany: 2 Sep 2020; Denmark:
+21 Jan 2022). Source: Refinitiv Eikon; author’s calculations.
+Figure G.2: Post-issuance greenium dynamics — Germany and Denmark (event study, side-
+by-side). Both countries show minor fluctuations around zero with no systematic post-issuance
+trend, consistent with a stable equilibrium greenium established at inaugural issuance.
+48
+Figure G.3: Germany — post-issuance price discovery (inaugural Green Bund, 2 Sep 2020,
+20-week window). Pre-issuance region (grey) does not test parallel trends. Post-issuance coef-
+ficients are jointly non-significant —F(20,84) =0.603,p=0.900.
+Figure G.4: Denmark — post-issuance greenium dynamics (inaugural sovereign green bond,
+21 Jan 2022, 20-week window). Pre-issuance region is thin. Post-issuance coefficients are
+jointly non-significant —F(20,87) =0.100,p=1.000.
+49
+Appendix H
+Stacked DiD Verification
+Stack A verification:
+• Window: 18 May 2022 to 15 May 2023 (±180 days around 15 Nov 2022)
+• Countries: Indonesia (treated), India (clean control)
+• Indonesia Post=1 from 15 Nov 2022: confirmed
+• India Post=0 throughout: confirmed (not yet treated)
+• Total observations: 127|Valid DiD:Yes
+Stack B verification:
+• Window:≈ ±180 days around 27 October 2023
+• Countries: India only (Indonesia already treated — excluded)
+• Total observations: 257|Valid DiD:No — pre-post only
+50
+Appendix I
+Granger Causality Tests
+Table I.1 reports Granger causality tests for the relationship between signalling noise and the
+greenium, run separately for India and Indonesia. Maximum lags tested: 5 trading days.
+51
+Table I.1: Granger Causality Tests — Signalling Noise and Greenium
+Lag F-statisticp-value Sig. Verdict
+Panel A: India (N=502) — Direction 1: Noise→Greenium
+1 0.418 0.518 n.s.H 0 not rejected
+2 0.982 0.375 n.s.H 0 not rejected
+3 0.469 0.704 n.s.H 0 not rejected
+4 0.423 0.792 n.s.H 0 not rejected
+5 0.441 0.820 n.s.H 0 not rejected
+Panel B: India (N=502) — Direction 2: Greenium→Noise
+1 0.669 0.414 n.s.H 0 not rejected
+2 5.450 0.005 ∗∗∗ H0 rejected
+3 3.263 0.021 ∗∗ H0 rejected
+4 2.560 0.038 ∗∗ H0 rejected
+5 1.991 0.079 ∗ H0 rejected
+Panel C: Indonesia (N=595) — Direction 1: Noise→Greenium
+1 1.007 0.316 n.s.H 0 not rejected
+2 0.505 0.604 n.s.H 0 not rejected
+3 0.340 0.797 n.s.H 0 not rejected
+4 0.538 0.708 n.s.H 0 not rejected
+5 0.481 0.790 n.s.H 0 not rejected
+Panel D: Indonesia (N=595) — Direction 2: Greenium→Noise
+1 1.031 0.310 n.s.H 0 not rejected
+2 1.088 0.338 n.s.H 0 not rejected
+3 0.853 0.465 n.s.H 0 not rejected
+4 0.708 0.587 n.s.H 0 not rejected
+5 0.547 0.741 n.s.H 0 not rejected
+H0:Xdoes not Granger-causeY. F-statistic from SSR-based F-test. ∗ p<0.1, ∗∗ p<0.05, ∗∗∗ p<0.01. India
+Direction 2 (Greenium→Noise): significant at lags 2–4, consistent with reverse causality where market pricing
+influences media tone coverage. Overall verdict: H2 null confirmed.
+52
