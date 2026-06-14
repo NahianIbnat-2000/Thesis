@@ -523,17 +523,22 @@
         <p class="tool-desc">77-second narrated walkthrough of the simulator and the core finding. Start here if you're new to the thesis.</p>
         <span class="tool-tag">77 SECONDS</span>
       </a>
-      <a class="tool-card codespace-card" href="https://codespaces.new/NahianIbnat-2000/Thesis">
+      <a class="tool-card codespace-card" href="chatbot.html">
         <span class="tool-icon">🤖</span>
         <p class="tool-name">Green Bond Credibility Assistant</p>
-        <p class="tool-desc">RAG-based research assistant. Ask what the evidence says — null results reported honestly, citations enforced, no policy advice.</p>
-        <span class="tool-tag">OPEN IN CODESPACES</span>
+        <p class="tool-desc">Chat with a research assistant trained on the thesis. Ask what the evidence says — null results reported honestly, citations enforced, no policy advice.</p>
+        <span class="tool-tag">CHAT IN BROWSER</span>
       </a>
     </div>
     <div class="codespace-block">
-      <h3>Running the Credibility Assistant</h3>
-      <p>Click the button above to open a preconfigured Codespace. You will need a free Anthropic API key (~$5 credit covers hundreds of queries). Once the environment loads:</p>
-      <div class="cmd-line">bash green-bond-credibility-assistant/scripts/run.sh</div>
+      <h3>About the Credibility Assistant</h3>
+      <p>A retrieval-augmented assistant that answers questions about the thesis and the greenium literature, with inline citations and honest reporting of null results. It refuses policy advice, price predictions, and investment recommendations by design.</p>
+      <p style="margin-top:10px;"><strong style="color:var(--offwhite);">Two ways to use it:</strong> the live web chat needs no setup — just open and ask. Developers can also run the full RAG version (dense embeddings, evaluation suite) in a preconfigured Codespace.</p>
+      <div style="display:flex; flex-wrap:wrap; gap:12px; margin-top:14px;">
+        <a class="btn btn-primary" href="chatbot.html">🤖 &nbsp;Open the live chat</a>
+        <a class="btn btn-secondary" href="https://codespaces.new/NahianIbnat-2000/Thesis">⬡ &nbsp;Open in Codespaces</a>
+      </div>
+      <p style="margin-top:12px; font-size:12px; color:var(--muted);">In the Codespace, run: <code>bash green-bond-credibility-assistant/scripts/run.sh</code> (requires a free Anthropic API key).</p>
     </div>
   </section>
 

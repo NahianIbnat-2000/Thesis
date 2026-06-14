@@ -15,7 +15,7 @@ Supervisor: Zoltán Csaba Tóth | 2026
 | 🎮 **[The Greenium Game](https://nahianibnat-2000.github.io/Thesis/Play%20it/greenium_game.html)** | 20-quarter policy simulation — can you make bond markets believe your green promises? |
 | 📊 **[Live Simulator](https://nahianibnat-2000.github.io/Thesis/live_simulator/greenium_live_simulator.html)** | Stream the greenium in real time, fire credibility events, inject VIX shocks |
 | 🎬 **[Explainer Video](live_simulator/What%20does%20the%20live%20simulator%20say.mp4)** | 77-second narrated walkthrough of the simulator and the core finding |
-| 🤖 **[Green Bond Credibility Assistant](#-green-bond-credibility-assistant)** | RAG-based research assistant — ask what the evidence says about the greenium |
+| 🤖 **[Green Bond Credibility Assistant](https://nahianibnat-2000.github.io/Thesis/chatbot.html)** | Chat with a research assistant trained on the thesis — citations enforced, null results reported honestly |
 
 ---
 
@@ -119,12 +119,19 @@ Thesis/
 │   ├── greenium_live_simulator.html # 📊 Live streaming simulator (open in browser)
 │   ├── What does the live simulator say.mp4  # 🎬 77s narrated explainer video
 │   └── README.md                    # How to use the simulator
-├── green-bond-credibility-assistant/  # 🤖 RAG research assistant (see section below)
+├── green-bond-credibility-assistant/  # 🤖 Full RAG version (dense embeddings, see §3)
 │   ├── src/                         # Ingest, store, retrieve, generate, CLI
 │   ├── prompts/                     # System prompt encoding the assistant's charter
 │   ├── eval/                        # 15-question evaluation set with trap-null tests
 │   ├── corpus/                      # Local PDFs only — gitignored (see SOURCES.md)
 │   └── scripts/run.sh               # One-command setup and launch
+├── green-bond-assistant-backend/    # 🌐 Hosted backend (FastAPI + TF-IDF, deploys to Render)
+│   ├── main.py                      # API: /chat, /upload, /status, /health
+│   ├── thesis_corpus.txt            # Bundled thesis text, indexed on startup
+│   ├── render.yaml                  # Render deployment config
+│   └── requirements.txt
+├── index.html                       # 🏠 Project landing page (GitHub Pages)
+├── chatbot.html                     # 🤖 Public chat UI (GitHub Pages)
 ├── data/
 │   ├── raw/                         # Bond yields, VIX, FX, CDS (not all redistributable)
 │   └── processed/                   # GDELT tone panel + analysis-ready regression panel
@@ -172,11 +179,33 @@ All outputs are written to `output/`.
 
 A retrieval-augmented research assistant built on top of this thesis. It answers questions about what the evidence says on sovereign green bond credibility and the greenium — with citations and with the uncertainty attached, including null results reported honestly.
 
-**It is a knowledge tool, not an advisory tool.** It will not tell you what a government should do to improve its greenium (your own thesis is the argument against that). It will tell you what the literature documents, where the evidence is contested, and where it is simply absent.
+**It is a knowledge tool, not an advisory tool.** It will not tell you what a government should do to improve its greenium (the thesis itself is the argument against that). It tells you what the literature documents, where the evidence is contested, and where it is simply absent. It refuses policy advice, price predictions, and investment recommendations by design, and it reports the thesis's null results faithfully rather than inventing positive effects.
 
-**Architecture:** `bge-small-en-v1.5` embeddings → ChromaDB vector store → optional cross-encoder reranker → Claude with a citation-enforcing system prompt and a refusal guard for low-confidence retrievals.
+**Features:** inline citations on every claim, a refusal guard that declines low-confidence or out-of-scope questions instead of speculating, and browser-side session memory so follow-up questions ("why is that?") work.
 
-**Evaluation:** 15-question test set in `eval/questions.jsonl` covering factual retrieval, contested findings, boundary refusals, and *trap-null questions* — questions that presuppose an effect the thesis does not find (e.g., "how much does climate news tone move the Indian greenium?"). A correct answer reports the null and the ±6.5 bp confidence interval, not a positive effect size.
+There are three ways to use it, from easiest to most technical:
+
+### 1. Live web chat (recommended — no setup)
+
+**▶️ [Open the live assistant](https://nahianibnat-2000.github.io/Thesis/chatbot.html)** — no login, no API key, just open and ask.
+
+This is the hosted version anyone can use. The chat interface runs on GitHub Pages and talks to a FastAPI backend deployed on Render, which indexes the thesis with a TF-IDF retriever and passes the top passages to Claude under a citation-enforcing system prompt with a hard no-advice charter.
+
+### 2. Deploy your own backend (Render)
+
+The backend lives in [`green-bond-assistant-backend/`](green-bond-assistant-backend/). To host your own copy:
+
+1. On [render.com](https://render.com) → New → Web Service → connect this repo
+2. Set **Root Directory** to `green-bond-assistant-backend`
+3. Start command: `uvicorn main:app --host 0.0.0.0 --port $PORT`
+4. Add environment variable `ANTHROPIC_API_KEY`
+5. Deploy, then point `chatbot.html`'s `BACKEND` constant at your Render URL
+
+The thesis corpus (`thesis_corpus.txt`) is bundled and indexed automatically on startup, so no persistent disk or manual upload is required. A free uptime pinger (e.g. UptimeRobot hitting `/health`) keeps the free instance from sleeping.
+
+### 3. Full RAG version in a Codespace (developers)
+
+The repository also contains a fuller dense-retrieval implementation in [`green-bond-credibility-assistant/`](green-bond-credibility-assistant/) — `bge-small-en-v1.5` embeddings, a ChromaDB vector store, an optional cross-encoder reranker, and a 15-question evaluation set including *trap-null questions* that presuppose an effect the thesis does not find (a correct answer reports the null and the ±6.5 bp confidence interval).
 
 ### Run it
 
