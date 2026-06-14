@@ -380,6 +380,35 @@
     document.getElementById('typing-indicator')?.remove();
   }
 
+  // ── server wake handling (Render free tier sleeps after 15 min idle) ──
+  let serverReady = false;
+
+  async function wakeServer(showBanner) {
+    if (serverReady) return true;
+    let banner;
+    if (showBanner) {
+      banner = document.createElement('div');
+      banner.id = 'wake-banner';
+      banner.style.cssText = 'text-align:center;font-size:12px;color:var(--gold);padding:10px;background:rgba(212,168,67,.08);border-bottom:1px solid rgba(212,168,67,.2);';
+      banner.textContent = '⏳ Waking up the server… first request takes up to a minute on free hosting.';
+      document.querySelector('.disclaimer').after(banner);
+    }
+    // poll /health for up to 70 seconds
+    const deadline = Date.now() + 70000;
+    while (Date.now() < deadline) {
+      try {
+        const r = await fetch(`${BACKEND}/health`, { method: 'GET' });
+        if (r.ok) { serverReady = true; banner?.remove(); return true; }
+      } catch (e) { /* still asleep, keep trying */ }
+      await new Promise(res => setTimeout(res, 3000));
+    }
+    banner?.remove();
+    return false;
+  }
+
+  // warm the server as soon as the page loads, silently
+  window.addEventListener('load', () => { wakeServer(false); });
+
   function newChat() {
     if (busy) return;
     history = [];
@@ -396,6 +425,19 @@
     inputEl.style.height = '44px';
 
     addMsg('user', q);
+
+    // if the server isn't confirmed awake, wake it first with a visible banner
+    if (!serverReady) {
+      showTyping();
+      const woke = await wakeServer(true);
+      removeTyping();
+      if (!woke) {
+        addMsg('bot', 'The server is taking longer than expected to wake up. Please wait a few seconds and try again — free hosting spins the server down when idle.');
+        busy = false; sendBtn.disabled = false; inputEl.focus();
+        return;
+      }
+    }
+
     showTyping();
 
     try {
@@ -431,7 +473,8 @@
       if (history.length > 16) history = history.slice(-16);  // cap ~8 turns
     } catch (e) {
       removeTyping();
-      addMsg('bot', `Network error — is the backend running?\n${e}`);
+      serverReady = false;   // force a re-wake next attempt
+      addMsg('bot', 'Connection dropped — the server may have gone back to sleep. Please try your question again.');
     } finally {
       busy = false;
       sendBtn.disabled = false;
