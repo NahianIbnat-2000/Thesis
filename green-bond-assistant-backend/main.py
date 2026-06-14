@@ -26,7 +26,7 @@ ANTHROPIC_API_KEY = os.environ["ANTHROPIC_API_KEY"]
 BASE_DIR          = Path(__file__).resolve().parent
 CHUNK_TOKENS      = 500
 CHUNK_OVERLAP     = 80
-TOP_K             = 5
+TOP_K             = 8
 MIN_SIMILARITY    = 0.04
 LLM_MODEL         = "claude-sonnet-4-6"
 MAX_HISTORY       = 8          # cap conversation turns sent to the model
@@ -57,7 +57,9 @@ is that?"), but you must still grow every factual claim from the cited context
 passages, not from memory of earlier turns.
 
 Be concise, plain academic English. State quantities with units (basis points, etc).
-Distinguish statistical insignificance from a true zero effect when sources do so."""
+Distinguish statistical insignificance from a true zero effect when sources do so.
+Prefer paraphrasing over long verbatim quotes; if you must quote, keep it short
+(under 15 words) and use it only when exact wording matters."""
 
 app = FastAPI(title="Green Bond Credibility Assistant")
 app.add_middleware(
@@ -160,10 +162,17 @@ class ChatRequest(BaseModel):
 
 
 def retrieval_query(question: str, history: list[Turn]) -> str:
-    """For follow-ups like 'why is that?', blend the last user turn into the
-    retrieval query so TF-IDF still finds the right passages."""
+    """Improve retrieval for follow-ups and short questions by blending in the
+    most recent user turn. Short or context-dependent questions (e.g. 'why is
+    that?', 'who does it mention?') don't carry enough distinctive terms on their
+    own for TF-IDF, so we prepend the previous user question to widen recall."""
     prior_user = [t.content for t in history if t.role == "user"]
-    if len(question.split()) <= 4 and prior_user:
+    # blend whenever the question is short OR clearly references prior context
+    refers_back = bool(re.search(
+        r"\b(that|this|it|they|them|those|these|he|she|his|her|its|their)\b",
+        question.lower()
+    ))
+    if prior_user and (len(question.split()) <= 6 or refers_back):
         return prior_user[-1] + " " + question
     return question
 
