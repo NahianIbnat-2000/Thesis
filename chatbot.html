@@ -168,6 +168,11 @@
       padding: 1px 5px;
       color: var(--gold);
     }
+    .bubble strong { color: var(--offwhite); font-weight: 600; }
+    .bubble em { font-style: italic; }
+    .bubble ul { list-style: disc; }
+    .bubble li { margin: 2px 0; }
+    .bubble h3, .bubble h4 { font-family: 'Inter', sans-serif; }
 
     /* citation links */
     .bubble .cite {
@@ -300,7 +305,7 @@
 
 <script>
   // ── CONFIG — replace with your Render URL after deploy ──
-  const BACKEND = "https://credibility-signal-assistant.onrender.com";
+  const BACKEND = "https://green-bond-assistant.onrender.com";
 
   const chatEl  = document.getElementById('chat');
   const inputEl = document.getElementById('input');
@@ -336,11 +341,29 @@
   }
 
   function formatText(t) {
-    // render [1], [2] citations as styled badges
-    return t
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-      .replace(/\[(\d+)\]/g, '<span class="cite">[$1]</span>')
-      .replace(/\n/g, '<br>');
+    // escape HTML first
+    let s = t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+    // inline code: `code`
+    s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
+    // bold: **text**
+    s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    // italic: *text* (single asterisk, avoid matching ** already consumed)
+    s = s.replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g, '$1<em>$2</em>');
+    // headers: ### text  /  ## text
+    s = s.replace(/^###\s+(.+)$/gm, '<h4 style="margin:10px 0 4px;font-size:14px;color:var(--offwhite);">$1</h4>');
+    s = s.replace(/^##\s+(.+)$/gm,  '<h3 style="margin:12px 0 6px;font-size:15px;color:var(--offwhite);">$1</h3>');
+    // bullet lists: lines starting with - or *
+    s = s.replace(/^[\-\*]\s+(.+)$/gm, '<li>$1</li>');
+    s = s.replace(/(<li>.*<\/li>\n?)+/g, m => '<ul style="margin:6px 0 6px 18px;padding:0;">' + m.replace(/\n/g,'') + '</ul>');
+    // numbered lists: lines starting with 1. 2. etc
+    s = s.replace(/^\d+\.\s+(.+)$/gm, '<li>$1</li>');
+    // citation badges [1], [2]
+    s = s.replace(/\[(\d+)\]/g, '<span class="cite">[$1]</span>');
+    // remaining newlines -> <br>, but not right after block elements
+    s = s.replace(/\n/g, '<br>');
+    s = s.replace(/(<\/(?:ul|h3|h4)>)<br>/g, '$1');
+    return s;
   }
 
   function showTyping() {
