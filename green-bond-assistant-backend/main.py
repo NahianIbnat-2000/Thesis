@@ -1,37 +1,30 @@
-"""Green Bond Credibility Assistant — FastAPI backend.
+"""Green Bond Credibility Assistant — FastAPI backend (memory-light).
 
-Endpoints:
-  POST /chat          { "question": "..." } → streaming text response
-  POST /upload        multipart PDF upload → ingests into ChromaDB
-  GET  /status        corpus status (chunk count, sources)
-  GET  /health        liveness check
+Uses scikit-learn TF-IDF for retrieval instead of sentence-transformers,
+so it fits comfortably in Render's 512MB free tier (no PyTorch).
 """
 
 import os
-import json
 import re
+import pickle
 from pathlib import Path
 
 import anthropic
-import chromadb
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
-from sentence_transformers import SentenceTransformer
 from pypdf import PdfReader
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import cosine_similarity
 
-# ── config ────────────────────────────────────────────────────────────────────
 ANTHROPIC_API_KEY = os.environ["ANTHROPIC_API_KEY"]
 DATA_DIR          = Path(os.environ.get("DATA_DIR", "/data"))
-VECTOR_DIR        = DATA_DIR / "chroma"
-CHUNK_STORE       = DATA_DIR / "chunks.jsonl"
-EMBED_MODEL       = "BAAI/bge-small-en-v1.5"
-COLLECTION_NAME   = "green_bond_corpus"
+INDEX_PATH        = DATA_DIR / "tfidf_index.pkl"
 CHUNK_TOKENS      = 500
 CHUNK_OVERLAP     = 80
 TOP_K             = 5
-MIN_SIMILARITY    = 0.35
+MIN_SIMILARITY    = 0.04
 LLM_MODEL         = "claude-sonnet-4-6"
 
 SYSTEM_PROMPT = """You are a research assistant specialised in sovereign green bond
@@ -43,7 +36,7 @@ says — including null, mixed, and contested findings — with uncertainty atta
 
 The corpus includes a master's thesis (Ibnat, 2026) whose central empirical
 results are NULL EFFECTS of climate-news tone and signalling noise on the greenium
-in India and Indonesia, with VIX as the dominant daily pricing driver (0.35–0.48 bp
+in India and Indonesia, with VIX as the dominant daily pricing driver (0.35-0.48 bp
 per SD of log VIX). Report such results faithfully; never reframe a null as positive.
 
 HARD RULES:
@@ -51,49 +44,37 @@ HARD RULES:
 2. No price predictions.
 3. No investment advice.
 4. Every factual claim must carry an inline [n] citation.
-5. If context is insufficient, say so — do not speculate.
+5. If context is insufficient, say so - do not speculate.
 6. Represent genuine disagreement in the literature when sources conflict.
 
 Be concise, plain academic English. State quantities with units (basis points, etc).
 Distinguish statistical insignificance from a true zero effect when sources do so."""
 
-# ── app ───────────────────────────────────────────────────────────────────────
 app = FastAPI(title="Green Bond Credibility Assistant")
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],   # tighten to your GitHub Pages domain after testing
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# ── singletons ────────────────────────────────────────────────────────────────
-_embedder   = None
-_collection = None
+_index = None
 
 
-def embedder() -> SentenceTransformer:
-    global _embedder
-    if _embedder is None:
-        _embedder = SentenceTransformer(EMBED_MODEL)
-    return _embedder
+def load_index():
+    global _index
+    if _index is None and INDEX_PATH.exists():
+        with INDEX_PATH.open("rb") as f:
+            _index = pickle.load(f)
+    return _index
 
 
-def collection():
-    global _collection
-    if _collection is None:
-        VECTOR_DIR.mkdir(parents=True, exist_ok=True)
-        client = chromadb.PersistentClient(path=str(VECTOR_DIR))
-        try:
-            _collection = client.get_collection(COLLECTION_NAME)
-        except Exception:
-            _collection = client.create_collection(
-                COLLECTION_NAME, metadata={"hnsw:space": "cosine"}
-            )
-    return _collection
+def save_index():
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    with INDEX_PATH.open("wb") as f:
+        pickle.dump(_index, f)
 
 
-# ── helpers ───────────────────────────────────────────────────────────────────
 def clean(text: str) -> str:
     text = re.sub(r"-\n(?=[a-z])", "", text)
     text = re.sub(r"[ \t]+", " ", text)
@@ -110,60 +91,54 @@ def chunk(text: str):
             yield " ".join(piece)
 
 
+def rebuild_vectorizer():
+    global _index
+    chunks = _index["chunks"]
+    vec    = TfidfVectorizer(stop_words="english", ngram_range=(1, 2), max_features=20000)
+    matrix = vec.fit_transform(chunks)
+    _index["vectorizer"] = vec
+    _index["matrix"]     = matrix
+
+
 def ingest_pdf(pdf_bytes: bytes, filename: str) -> int:
+    global _index
     import io
     reader = PdfReader(io.BytesIO(pdf_bytes))
     text   = clean("\n".join(p.extract_text() or "" for p in reader.pages))
-    chunks = list(chunk(text))
-    if not chunks:
+    new_chunks = list(chunk(text))
+    if not new_chunks:
         return 0
 
-    col  = collection()
-    embs = embedder().encode(chunks, batch_size=32, normalize_embeddings=True)
+    if _index is None:
+        _index = {"chunks": [], "sources": [], "vectorizer": None, "matrix": None}
 
-    # remove existing chunks from this source so re-uploads replace cleanly
-    try:
-        existing = col.get(where={"source": filename})
-        if existing["ids"]:
-            col.delete(ids=existing["ids"])
-    except Exception:
-        pass
+    keep = [i for i, s in enumerate(_index["sources"]) if s != filename]
+    _index["chunks"]  = [_index["chunks"][i]  for i in keep]
+    _index["sources"] = [_index["sources"][i] for i in keep]
 
-    stem = Path(filename).stem
-    col.add(
-        ids        = [f"{stem}::{i:04d}" for i in range(len(chunks))],
-        embeddings = embs.tolist(),
-        documents  = chunks,
-        metadatas  = [{"source": filename, "chunk_index": i} for i in range(len(chunks))],
-    )
+    _index["chunks"].extend(new_chunks)
+    _index["sources"].extend([filename] * len(new_chunks))
 
-    # persist chunk store for reference
-    CHUNK_STORE.parent.mkdir(parents=True, exist_ok=True)
-    with CHUNK_STORE.open("a", encoding="utf-8") as f:
-        for i, c in enumerate(chunks):
-            f.write(json.dumps({"id": f"{stem}::{i:04d}", "source": filename,
-                                "chunk_index": i, "text": c}) + "\n")
-    return len(chunks)
+    rebuild_vectorizer()
+    save_index()
+    return len(new_chunks)
 
 
 def retrieve(question: str):
-    col  = collection()
-    if col.count() == 0:
+    idx = load_index()
+    if not idx or not idx["chunks"]:
         return [], False
-    q    = "Represent this sentence for searching relevant passages: " + question
-    emb  = embedder().encode([q], normalize_embeddings=True)
-    res  = col.query(query_embeddings=emb.tolist(), n_results=min(TOP_K, col.count()))
+    q_vec  = idx["vectorizer"].transform([question])
+    scores = cosine_similarity(q_vec, idx["matrix"])[0]
+    ranked = scores.argsort()[::-1][:TOP_K]
     hits = [
-        {"text": doc, "source": meta["source"], "score": 1.0 - dist}
-        for doc, meta, dist in zip(
-            res["documents"][0], res["metadatas"][0], res["distances"][0]
-        )
+        {"text": idx["chunks"][i], "source": idx["sources"][i], "score": float(scores[i])}
+        for i in ranked if scores[i] > 0
     ]
     confident = bool(hits) and hits[0]["score"] >= MIN_SIMILARITY
     return hits, confident
 
 
-# ── endpoints ─────────────────────────────────────────────────────────────────
 class ChatRequest(BaseModel):
     question: str
 
@@ -175,21 +150,18 @@ def health():
 
 @app.get("/status")
 def status():
-    col = collection()
-    n   = col.count()
-    sources: list[str] = []
-    if n > 0:
-        sample  = col.get(limit=min(n, 1000))
-        sources = sorted({m["source"] for m in sample["metadatas"]})
-    return {"chunk_count": n, "sources": sources}
+    idx = load_index()
+    if not idx or not idx["chunks"]:
+        return {"chunk_count": 0, "sources": []}
+    return {"chunk_count": len(idx["chunks"]), "sources": sorted(set(idx["sources"]))}
 
 
 @app.post("/upload")
 async def upload(file: UploadFile = File(...)):
     if not file.filename.lower().endswith(".pdf"):
         raise HTTPException(400, "Only PDF files are supported.")
-    data   = await file.read()
-    n      = ingest_pdf(data, file.filename)
+    data = await file.read()
+    n    = ingest_pdf(data, file.filename)
     return {"message": f"Ingested {n} chunks from {file.filename}", "chunks": n}
 
 
@@ -202,13 +174,13 @@ async def chat(req: ChatRequest):
     hits, confident = retrieve(question)
 
     if not confident:
-        if collection().count() == 0:
+        idx = load_index()
+        if not idx or not idx["chunks"]:
             msg = ("No documents have been uploaded yet. "
                    "Please upload the thesis PDF via the admin panel first.")
         else:
             msg = ("The corpus does not contain enough relevant material to answer "
-                   "this reliably. Try rephrasing, or check corpus/SOURCES.md for "
-                   "what documents are indexed.")
+                   "this reliably. Try rephrasing your question.")
 
         def no_corpus():
             yield msg
