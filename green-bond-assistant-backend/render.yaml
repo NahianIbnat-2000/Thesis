@@ -1,0 +1,20 @@
+# NOTE: This backend lives in a subfolder of the Thesis repo.
+# In the Render dashboard, set "Root Directory" to:
+#     green-bond-assistant-backend
+# Then Render runs all commands below relative to that folder.
+services:
+  - type: web
+    name: green-bond-assistant
+    runtime: python
+    rootDir: green-bond-assistant-backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false          # you set this manually in Render dashboard
+      - key: DATA_DIR
+        value: /data
+    disk:
+      name: corpus-data
+      mountPath: /data
+      sizeGB: 1              # free tier allows 1GB persistent disk
