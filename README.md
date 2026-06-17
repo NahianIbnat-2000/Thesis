@@ -106,6 +106,8 @@ The design stacks two treatment cohorts and estimates a pooled DiD with cohort-s
 **Countries:** India, Indonesia (core); Germany, Denmark (robustness).
 **Note:** Thailand was excluded — no tradeable sovereign green bond with verifiable secondary-market yield data could be identified on Refinitiv.
 
+Full provenance, the twin-bond ISIN pairs, and the layout of `raw/` and `processed/` are documented in [`data/README.md`](data/README.md). The CEU institutional Refinitiv/LSEG subscription permits redistribution of the extracted series included here.
+
 ---
 
 ## Repository Structure
@@ -126,21 +128,24 @@ Thesis/
 │   ├── corpus/                      # Local PDFs only — gitignored (see SOURCES.md)
 │   └── scripts/run.sh               # One-command setup and launch
 ├── green-bond-assistant-backend/    # 🌐 Hosted backend (FastAPI + TF-IDF, deploys to Render)
-│   ├── main.py                      # API: /chat, /upload, /status, /health
+│   ├── main.py                      # API: /chat, /status, /health
 │   ├── thesis_corpus.txt            # Bundled thesis text, indexed on startup
 │   ├── render.yaml                  # Render deployment config
 │   └── requirements.txt
 ├── index.html                       # 🏠 Project landing page (GitHub Pages)
 ├── chatbot.html                     # 🤖 Public chat UI (GitHub Pages)
 ├── data/
-│   ├── raw/                         # Bond yields, VIX, FX, CDS (not all redistributable)
-│   └── processed/                   # GDELT tone panel + analysis-ready regression panel
+│   ├── raw/                         # Bond yields, VIX, FX, CDS (CEU-licensed for release)
+│   ├── processed/                   # GDELT tone panel + analysis-ready regression panel
+│   └── README.md                    # Data provenance and source table
 ├── notebooks/                       # Regression, event study, GDELT/tone pipelines
-├── output/                          # Figures and tables used in Chapters 4–5
+├── output/                          # Figures, tables, and rendered (executed) notebooks
 ├── presentation/                    # Thesis defence slides
 ├── Nahian_Ibnat_2026_MA_Thesis.pdf  # 📄 Full thesis (final submitted version)
 ├── AI_Declaration_Nahian_Ibnat.pdf
-├── requirements.txt
+├── requirements.txt                 # Loose ranges for a quick start
+├── requirements-lock.txt            # Pinned versions for exact reproduction
+├── .python-version                  # Pinned Python version (3.10)
 └── thesis_latex.zip                 # LaTeX source of the written thesis
 ```
 
@@ -148,30 +153,45 @@ Thesis/
 
 ## Environment
 
-- Python 3.10+
-- Install dependencies: `pip install -r requirements.txt`
+- Python 3.10+ (pinned in `.python-version`)
+- Quick start: `pip install -r requirements.txt`
+- Exact reproduction: `pip install -r requirements-lock.txt` (deterministic, pinned versions from the environment that produced the reported results)
 
 | Package | Purpose |
 | --- | --- |
 | `pandas`, `numpy` | Panel construction and data manipulation |
-| `statsmodels` / `linearmodels` | DiD, panel regression, HC3/PCSE standard errors |
-| `matplotlib` | Thesis figures |
+| `statsmodels` | OLS, DiD, Durbin-Watson, VIF, Granger causality |
+| `linearmodels` | PanelOLS, stacked DiD with pair and time fixed effects |
+| `scipy` | Statistical tests in the event study |
+| `matplotlib` | All thesis figures |
 | `requests` / BigQuery client | GDELT V2Tone extraction |
 | `openpyxl` | Excel I/O for raw bond data |
+| `transformers`, `torch` | ClimateBERT sentiment pipeline only (dropped from the main analysis; see note above) |
 
-Notebooks were developed across VS Code, Kaggle, and Google Colab. Bond data was accessed via Refinitiv (LSEG Workspace) through the CEU Library institutional subscription.
+Bond data was accessed via Refinitiv (LSEG Workspace) through the CEU Library institutional subscription, which permits redistribution of the extracted series included in `data/`.
 
 ---
 
 ## How to Reproduce
 
-1. **Tone data:** Run the GDELT notebook to regenerate the daily V2Tone climate-news panel from BigQuery.
-2. **Panel construction:** Place raw bond/VIX/FX/CDS files under `data/raw/` following the existing structure, then build the merged regression panel.
-3. **Regressions:** Run the regression notebook to reproduce M1–M5, robustness checks, and coefficient plots.
-4. **Event study:** Run the event study notebook to reproduce leads/lags figures and parallel-trends diagnostics.
-5. **European benchmark:** Run the European comparison notebook to reproduce the Germany/Denmark greenium estimates.
+The repository is built so that **every quantitative claim in the thesis can be verified without re-running anything**, and fully re-run if you want to.
 
-All outputs are written to `output/`.
+### Verify without running (no setup, no data pull)
+
+1. **Read the executed notebooks.** Fully-rendered versions of all four analysis notebooks, with every cell output, table, and figure intact, are in [`output/html/`](output/html/). Open them in a browser — no Python, no execution. These are the canonical record of what each cell produced.
+2. **Check the processed panels.** The analysis-ready CSVs the regressions consume are committed under [`data/processed/`](data/processed/). The figures and tables used in Chapters 4–5 are in [`output/`](output/).
+
+### Re-run the full pipeline
+
+All inputs are included (see [`data/README.md`](data/README.md) for provenance), so the analysis runs end to end:
+
+1. **Environment:** `pip install -r requirements.txt` (or `requirements-lock.txt` for exact versions).
+2. **Tone data (optional):** the GDELT V2Tone panel is already in `data/processed/gdelt/`. To regenerate it from BigQuery, run the GDELT notebook in `notebooks/sentiment_colab/`.
+3. **Regressions:** run `notebooks/GreenBond_Regression.ipynb` to reproduce M1–M5, robustness checks, and coefficient plots.
+4. **Event study:** run `notebooks/GreenBond_EventStudy.ipynb` for leads/lags and parallel-trends diagnostics.
+5. **European benchmark:** run `notebooks/GreenBond_Regression_Europe.ipynb` and `GreenBond_EventStudy_Europe.ipynb` for the Germany/Denmark estimates.
+
+All outputs are written to `output/`. The notebooks read from `data/` with relative paths, so no path editing is needed.
 
 ---
 
