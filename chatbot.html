@@ -358,8 +358,9 @@
     s = s.replace(/(<li>.*<\/li>\n?)+/g, m => '<ul style="margin:6px 0 6px 18px;padding:0;">' + m.replace(/\n/g,'') + '</ul>');
     // numbered lists: lines starting with 1. 2. etc
     s = s.replace(/^\d+\.\s+(.+)$/gm, '<li>$1</li>');
-    // citation badges [1], [2]
-    s = s.replace(/\[(\d+)\]/g, '<span class="cite">[$1]</span>');
+    // remove inline citation markers [1], [2] from the displayed answer
+    // (the model still cites internally to stay grounded; we just don't show them)
+    s = s.replace(/\s*\[\d+\]/g, '');
     // remaining newlines -> <br>, but not right after block elements
     s = s.replace(/\n/g, '<br>');
     s = s.replace(/(<\/(?:ul|h3|h4)>)<br>/g, '$1');
