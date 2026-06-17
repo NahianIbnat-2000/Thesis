@@ -1,14 +1,16 @@
-data/processed/gdelt/gdelt_raw_articles.csv
-data/processed/gdelt/gdelt_climatebert_scored.csv
-data/processed/gdelt/gdelt_raw_articles_europe.csv
-data/processed/gdelt/gdelt_climatebert_scored_europe.csvdata/processed/gdelt/gdelt_climatebert_scored_europe.csv
-data/processed/gdelt/gdelt_raw_articles_europe.csv
+# GDELT raw / scored data — not redistributable
 data/processed/gdelt/*.csv
-data/processed/gdelt/gdelt_climatebert_scored_europe.csv
-data/processed/gdelt/gdelt_climatebert_scored_europe.csv
 
+# Large notebook-export PDFs — link via Release instead
+output/html/*.pdf
 
-# chatbot — local-only data
+# Chatbot — local-only data
 green-bond-credibility-assistant/corpus/*
 !green-bond-credibility-assistant/corpus/SOURCES.md
 green-bond-credibility-assistant/data/
+
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.env
