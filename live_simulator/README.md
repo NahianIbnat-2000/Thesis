@@ -9,17 +9,20 @@
 
 ---
 
-## 🎬 Watch the Explainer Video First
+## 🎬 New here? Watch the animated explainer first
 
-Before jumping in, watch the 77-second narrated explainer — it walks you through every part of the simulator visually:
+Before jumping into the controls, watch the short animated explainer — it walks through the whole argument visually, with the greenium line drawing itself, reacting to a VIX shock, and crossing the depth threshold:
 
-> 📁 [`What does the live simulator say.mp4`](./What%20does%20the%20live%20simulator%20say.mp4)
+▶️ **[Open the Animated Explainer](https://nahianibnat-2000.github.io/Thesis/live_simulator/greenium_explainer.html)**
 
-The video covers:
-- What the greenium is and how to read the color-coded line
-- What happens when you fire a credibility event in a **thin market** (spoiler: nothing)
-- What crossing the **depth threshold** does
-- What happens when you fire the same event in a **mature market** (spoiler: it reprices)
+It autoplays start to finish like a video, but you can pause, scrub the timeline, or jump between scenes. In about a minute it covers:
+- What the greenium is and how to read the colour-coded line
+- Why, in a **thin market**, a credibility event doesn't move the price
+- Why **global risk appetite (VIX)** is the one thing that does
+- What crossing the **depth threshold** changes — and why the same signal then reprices
+- Where the greenium *is* real: the Germany / Denmark benchmark
+
+> The simulator itself has a built-in guided walkthrough too — click the **?** button (bottom-right) any time to replay it.
 
 ---
 
@@ -56,7 +59,7 @@ The line **changes color by zone** — no need to read the y-axis:
 
 ### Lower chart — VIX
 
-Global fear over time. When VIX spikes up, watch the greenium chart — in a thin market it goes red almost immediately. That is the thesis finding: fear is priced, promises are not.
+Global fear over time. When VIX spikes up, watch the greenium chart — in a thin market it reacts almost immediately. That is the thesis finding: fear is priced, promises are not.
 
 ### Event feed — bottom right
 
@@ -81,7 +84,7 @@ After you fire a credibility event, it waits 20 trading days then reports back:
 | Button | What it does |
 |--------|-------------|
 | **⚡ Fire credibility event** | Simulates a discrete political event (auction, pledge, framework). Adds +8 credibility. Runs a 20-day event study and reports the verdict in the feed. |
-| **📉 VIX shock** | Injects a sudden +12 spike in global fear. Watch what it does to the greenium in thin vs mature markets. |
+| **📉 VIX shock** | Injects a sudden spike in global fear. Watch what it does to the greenium in thin vs mature markets. |
 
 ### Speed and pause
 
@@ -94,13 +97,13 @@ After you fire a credibility event, it waits 20 trading days then reports back:
 
 This sequence demonstrates the entire thesis argument interactively:
 
-**Step 1** — Leave depth at 25. Hit **⚡ Fire credibility event**. Wait for the event feed verdict after ~20 days. It will report something like *"not distinguishable from noise, p ≈ 0.6"* — your actual India/Indonesia result.
+**Step 1** — Leave depth at 25. Hit **⚡ Fire credibility event**. Wait for the event feed verdict after ~20 days. It will report something like *"not distinguishable from noise, p ≈ 0.6"* — mirroring the India/Indonesia result.
 
 **Step 2** — Drag **Market depth** past 60. Watch the regime pill flip from red to green. The greenium line stabilises and shifts downward.
 
 **Step 3** — Hit **⚡ Fire credibility event** again. The feed now reports a real repricing. The same signal, the same market, but now with a receiver.
 
-**Step 4 (optional)** — Hit **📉 VIX shock** in both regimes. In the thin market it moves the price violently. In the mature market it barely registers. That is the VIX dominance result: 0.35–0.48 bp per standard deviation in Asia, not significant in Europe.
+**Step 4 (optional)** — Hit **📉 VIX shock** in both regimes. In the thin market it moves the price visibly. In the mature market it barely registers. That is the VIX dominance result: 0.35–0.48 bp per standard deviation in Asia, not significant in Europe.
 
 ---
 
@@ -110,10 +113,12 @@ This sequence demonstrates the entire thesis argument interactively:
 |---|---|
 | Thin market mean greenium ≈ +0.5 bp | India sample mean: +0.50 bp |
 | Thin market volatility σ ≈ 4 bp | Indonesia sample σ: 4.12 bp |
-| VIX moves price ~0.45 bp per SD | Thesis Table 4.1: β = −0.0035 to −0.0048 pp, p < 0.05 |
-| Event study verdict p ≈ 0.5–0.9 | M5 pooled Post: p = 0.593; Stack A: p = 0.400 |
+| VIX moves price ~0.35–0.48 bp per SD | Thesis: β ≈ −0.0035 to −0.0048 pp per SD of log VIX, significant across specifications |
+| Event study verdict p ≈ 0.5–0.9 | M5 pooled Post: p ≈ 0.59; Stack A: p ≈ 0.40 |
 | Mature market stable at ~−2.8 bp | Denmark mean: −2.80 bp; Germany: −1.82 bp |
-| Mature market σ ≈ 1 bp | Denmark σ: 1.99 bp |
+| Mature market σ ≈ 1 bp | Denmark σ ≈ 2.0 bp |
+
+> The exact regression figures live in the [thesis](../Nahian_Ibnat_2026_MA_Thesis.pdf) and [notebooks](../notebooks/) — the simulator is calibrated *to the spirit* of those estimates, not a structural re-estimation of them.
 
 ---
 
@@ -134,6 +139,7 @@ The model parameters are calibrated to the thesis estimates but the simulator is
 ## 📂 Also in this repository
 
 - 🎮 **[The Greenium Game](https://nahianibnat-2000.github.io/Thesis/Play%20it/greenium_game.html)** — a 20-quarter policy simulation where you can win or lose
+- 🎬 **[Animated Explainer](https://nahianibnat-2000.github.io/Thesis/live_simulator/greenium_explainer.html)** — the one-minute visual walkthrough of the core argument
 - 📄 **[Full Thesis](../Nahian_Ibnat_2026_MA_Thesis.pdf)** — the complete empirical paper with all regression tables
 - 💻 **[Replication notebooks](../notebooks/)** — all Python code for the DiD regressions and event studies
 
