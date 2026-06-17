@@ -6,6 +6,12 @@ startup — no persistent disk and no manual upload required.
 
 Session memory: the frontend sends recent conversation history with each request.
 History lives in the user's browser only; the backend stores nothing.
+
+Public-deployment hardening:
+  * Per-IP rate limiting on /chat (slowapi) so a burst cannot drain API credits.
+  * CORS restricted to the GitHub Pages origin.
+  * Request-size caps on question length and history depth.
+  * No write endpoints: the corpus is read-only and loaded once at startup.
 """
 
 import os
@@ -14,13 +20,16 @@ import glob
 from pathlib import Path
 
 import anthropic
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from pypdf import PdfReader
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 
 ANTHROPIC_API_KEY = os.environ["ANTHROPIC_API_KEY"]
 BASE_DIR          = Path(__file__).resolve().parent
@@ -30,6 +39,16 @@ TOP_K             = 8
 MIN_SIMILARITY    = 0.04
 LLM_MODEL         = "claude-sonnet-4-6"
 MAX_HISTORY       = 8          # cap conversation turns sent to the model
+MAX_QUESTION_CHARS = 2000      # reject absurdly long questions before the paid call
+MAX_TURN_CHARS     = 4000      # cap each history turn's length
+
+# Restrict browser access to the public site. Add other origins if you host the
+# chat UI elsewhere. (Note: this only stops casual cross-site browser calls;
+# the per-IP rate limit below is the real abuse protection.)
+ALLOWED_ORIGINS = [
+    "https://nahianibnat-2000.github.io",
+    "http://localhost:8000",   # local testing
+]
 
 SYSTEM_PROMPT = """You are a research assistant specialised in sovereign green bond
 credibility and the greenium literature. You answer questions strictly from the
@@ -62,10 +81,16 @@ Prefer paraphrasing over long verbatim quotes; if you must quote, keep it short
 (under 15 words) and use it only when exact wording matters."""
 
 app = FastAPI(title="Green Bond Credibility Assistant")
+
+# Per-IP rate limiter. Protects the paid /chat endpoint from bursts.
+limiter = Limiter(key_func=get_remote_address)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
+    allow_origins=ALLOWED_ORIGINS,
+    allow_methods=["GET", "POST", "HEAD"],
     allow_headers=["*"],
 )
 
@@ -187,25 +212,18 @@ def status():
     return {"chunk_count": len(_index["chunks"]), "sources": sorted(set(_index["sources"]))}
 
 
-@app.post("/upload")
-async def upload(file: UploadFile = File(...)):
-    if not file.filename.lower().endswith(".pdf"):
-        raise HTTPException(400, "Only PDF files are supported.")
-    import io
-    data   = await file.read()
-    reader = PdfReader(io.BytesIO(data))
-    text   = "\n".join(p.extract_text() or "" for p in reader.pages)
-    n      = add_text(text, file.filename)
-    return {"message": f"Ingested {n} chunks from {file.filename}", "chunks": n}
-
-
 @app.post("/chat")
-async def chat(req: ChatRequest):
+@limiter.limit("10/minute;100/day")
+async def chat(request: Request, req: ChatRequest):
     question = req.question.strip()
     if not question:
         raise HTTPException(400, "Question cannot be empty.")
+    if len(question) > MAX_QUESTION_CHARS:
+        raise HTTPException(413, "Question is too long.")
 
-    history = req.history[-MAX_HISTORY:] if req.history else []
+    # cap history depth and per-turn length before anything reaches the paid call
+    history = (req.history or [])[-MAX_HISTORY:]
+    history = [t for t in history if len(t.content) <= MAX_TURN_CHARS]
     rquery  = retrieval_query(question, history)
     hits, confident = retrieve(rquery)
 
