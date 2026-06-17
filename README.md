@@ -14,7 +14,7 @@ Supervisor: Zoltán Csaba Tóth | 2026
 |---|---|
 | 🎮 **[The Greenium Game](https://nahianibnat-2000.github.io/Thesis/Play%20it/greenium_game.html?v=2)** | 20-quarter policy simulation — can you make bond markets believe your green promises? |
 | 📊 **[Live Simulator](https://nahianibnat-2000.github.io/Thesis/live_simulator/greenium_live_simulator.html)** | Stream the greenium in real time, fire credibility events, inject VIX shocks |
-| 🎬 **[Explainer Video](live_simulator/What%20does%20the%20live%20simulator%20say.mp4)** | 77-second narrated walkthrough of the simulator and the core finding |
+| 🎬 **[Animated Explainer](https://nahianibnat-2000.github.io/Thesis/live_simulator/greenium_explainer.html)** | One-minute animated walkthrough of the core finding — autoplays, or pause and scrub |
 | 🤖 **[Green Bond Credibility Assistant](https://nahianibnat-2000.github.io/Thesis/chatbot.html)** | Chat with a research assistant trained on the thesis — citations enforced, null results reported honestly |
 
 ---
@@ -117,7 +117,7 @@ Thesis/
 │   └── README.md                    # How to play
 ├── live_simulator/
 │   ├── greenium_live_simulator.html # 📊 Live streaming simulator (open in browser)
-│   ├── What does the live simulator say.mp4  # 🎬 77s narrated explainer video
+│   ├── greenium_explainer.html      # 🎬 Animated explainer (autoplay walkthrough)
 │   └── README.md                    # How to use the simulator
 ├── green-bond-credibility-assistant/  # 🤖 Full RAG version (dense embeddings, see §3)
 │   ├── src/                         # Ingest, store, retrieve, generate, CLI
