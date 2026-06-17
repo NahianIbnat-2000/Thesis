@@ -99,6 +99,40 @@
   footer{margin-top:22px;font-size:11.5px;color:#5a6280;border-top:1px solid var(--rule);padding-top:10px}
   footer em{color:var(--ink)}
   @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+  /* ---- help button ---- */
+  .helpbtn{position:fixed;right:16px;bottom:16px;z-index:40;width:46px;height:46px;border-radius:50%;
+    border:2px solid var(--ink);background:var(--paper);color:var(--ink);font-family:var(--serif);
+    font-size:24px;font-weight:700;line-height:1;box-shadow:2px 2px 0 var(--ink);transition:transform .08s}
+  .helpbtn:hover{transform:translate(-1px,-1px);background:#fff}
+  .helpbtn .lbl{position:absolute;right:54px;top:50%;transform:translateY(-50%);white-space:nowrap;
+    font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink);
+    background:var(--paper);border:1px solid var(--rule);padding:4px 8px;opacity:0;pointer-events:none;transition:opacity .15s}
+  .helpbtn:hover .lbl{opacity:1}
+
+  /* ---- guided tour spotlight ---- */
+  #tourVeil{position:fixed;inset:0;z-index:60;display:none}
+  #tourVeil.on{display:block}
+  /* four dim panels leave a transparent hole over the target */
+  .tdim{position:fixed;background:rgba(27,42,74,.62);transition:all .25s ease;z-index:60}
+  .tring{position:fixed;border:2.5px solid var(--gold);border-radius:4px;box-shadow:0 0 0 3px rgba(154,123,45,.25);
+    z-index:61;pointer-events:none;transition:all .25s ease}
+  .ttip{position:fixed;z-index:62;max-width:300px;background:var(--paper);border:2px solid var(--ink);
+    padding:16px 18px;box-shadow:3px 3px 0 var(--ink);transition:all .25s ease}
+  .ttip::before{content:"";position:absolute;inset:4px;border:1px solid var(--ink);pointer-events:none}
+  .ttip .step{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin-bottom:5px}
+  .ttip h3{font-size:18px;margin-bottom:7px;line-height:1.2}
+  .ttip p{font-size:13.5px;line-height:1.4;margin-bottom:6px}
+  .ttip .key{color:var(--bond-green);font-weight:700}
+  .ttip .nav{display:flex;justify-content:space-between;align-items:center;margin-top:12px;gap:8px}
+  .ttip .dots{display:flex;gap:5px}
+  .ttip .dot{width:6px;height:6px;border-radius:50%;background:var(--rule)}
+  .ttip .dot.cur{background:var(--ink)}
+  .ttip button{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+    border:1.5px solid var(--ink);background:var(--ink);color:var(--paper);padding:7px 14px;font-weight:700}
+  .ttip button.ghost{background:var(--paper);color:var(--ink)}
+  .ttip .skip{position:absolute;top:8px;right:12px;font-family:var(--mono);font-size:10px;letter-spacing:.1em;
+    text-transform:uppercase;color:#5a6280;background:none;border:none;padding:2px 4px;box-shadow:none}
 </style>
 </head>
 <body>
@@ -112,16 +146,16 @@
 
 <div class="strip" role="status" aria-live="polite">
   <div class="cell"><div class="lbl">Quarter</div><div class="val" id="qVal">1 / 20</div><div class="sub" id="dateVal">Q1 · Year 1</div></div>
-  <div class="cell"><div class="lbl">Greenium</div><div class="val" id="gVal">+0.5 bp</div><div class="sub">goal: hold ≤ −2.0 bp for 4 qtrs</div></div>
-  <div class="cell"><div class="lbl">Market depth</div><div class="val" id="dVal" style="font-size:16px">25</div>
+  <div class="cell" data-tour="greenium"><div class="lbl">Greenium</div><div class="val" id="gVal">+0.5 bp</div><div class="sub">goal: hold ≤ −2.0 bp for 4 qtrs</div></div>
+  <div class="cell" data-tour="depth"><div class="lbl">Market depth</div><div class="val" id="dVal" style="font-size:16px">25</div>
     <div class="meter"><div class="fill" id="dFill" style="width:25%"></div><div class="thresh"></div></div></div>
   <div class="cell"><div class="lbl">Credibility</div><div class="val" id="cVal" style="font-size:16px">10</div><div class="sub">signals sent so far</div></div>
-  <div class="cell"><div class="lbl">VIX</div><div class="val" id="vVal">17.0</div><div class="sub" id="vMood">calm</div></div>
+  <div class="cell" data-tour="vix"><div class="lbl">VIX</div><div class="val" id="vVal">17.0</div><div class="sub" id="vMood">calm</div></div>
 </div>
 
 <main>
   <section>
-    <div class="card">
+    <div class="card" data-tour="chart">
       <h2>Daily Greenium — your twin-bond spread (bp)</h2>
       <div class="chartwrap">
         <svg id="chart" viewBox="0 0 640 300" role="img" aria-label="Greenium time series chart"></svg>
@@ -134,7 +168,7 @@
   </section>
 
   <section>
-    <div class="card">
+    <div class="card" data-tour="desk">
       <h2>Policy desk</h2>
       <div class="ap">Action points this quarter: <b id="apVal">2</b> — signals are cheap; infrastructure is slow.</div>
       <div class="actions" id="actionGrid"></div>
@@ -168,6 +202,30 @@
     <button id="startBtn">OPEN THE MARKET</button>
   </div>
 </div>
+
+<!-- guided tour overlay -->
+<div id="tourVeil" aria-hidden="true">
+  <div class="tdim" id="dimTop"></div>
+  <div class="tdim" id="dimBot"></div>
+  <div class="tdim" id="dimLeft"></div>
+  <div class="tdim" id="dimRight"></div>
+  <div class="tring" id="tRing"></div>
+  <div class="ttip" id="tTip" role="dialog" aria-live="polite">
+    <button class="skip" id="tSkip">Skip ✕</button>
+    <div class="step" id="tStep"></div>
+    <h3 id="tHead"></h3>
+    <div id="tBody"></div>
+    <div class="nav">
+      <div class="dots" id="tDots"></div>
+      <div>
+        <button class="ghost" id="tBack">Back</button>
+        <button id="tNext">Next →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<button class="helpbtn" id="helpBtn" aria-label="How to play — replay the tutorial">?<span class="lbl">How to play</span></button>
 
 <!-- end modal -->
 <div class="veil hidden" id="endVeil">
@@ -363,7 +421,86 @@ $("endQ").onclick=settleQuarter;
 $("startBtn").onclick=()=>{
   $("introVeil").classList.add("hidden");
   log("Inaugural sovereign green bond begins trading. Mean greenium: +0.5 bp. Investors currently demand a yield pick-up to hold your green label.","market",1);
+  if(!window.__tourSeen){ window.__tourSeen=true; setTimeout(()=>startTour(),350); }
 };
+
+/* ---------- guided tour ---------- */
+const TOUR=[
+  {sel:'.strip', step:'The dashboard',
+   head:'Your five vital signs',
+   body:`Every decision shows up here. Watch these five numbers — but two of them decide whether you win, and they're not the ones you'd guess.`},
+  {sel:'[data-tour="greenium"]', step:'The score',
+   head:'The greenium is the prize',
+   body:`The yield gap between your <span class="key">green</span> bond and its conventional twin, in basis points. Negative is good — it means investors accept a lower yield to hold your green label. <b>Win by holding it at −2.0 bp or better for 4 straight quarters.</b>`},
+  {sel:'[data-tour="depth"]', step:'The real constraint',
+   head:'Market depth is the lock',
+   body:`This is the variable most players ignore — and it's the whole game. Below the <span style="color:var(--gold);font-weight:700">gold threshold</span>, the market is too thin for anyone to price your promises. Your greenium is just noise. Cross it, and credibility finally bites.`},
+  {sel:'[data-tour="vix"]', step:'The spoiler',
+   head:'VIX moves prices — you don\'t',
+   body:`Global risk appetite. While your market is thin, <b>this</b> is what actually drives your greenium day to day — not your announcements. When VIX spikes, investors dump your illiquid green leg first.`},
+  {sel:'[data-tour="desk"]', step:'Your two levers',
+   head:'Where you spend your turn',
+   body:`Two action points per quarter. <span style="color:var(--bond-green);font-weight:700">Green cards</span> send credibility <i>signals</i> (auctions, pledges). <b>Navy cards</b> build <i>market infrastructure</i> — the investors who can receive those signals.`},
+  {sel:'[data-tour="desk"]', step:'The strategy',
+   head:'Build the receiver first',
+   body:`The trap: spending everything on louder green signals. They bounce off a thin market. Spend early turns on <b>navy infrastructure</b> to push depth past the threshold — <i>then</i> your credibility signals start to pay.`},
+  {sel:'#endQ', step:'Advance time',
+   head:'Settle the quarter',
+   body:`When you've spent your action points, settle. The market reprices, VIX moves, and the clock ticks one of your 20 quarters. Then you do it again.`},
+  {sel:'[data-tour="chart"]', step:'Read the tape',
+   head:'The green dashed line is the target',
+   body:`Your greenium plots here each quarter. Get the line to sit on or below the <span style="color:var(--bond-green);font-weight:700">−2.0 bp target</span> and keep it there. Good luck, Minister.`}
+];
+let tIdx=0;
+function startTour(){ tIdx=0; $("tourVeil").classList.add("on"); $("tourVeil").setAttribute("aria-hidden","false"); showStep(); }
+function endTour(){ $("tourVeil").classList.remove("on"); $("tourVeil").setAttribute("aria-hidden","true"); }
+function showStep(){
+  const t=TOUR[tIdx];
+  const node=document.querySelector(t.sel);
+  if(!node){ if(tIdx<TOUR.length-1){tIdx++;return showStep();} return endTour(); }
+  node.scrollIntoView({block:"center",behavior:"smooth"});
+  setTimeout(()=>positionStep(t,node),260);
+  $("tStep").textContent=t.step;
+  $("tHead").textContent=t.head;
+  $("tBody").innerHTML=`<p>${t.body}</p>`;
+  $("tBack").style.visibility = tIdx===0?"hidden":"visible";
+  $("tNext").textContent = tIdx===TOUR.length-1?"Got it ✓":"Next →";
+  const dots=$("tDots"); dots.innerHTML="";
+  TOUR.forEach((_,i)=>{const d=document.createElement("span");d.className="dot"+(i===tIdx?" cur":"");dots.appendChild(d);});
+}
+function positionStep(t,node){
+  const r=node.getBoundingClientRect();
+  const pad=6;
+  const x=r.left-pad, y=r.top-pad, w=r.width+pad*2, h=r.height+pad*2;
+  const vw=window.innerWidth, vh=window.innerHeight;
+  // ring
+  const ring=$("tRing"); ring.style.left=x+"px"; ring.style.top=y+"px"; ring.style.width=w+"px"; ring.style.height=h+"px";
+  // four dim panels around the hole
+  $("dimTop").style.cssText    =`left:0;top:0;width:${vw}px;height:${Math.max(0,y)}px`;
+  $("dimBot").style.cssText    =`left:0;top:${y+h}px;width:${vw}px;height:${Math.max(0,vh-(y+h))}px`;
+  $("dimLeft").style.cssText   =`left:0;top:${y}px;width:${Math.max(0,x)}px;height:${h}px`;
+  $("dimRight").style.cssText  =`left:${x+w}px;top:${y}px;width:${Math.max(0,vw-(x+w))}px;height:${h}px`;
+  // tooltip: prefer below, else above, clamp horizontally
+  const tip=$("tTip"); tip.style.left="0px"; tip.style.top="0px"; // reset to measure
+  const tw=Math.min(300,vw-24), th=tip.offsetHeight;
+  let tx=x, ty=y+h+12;
+  if(ty+th>vh-10) ty=Math.max(10,y-th-12);            // flip above
+  if(tx+tw>vw-12) tx=vw-tw-12;
+  if(tx<12) tx=12;
+  tip.style.left=tx+"px"; tip.style.top=ty+"px"; tip.style.maxWidth=tw+"px";
+}
+$("tNext").onclick=()=>{ if(tIdx>=TOUR.length-1)return endTour(); tIdx++; showStep(); };
+$("tBack").onclick=()=>{ if(tIdx>0){tIdx--;showStep();} };
+$("tSkip").onclick=endTour;
+$("helpBtn").onclick=startTour;
+window.addEventListener("resize",()=>{ if($("tourVeil").classList.contains("on")){const t=TOUR[tIdx];const n=document.querySelector(t.sel);if(n)positionStep(t,n);} });
+window.addEventListener("keydown",e=>{
+  if(!$("tourVeil").classList.contains("on"))return;
+  if(e.key==="Escape")endTour();
+  if(e.key==="ArrowRight")$("tNext").click();
+  if(e.key==="ArrowLeft")$("tBack").click();
+});
+
 refresh();
 </script>
 </body>
