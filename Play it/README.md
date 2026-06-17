@@ -6,7 +6,7 @@ A playable simulation of the key finding from:
 > Ibnat, N. (2026). *When Governments Say 'Green' — Do Bond Markets Believe Them?*
 > MA Thesis, Department of Economics, Central European University — Private University, Vienna.
 
-▶️ **[Play it live here](https://nahianibnat-2000.github.io/Thesis/Play%20it/greenium_game.html)**
+▶️ **[Play it live here](https://nahianibnat-2000.github.io/Thesis/Play%20it/greenium_game.html?v=2)**
 
 ---
 
