@@ -10,16 +10,26 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --navy:    #0d1117;
-      --navy-2:  #161b22;
-      --navy-3:  #21262d;
-      --border:  #30363d;
-      --gold:    #d4a843;
-      --offwhite:#e6edf3;
-      --muted:   #8b949e;
-      --green:   #3fb950;
-      --user-bg: #1a2332;
-      --bot-bg:  #161b22;
+      --paper:   #FBF9F4;
+      --paper-2: #F2EEE3;
+      --ink:     #16233B;
+      --ink-soft:#4A5570;
+      --line:    #E4DECF;
+      --mint:    #1E9E78;
+      --amber:   #E0961E;
+      --coral:   #E0533D;
+      --violet:  #7C5CD6;
+      /* semantic aliases so the rest of the sheet keeps working */
+      --navy:    #FBF9F4;
+      --navy-2:  #F2EEE3;
+      --navy-3:  #ECE6D7;
+      --border:  #E4DECF;
+      --gold:    #1E9E78;
+      --offwhite:#16233B;
+      --muted:   #4A5570;
+      --green:   #1E9E78;
+      --user-bg: #16233B;
+      --bot-bg:  #FFFFFF;
     }
     html, body { height: 100%; }
     body {
@@ -48,13 +58,14 @@
       font-size: 15px;
       color: var(--offwhite);
     }
-    .logo em { font-style: italic; color: var(--gold); }
+    .logo em { font-style: italic; color: var(--mint); }
     .badge {
       font-family: 'JetBrains Mono', monospace;
       font-size: 10px;
-      color: var(--gold);
-      border: 1px solid var(--gold);
-      padding: 2px 7px;
+      color: var(--mint);
+      border: 1px solid var(--mint);
+      border-radius: 20px;
+      padding: 2px 9px;
       letter-spacing: .05em;
     }
     .header-right a {
@@ -67,15 +78,15 @@
 
     /* ── DISCLAIMER ── */
     .disclaimer {
-      background: rgba(212,168,67,.07);
-      border-bottom: 1px solid rgba(212,168,67,.2);
+      background: rgba(30,158,120,.07);
+      border-bottom: 1px solid rgba(30,158,120,.2);
       padding: 8px 24px;
       font-size: 11px;
       color: var(--muted);
       text-align: center;
       flex-shrink: 0;
     }
-    .disclaimer strong { color: var(--gold); }
+    .disclaimer strong { color: var(--mint); }
 
     /* ── CHAT AREA ── */
     #chat {
@@ -108,16 +119,17 @@
     }
     .suggestion {
       font-size: 12px;
-      color: var(--offwhite);
-      background: var(--navy-2);
-      border: 1px solid var(--border);
-      padding: 8px 14px;
+      color: var(--ink);
+      background: #FFFFFF;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 9px 15px;
       cursor: pointer;
       text-align: left;
-      transition: border-color .15s;
+      transition: all .15s;
       font-family: 'Inter', sans-serif;
     }
-    .suggestion:hover { border-color: var(--gold); color: var(--gold); }
+    .suggestion:hover { border-color: var(--mint); color: var(--mint); transform: translateY(-2px); box-shadow: 0 6px 16px -10px rgba(30,158,120,.6); }
 
     /* ── MESSAGES ── */
     .msg {
@@ -131,44 +143,52 @@
     .msg.bot  { align-self: flex-start; }
 
     .avatar {
-      width: 30px;
-      height: 30px;
-      border-radius: 2px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 14px;
+      font-size: 15px;
       flex-shrink: 0;
       margin-top: 2px;
     }
-    .msg.user .avatar { background: var(--user-bg); border: 1px solid var(--border); }
-    .msg.bot  .avatar { background: rgba(212,168,67,.12); border: 1px solid rgba(212,168,67,.25); }
+    .msg.user .avatar { background: var(--ink); border: 1px solid var(--ink); }
+    .msg.bot  .avatar { background: rgba(30,158,120,.12); border: 1px solid rgba(30,158,120,.3); }
 
     .bubble {
-      padding: 12px 16px;
+      padding: 13px 17px;
       line-height: 1.65;
       font-size: 13.5px;
-      max-width: calc(100% - 42px);
+      max-width: calc(100% - 44px);
+      border-radius: 16px;
+      box-shadow: 0 4px 14px -10px rgba(22,35,59,.4);
     }
     .msg.user .bubble {
-      background: var(--user-bg);
-      border: 1px solid var(--border);
-      color: var(--offwhite);
+      background: var(--ink);
+      border: 1px solid var(--ink);
+      color: #F2EEE3;
+      border-bottom-right-radius: 4px;
     }
     .msg.bot .bubble {
-      background: var(--bot-bg);
-      border: 1px solid var(--border);
-      color: #c9d1d9;
+      background: #FFFFFF;
+      border: 1px solid var(--line);
+      color: #2A3550;
+      border-bottom-left-radius: 4px;
     }
 
     .bubble code {
       font-family: 'JetBrains Mono', monospace;
       font-size: 12px;
-      background: var(--navy-3);
+      background: var(--paper-2);
+      border: 1px solid var(--line);
+      border-radius: 5px;
       padding: 1px 5px;
-      color: var(--gold);
+      color: var(--mint);
     }
-    .bubble strong { color: var(--offwhite); font-weight: 600; }
+    .msg.user .bubble code { background: rgba(255,255,255,.12); border-color: transparent; color: #FBF9F4; }
+    .bubble strong { color: var(--ink); font-weight: 700; }
+    .msg.user .bubble strong { color: #FFFFFF; }
     .bubble em { font-style: italic; }
     .bubble ul { list-style: disc; }
     .bubble li { margin: 2px 0; }
@@ -213,34 +233,36 @@
     }
     #input {
       flex: 1;
-      background: var(--navy);
-      border: 1px solid var(--border);
-      color: var(--offwhite);
+      background: #FFFFFF;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      color: var(--ink);
       font-family: 'Inter', sans-serif;
       font-size: 13px;
-      padding: 10px 14px;
+      padding: 11px 15px;
       resize: none;
       height: 44px;
       max-height: 140px;
       line-height: 1.5;
       outline: none;
-      transition: border-color .15s;
+      transition: border-color .15s, box-shadow .15s;
     }
-    #input:focus { border-color: var(--gold); }
+    #input:focus { border-color: var(--mint); box-shadow: 0 0 0 3px rgba(30,158,120,.12); }
     #input::placeholder { color: var(--muted); }
     #sendBtn {
-      background: var(--gold);
-      color: var(--navy);
+      background: var(--mint);
+      color: #FFFFFF;
       border: none;
-      padding: 0 18px;
+      border-radius: 12px;
+      padding: 0 20px;
       font-size: 16px;
       cursor: pointer;
       font-weight: bold;
-      transition: opacity .15s;
+      transition: transform .12s, box-shadow .15s;
       flex-shrink: 0;
     }
-    #sendBtn:hover { opacity: .85; }
-    #sendBtn:disabled { opacity: .4; cursor: not-allowed; }
+    #sendBtn:hover { transform: translateY(-2px); box-shadow: 0 8px 18px -10px rgba(30,158,120,.7); }
+    #sendBtn:disabled { opacity: .4; cursor: not-allowed; transform: none; box-shadow: none; }
 
     .input-hint {
       text-align: center;
@@ -271,6 +293,8 @@
     <span class="badge">RESEARCH TOOL</span>
   </div>
   <div class="header-right">
+    <a href="#" onclick="emailChat('self'); return false;" style="margin-right:16px;">✉ Email myself</a>
+    <a href="#" onclick="emailChat('author'); return false;" style="margin-right:16px;">✉ Email Nahian</a>
     <a href="#" onclick="newChat(); return false;" style="margin-right:16px;">↻ New chat</a>
     <a href="index.html">← Back to thesis</a>
   </div>
@@ -300,7 +324,7 @@
   <button id="sendBtn" onclick="send()">➤</button>
 </div>
 <div class="input-hint">
-  Powered by <a href="https://github.com/NahianIbnat-2000/Thesis" target="_blank">Ibnat (2026)</a> &nbsp;·&nbsp; Citations enforced &nbsp;·&nbsp; Enter to send
+  Powered by <a href="https://github.com/NahianIbnat-2000/Thesis" target="_blank">Ibnat (2026)</a> &nbsp;·&nbsp; Grounded in the thesis &nbsp;·&nbsp; Enter to send
 </div>
 
 <script>
@@ -409,6 +433,46 @@
 
   // warm the server as soon as the page loads, silently
   window.addEventListener('load', () => { wakeServer(false); });
+
+  // build the author address in JS so it isn't sitting in the page source as plain text
+  function authorEmail() {
+    const user = ['nahian', 'anan83'].join('.');
+    return user + '@' + 'gmail.com';
+  }
+
+  function emailChat(target) {
+    if (!history.length) {
+      alert('Ask a question first — there is no conversation to email yet.');
+      return;
+    }
+    const recipient = target === 'author' ? authorEmail() : '';
+    const subject = 'Green Bond Credibility Assistant — chat transcript';
+
+    // assemble a readable transcript from the in-browser history
+    const lines = history.map(t => {
+      const who = t.role === 'user' ? 'Me' : 'Assistant';
+      return who + ': ' + t.content;
+    });
+    let body =
+      'Conversation with the Green Bond Credibility Assistant\n' +
+      '(' + new Date().toLocaleString() + ')\n' +
+      'Tool: https://nahianibnat-2000.github.io/Thesis/chatbot.html\n\n' +
+      lines.join('\n\n') +
+      '\n\n— Sent from the Green Bond Credibility Assistant, a companion to ' +
+      'Ibnat, N. (2026), MA Thesis, CEU.';
+
+    // mailto bodies have a practical length limit (~1800 chars is safe across clients)
+    const MAX = 1800;
+    if (body.length > MAX) {
+      body = body.slice(0, MAX) +
+        '\n\n[Transcript truncated — open the assistant to see the full conversation.]';
+    }
+
+    const url = 'mailto:' + recipient +
+      '?subject=' + encodeURIComponent(subject) +
+      '&body='    + encodeURIComponent(body);
+    window.location.href = url;
+  }
 
   function newChat() {
     if (busy) return;
