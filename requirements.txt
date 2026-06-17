@@ -1,0 +1,27 @@
+# ── Data manipulation ──────────────────────────
+pandas>=1.5.0
+numpy>=1.23.0
+openpyxl>=3.0.10          # Excel I/O for raw bond data
+
+# ── Regression & econometrics ──────────────────
+statsmodels>=0.13.0        # OLS, DiD, Durbin-Watson, VIF, Granger causality
+linearmodels>=4.27         # PanelOLS, stacked DiD with fixed effects
+scipy>=1.9.0               # statistical tests used in the event study
+
+# ── NLP / ClimateBERT (sentiment pipeline only) ─
+transformers>=4.30.0       # AutoTokenizer, AutoModelForSequenceClassification
+torch>=2.0.0               # PyTorch backend for ClimateBERT
+tqdm>=4.64.0               # Progress bars
+
+# ── HTTP / API ────────────────────────────────
+requests>=2.28.0           # GDELT API queries
+
+# ── Visualisation ─────────────────────────────
+matplotlib>=3.6.0          # All thesis figures
+
+# os, time, random, warnings, datetime — standard library
+#
+# For an exact, deterministic environment, see requirements-lock.txt
+# (generated with `pip freeze` from the environment used to produce the
+# reported results). Install the loose ranges above for a quick start,
+# or the lockfile for byte-for-byte reproduction.
