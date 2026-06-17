@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Greenium Project · Nahian Ibnat (2026)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,700;0,800;1,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FBF9F4; --paper-2:#F2EEE3; --ink:#16233B; --ink-soft:#4A5570;
+    --mint:#1E9E78; --amber:#E0961E; --coral:#E0533D; --violet:#7C5CD6; --sky:#2D7FF0;
+    --line:#E4DECF;
+    --mono:'JetBrains Mono',monospace; --serif:'Playfair Display',serif; --sans:'Inter',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;font-weight:500}
+
+  /* ---------- HERO ---------- */
+  header.hero{padding:54px 0 30px;position:relative;overflow:hidden}
+  .hero .eyebrow{color:var(--mint);margin-bottom:18px}
+  .hero h1{font-family:var(--serif);font-weight:800;font-size:clamp(34px,6vw,64px);line-height:1.04;letter-spacing:-.01em;max-width:15ch}
+  .hero h1 .q{color:var(--amber);font-style:italic}
+  .hero h1 .belief{position:relative;white-space:nowrap}
+  .hero p.sub{font-size:clamp(15px,2vw,19px);color:var(--ink-soft);margin-top:20px;max-width:54ch}
+  /* live greenium line in hero */
+  .heroline{margin-top:30px;border:1px solid var(--line);border-radius:14px;background:#fff;
+    box-shadow:0 18px 40px -28px rgba(22,35,59,.35);overflow:hidden}
+  .heroline .cap{display:flex;justify-content:space-between;align-items:center;padding:11px 16px;border-bottom:1px solid var(--line);background:var(--paper-2)}
+  .heroline .cap b{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-soft);font-weight:500}
+  .heroline .cap .tag{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--coral);transition:color .5s}
+  canvas#hero{display:block;width:100%;height:150px}
+
+  /* author chip */
+  .author{display:flex;align-items:center;gap:14px;margin-top:30px;flex-wrap:wrap}
+  .author img{width:54px;height:54px;border-radius:50%;border:2px solid var(--ink);object-fit:cover;background:var(--paper-2)}
+  .author .nm{font-weight:700;font-size:15px}
+  .author .meta{font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);letter-spacing:.02em}
+
+  /* ---------- TOOLS ---------- */
+  section{padding:46px 0}
+  .sechead{display:flex;align-items:baseline;gap:14px;margin-bottom:24px}
+  .sechead h2{font-family:var(--serif);font-weight:700;font-size:clamp(24px,3.4vw,34px)}
+  .tools{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+  @media(max-width:720px){.tools{grid-template-columns:1fr}}
+  .card{display:block;border-radius:16px;padding:22px;border:1.5px solid var(--line);background:#fff;
+    transition:transform .15s ease, box-shadow .15s ease, border-color .15s;position:relative;overflow:hidden}
+  .card:hover{transform:translateY(-4px);box-shadow:0 20px 40px -24px rgba(22,35,59,.4)}
+  .card .ic{font-size:30px;display:block;margin-bottom:12px}
+  .card h3{font-family:var(--serif);font-weight:700;font-size:21px;margin-bottom:7px}
+  .card p{font-size:14px;color:var(--ink-soft);margin-bottom:16px}
+  .card .go{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;display:inline-flex;align-items:center;gap:6px}
+  .card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;transition:width .15s}
+  .card:hover::before{width:8px}
+  .card.c-mint::before{background:var(--mint)} .card.c-mint:hover{border-color:var(--mint)} .card.c-mint .go{color:var(--mint)}
+  .card.c-violet::before{background:var(--violet)} .card.c-violet:hover{border-color:var(--violet)} .card.c-violet .go{color:var(--violet)}
+  .card.c-amber::before{background:var(--amber)} .card.c-amber:hover{border-color:var(--amber)} .card.c-amber .go{color:var(--amber)}
+  .card.c-coral::before{background:var(--coral)} .card.c-coral:hover{border-color:var(--coral)} .card.c-coral .go{color:var(--coral)}
+  .card .pill{position:absolute;top:18px;right:18px;font-family:var(--mono);font-size:9.5px;font-weight:700;letter-spacing:.1em;
+    text-transform:uppercase;padding:4px 8px;border-radius:20px;background:var(--paper-2);color:var(--ink-soft)}
+
+  /* ---------- THE FINDING (colour band) ---------- */
+  .finding{background:var(--ink);color:var(--paper);border-radius:22px;padding:44px 38px;position:relative;overflow:hidden}
+  .finding .eyebrow{color:var(--amber)}
+  .finding h2{font-family:var(--serif);font-weight:800;font-size:clamp(26px,4vw,40px);margin:14px 0 8px;max-width:18ch;line-height:1.1}
+  .finding h2 em{color:var(--mint);font-style:italic}
+  .finding p.lead{color:#C7D0E4;max-width:60ch;font-size:15.5px}
+  .statband{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:30px}
+  @media(max-width:640px){.statband{grid-template-columns:1fr;gap:16px}}
+  .stat .v{font-family:var(--mono);font-weight:700;font-size:clamp(26px,4vw,40px);line-height:1}
+  .stat .v.null{color:var(--coral)} .stat .v.vix{color:var(--violet)} .stat .v.depth{color:var(--mint)}
+  .stat .l{font-size:13px;color:#9DA8C2;margin-top:8px;max-width:22ch}
+
+  /* ---------- HOW IT WORKS ---------- */
+  .twocol{display:grid;grid-template-columns:1fr 1fr;gap:30px}
+  @media(max-width:720px){.twocol{grid-template-columns:1fr;gap:18px}}
+  .prose p{margin-bottom:14px;color:var(--ink-soft)}
+  .prose strong{color:var(--ink)}
+  .factbox{border-left:3px solid var(--mint);background:var(--paper-2);border-radius:0 12px 12px 0;padding:16px 18px;font-size:14px}
+  .factbox .ttl{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--mint);font-weight:700;margin-bottom:8px}
+  .tbl{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:6px}
+  .tbl th{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);text-align:left;font-weight:500;padding:8px 10px;border-bottom:1.5px solid var(--line)}
+  .tbl td{padding:9px 10px;border-bottom:1px solid var(--line)}
+  .tbl td.iso{font-family:var(--mono);font-size:12px}
+
+  /* ---------- DOWNLOADS ---------- */
+  .dlrow{display:flex;flex-wrap:wrap;gap:12px;margin-top:8px}
+  .btn{font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.06em;padding:12px 18px;border-radius:10px;
+    border:1.5px solid var(--ink);display:inline-flex;align-items:center;gap:8px;transition:all .14s}
+  .btn.primary{background:var(--ink);color:var(--paper)}
+  .btn.primary:hover{background:var(--mint);border-color:var(--mint)}
+  .btn.ghost:hover{background:var(--paper-2)}
+
+  /* ---------- AI ASSISTANT SHOWCASE ---------- */
+  .aibox{border:1.5px solid var(--line);border-radius:22px;background:#fff;overflow:hidden;
+    display:grid;grid-template-columns:1fr 1fr;box-shadow:0 18px 40px -30px rgba(22,35,59,.35)}
+  @media(max-width:780px){.aibox{grid-template-columns:1fr}}
+  .aimain{padding:34px;border-right:1.5px solid var(--line)}
+  @media(max-width:780px){.aimain{border-right:none;border-bottom:1.5px solid var(--line)}}
+  .aimain h2{font-family:var(--serif);font-weight:700;font-size:clamp(24px,3.2vw,32px);margin:12px 0 10px}
+  .aimain p{color:var(--ink-soft);font-size:15px}
+  .aiways{padding:22px 26px;background:var(--paper-2);display:flex;flex-direction:column;gap:16px;justify-content:center}
+  .way{display:flex;gap:14px;align-items:flex-start}
+  .way .wn{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--coral);padding-top:2px;flex:none}
+  .way b{display:block;font-size:14.5px;margin-bottom:2px}
+  .way span{display:block;font-size:13px;color:var(--ink-soft);line-height:1.5}
+  .way code{font-family:var(--mono);font-size:11.5px;background:#fff;border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+
+  /* ---------- FOOTER ---------- */
+  footer{border-top:1px solid var(--line);margin-top:30px;padding:34px 0 50px}
+  .foot{display:flex;justify-content:space-between;align-items:center;gap:20px;flex-wrap:wrap}
+  .foot .who{display:flex;align-items:center;gap:14px}
+  .foot img{width:46px;height:46px;border-radius:50%;border:2px solid var(--ink);object-fit:cover;background:var(--paper-2)}
+  .foot .nm{font-weight:700}
+  .foot .meta{font-family:var(--mono);font-size:11.5px;color:var(--ink-soft)}
+  .foot .lks{display:flex;gap:18px;font-family:var(--mono);font-size:12px;font-weight:500}
+  .foot .lks a{border-bottom:1.5px solid transparent;transition:border-color .14s;padding-bottom:2px}
+  .foot .lks a:hover{border-color:var(--mint)}
+  .disc{font-family:var(--mono);font-size:11px;color:var(--ink-soft);margin-top:22px;line-height:1.6;max-width:80ch}
+
+  @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto}}
+  :focus-visible{outline:3px solid var(--amber);outline-offset:2px;border-radius:4px}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="eyebrow">MA Thesis · Central European University · 2026</div>
+    <h1>When governments say <span class="q">"green"</span>, do bond markets <span class="belief">believe them?</span></h1>
+    <p class="sub">A green bond is a promise. If investors trust it, they accept a lower yield, a discount called the <b>greenium</b>. This project asks whether anything a government does can actually move that price. Play with the answer below.</p>
+
+    <div class="heroline">
+      <div class="cap"><b>Greenium (bp) · India &amp; Indonesia</b><span class="tag" id="heroTag">THIN MARKET · NO BELIEF</span></div>
+      <canvas id="hero"></canvas>
+    </div>
+
+    <div class="author">
+      <img src="https://github.com/NahianIbnat-2000.png" alt="Nahian Ibnat" onerror="this.style.display='none'">
+      <div>
+        <div class="nm">Nahian Ibnat</div>
+        <div class="meta">MA Economics, Data &amp; Policy · Supervisor: Zoltán Csaba Tóth</div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- TOOLS FIRST -->
+<section id="tools">
+  <div class="wrap">
+    <div class="sechead">
+      <span class="eyebrow" style="color:var(--violet)">Start here</span>
+      <h2>Four ways in, no economics needed</h2>
+    </div>
+    <div class="tools">
+      <a class="card c-mint" href="Play it/greenium_game.html">
+        <span class="pill">Play in browser</span>
+        <span class="ic">🎮</span>
+        <h3>The Greenium Game</h3>
+        <p>Run an emerging-market debt office for 20 quarters. Can you make the bond market believe your green promises? (Spoiler: shouting louder won't do it.)</p>
+        <span class="go">Play the game →</span>
+      </a>
+      <a class="card c-violet" href="live_simulator/greenium_live_simulator.html">
+        <span class="pill">Open in browser</span>
+        <span class="ic">📊</span>
+        <h3>Live Simulator</h3>
+        <p>Watch the greenium stream in real time. Drag the sliders, fire credibility events, inject a VIX shock, and see the market respond, or refuse to.</p>
+        <span class="go">Open the simulator →</span>
+      </a>
+      <a class="card c-amber" href="live_simulator/greenium_explainer.html">
+        <span class="pill">~1 minute</span>
+        <span class="ic">🎬</span>
+        <h3>Animated Explainer</h3>
+        <p>The whole argument in about a minute: the line drawing itself, reacting to fear, crossing the threshold. Autoplays, or pause and scrub. New here? Start with this.</p>
+        <span class="go">Watch it →</span>
+      </a>
+      <a class="card c-coral" href="chatbot.html">
+        <span class="pill">Chat in browser</span>
+        <span class="ic">🤖</span>
+        <h3>Credibility Assistant</h3>
+        <p>Ask a research assistant what the evidence says. Citations on every claim, null results reported honestly, and no policy advice by design.</p>
+        <span class="go">Ask a question →</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- AI ASSISTANT SHOWCASE -->
+<section id="assistant">
+  <div class="wrap">
+    <div class="aibox">
+      <div class="aimain">
+        <span class="eyebrow" style="color:var(--coral)">The research assistant</span>
+        <h2>Ask the thesis a question.</h2>
+        <p>A retrieval-augmented assistant trained on the thesis and the greenium literature. It answers with inline citations on every claim, reports null results honestly instead of inventing positive effects, and declines policy advice, price predictions, and investment recommendations by design. It is a knowledge tool, not an advisor.</p>
+        <div class="dlrow" style="margin-top:18px">
+          <a class="btn primary" href="chatbot.html">🤖 Open the live chat</a>
+          <a class="btn ghost" href="https://codespaces.new/NahianIbnat-2000/Thesis">⬡ Open in Codespaces</a>
+        </div>
+      </div>
+      <div class="aiways">
+        <div class="way">
+          <span class="wn">01</span>
+          <div><b>Live web chat</b><span>No setup, no API key. Just open and ask. Runs on GitHub Pages, talks to a hosted retriever that passes the top passages to the model under a citation-enforcing prompt.</span></div>
+        </div>
+        <div class="way">
+          <span class="wn">02</span>
+          <div><b>Deploy your own backend</b><span>The FastAPI + TF-IDF backend in the repo deploys to Render. The thesis corpus is bundled and indexed on startup, so no manual upload is needed.</span></div>
+        </div>
+        <div class="way">
+          <span class="wn">03</span>
+          <div><b>Full RAG in a Codespace</b><span>A dense-retrieval build with bge-small embeddings, a ChromaDB store, and a 15-question evaluation set including trap-null questions. Run <code>bash green-bond-credibility-assistant/scripts/run.sh</code> (needs a free Anthropic key).</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- THE FINDING -->
+<section>
+  <div class="wrap">
+    <div class="finding">
+      <div class="eyebrow">The finding, in one line</div>
+      <h2>Credibility needs a <em>receiver</em>.</h2>
+      <p class="lead">In India and Indonesia, no credibility signal (climate-news tone, signalling noise, or a green-bond auction) moved the greenium. The channel returns a clean null. Only global risk appetite (VIX) drives the daily price. The greenium <i>is</i> real in deep markets like Germany and Denmark, so the null is a feature of thin markets, not a flaw in green bonds.</p>
+      <div class="statband">
+        <div class="stat"><div class="v null">NULL</div><div class="l">credibility → greenium, across all five specifications</div></div>
+        <div class="stat"><div class="v vix">0.35 to 0.48 bp</div><div class="l">VIX effect per SD, the one robust daily driver</div></div>
+        <div class="stat"><div class="v depth">−1.82 / −2.80</div><div class="l">persistent greenium (bp), Germany / Denmark benchmark</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section>
+  <div class="wrap">
+    <div class="sechead">
+      <span class="eyebrow" style="color:var(--mint)">The design</span>
+      <h2>How the question was tested</h2>
+    </div>
+    <div class="twocol">
+      <div class="prose">
+        <p>Each sovereign green bond is paired with a <strong>maturity-matched conventional twin</strong> from the same issuer. The daily yield gap between them is the greenium, in basis points.</p>
+        <p>The estimator is a <strong>twin-bond stacked difference-in-differences</strong> anchored on two political shocks, with climate-news tone measured from GDELT V2Tone, and HC3 / panel-corrected standard errors throughout.</p>
+        <p>These are <strong>precise nulls</strong>: coefficients sitting near zero with p-values around 0.4 to 0.6, not noisy non-results. The two-country sample limits statistical power, which the thesis states plainly.</p>
+      </div>
+      <div>
+        <table class="tbl">
+          <thead><tr><th>Country</th><th>Role</th><th>Green ISIN</th></tr></thead>
+          <tbody>
+            <tr><td>India</td><td>Core</td><td class="iso">IN0020220144</td></tr>
+            <tr><td>Indonesia</td><td>Core</td><td class="iso">US71567RAV87</td></tr>
+            <tr><td>Germany</td><td>Benchmark</td><td class="iso">DE0001030708</td></tr>
+            <tr><td>Denmark</td><td>Benchmark</td><td class="iso">DK0009924375</td></tr>
+          </tbody>
+        </table>
+        <p style="font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);margin-top:14px;line-height:1.6">
+          Coverage 2020 to 2024 · daily · bond yields via Refinitiv/LSEG (CEU) · tone via GDELT BigQuery · VIX via FRED. Thailand dropped: no tradeable sovereign green bond with verifiable secondary-market yields.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DOWNLOADS -->
+<section>
+  <div class="wrap">
+    <div class="sechead">
+      <span class="eyebrow" style="color:var(--coral)">Read &amp; replicate</span>
+      <h2>The paper and the code</h2>
+    </div>
+    <div class="dlrow">
+      <a class="btn primary" href="Nahian_Ibnat_2026_MA_Thesis.pdf">📄 Full thesis (PDF)</a>
+      <a class="btn ghost" href="https://github.com/NahianIbnat-2000/Thesis">⌥ GitHub repository</a>
+      <a class="btn ghost" href="https://github.com/NahianIbnat-2000/Thesis/tree/master/notebooks">⊞ Replication notebooks</a>
+      <a class="btn ghost" href="https://codespaces.new/NahianIbnat-2000/Thesis">⬡ Open in Codespaces</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="foot">
+      <div class="who">
+        <img src="https://github.com/NahianIbnat-2000.png" alt="Nahian Ibnat" onerror="this.style.display='none'">
+        <div>
+          <div class="nm">Nahian Ibnat</div>
+          <div class="meta">MA Economics, Data &amp; Policy · Central European University · 2026</div>
+        </div>
+      </div>
+      <div class="lks">
+        <a href="https://forms.gle/YMKYULpfnAX5dyV4A">Feedback</a>
+        <a href="AI_Declaration_Nahian_Ibnat.pdf">AI Declaration</a>
+        <a href="https://github.com/NahianIbnat-2000/Thesis">GitHub</a>
+      </div>
+    </div>
+    <p class="disc">A stylized public companion to an MA thesis. The interactive tools model <em>one interpretation</em> (the market-development-threshold reading) consistent with, but not directly identified by, the thesis evidence. Cite as: Ibnat, N. (2026). When Governments Say 'Green' — Do Bond Markets Believe Them? MA Thesis, Central European University, Vienna.</p>
+  </div>
+</footer>
+
+<script>
+"use strict";
+// hero greenium line: noisy/red while "thin", then settles green, answers the headline
+const cv=document.getElementById("hero");
+function draw(){
+  const dpr=window.devicePixelRatio||1, r=cv.getBoundingClientRect();
+  const w=Math.round(r.width)||800, h=150;
+  cv.width=w*dpr; cv.height=h*dpr;
+  const ctx=cv.getContext("2d"); ctx.setTransform(dpr,0,0,dpr,0,0);
+  const N=150, cross=92, padL=8,padR=8,padT=12,padB=12;
+  const yMin=-6,yMax=6;
+  const x=i=>padL+i/(N-1)*(w-padL-padR);
+  const y=v=>padT+(yMax-v)/(yMax-yMin)*(h-padT-padB);
+  let seed=11; const rnd=()=>{seed=(seed*9301+49297)%233280;return seed/233280;};
+  const data=[];let g=0.5;
+  for(let i=0;i<N;i++){ if(i<cross){g=0.6*g+0.4*0.6+(rnd()-0.5)*4.2;}
+    else{const t=-2.6;g=0.82*g+0.18*t+(rnd()-0.5)*0.8;} data.push(g);}
+  const col=v=>v<=-2?"#1E9E78":v>0?"#E0533D":"#E0961E";
+  let f=0;
+  (function loop(){
+    ctx.clearRect(0,0,w,h);
+    // zero + target guides
+    ctx.strokeStyle="#E4DECF";ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(padL,y(0));ctx.lineTo(w-padR,y(0));ctx.stroke();
+    ctx.strokeStyle="rgba(30,158,120,.4)";ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(padL,y(-2));ctx.lineTo(w-padR,y(-2));ctx.stroke();ctx.setLineDash([]);
+    const n=Math.floor(f);
+    // threshold marker
+    if(n>cross){const cx=x(cross);ctx.strokeStyle="#E0961E";ctx.setLineDash([3,3]);ctx.lineWidth=1.4;
+      ctx.beginPath();ctx.moveTo(cx,padT);ctx.lineTo(cx,h-padB);ctx.stroke();ctx.setLineDash([]);}
+    ctx.lineWidth=2.2;
+    for(let i=1;i<=n&&i<N;i++){ctx.strokeStyle=col(data[i]);ctx.beginPath();
+      ctx.moveTo(x(i-1),y(Math.max(yMin,Math.min(yMax,data[i-1]))));
+      ctx.lineTo(x(i),y(Math.max(yMin,Math.min(yMax,data[i]))));ctx.stroke();}
+    const tag=document.getElementById("heroTag");
+    if(n>cross){tag.textContent="DEEP MARKET · GREENIUM HOLDS";tag.style.color="#1E9E78";}
+    f+=1.5; if(f<N)requestAnimationFrame(loop);
+  })();
+}
+draw(); window.addEventListener("resize",draw);
+</script>
+</body>
+</html>
