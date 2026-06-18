@@ -25,9 +25,10 @@
   header.hero{padding:54px 0 30px;position:relative;overflow:hidden}
   .hero .eyebrow{color:var(--mint);margin-bottom:18px}
   .hero h1{font-family:var(--serif);font-weight:800;font-size:clamp(34px,6vw,64px);line-height:1.04;letter-spacing:-.01em;max-width:15ch}
-  .hero h1 .q{color:var(--amber);font-style:italic}
+  .hero h1 .q{color:var(--mint);font-style:italic}
   .hero h1 .belief{position:relative;white-space:nowrap}
   .hero p.sub{font-size:clamp(15px,2vw,19px);color:var(--ink-soft);margin-top:20px;max-width:54ch}
+  .hero p.why{font-size:14px;color:var(--ink-soft);margin-top:14px;max-width:60ch;padding-left:14px;border-left:3px solid var(--mint)}
   /* live greenium line in hero */
   .heroline{margin-top:30px;border:1px solid var(--line);border-radius:14px;background:#fff;
     box-shadow:0 18px 40px -28px rgba(22,35,59,.35);overflow:hidden}
@@ -65,16 +66,18 @@
     text-transform:uppercase;padding:4px 8px;border-radius:20px;background:var(--paper-2);color:var(--ink-soft)}
 
   /* ---------- THE FINDING (colour band) ---------- */
-  .finding{background:var(--ink);color:var(--paper);border-radius:22px;padding:44px 38px;position:relative;overflow:hidden}
+  .finding{background:#0E3B2E;color:var(--paper);border-radius:22px;padding:44px 38px;position:relative;overflow:hidden}
   .finding .eyebrow{color:var(--amber)}
   .finding h2{font-family:var(--serif);font-weight:800;font-size:clamp(26px,4vw,40px);margin:14px 0 8px;max-width:18ch;line-height:1.1}
-  .finding h2 em{color:var(--mint);font-style:italic}
-  .finding p.lead{color:#C7D0E4;max-width:60ch;font-size:15.5px}
+  .finding h2 em{color:#A7F0D1;font-style:italic}
+  .finding p.lead{color:#CDE6DC;max-width:60ch;font-size:15.5px}
+  .finding p.contrib{color:#A9CFC0;max-width:64ch;font-size:13.5px;margin-top:26px;padding-top:20px;border-top:1px solid rgba(255,255,255,.14);line-height:1.7}
+  .finding p.contrib b{color:var(--amber)}
   .statband{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:30px}
   @media(max-width:640px){.statband{grid-template-columns:1fr;gap:16px}}
   .stat .v{font-family:var(--mono);font-weight:700;font-size:clamp(26px,4vw,40px);line-height:1}
-  .stat .v.null{color:var(--coral)} .stat .v.vix{color:var(--violet)} .stat .v.depth{color:var(--mint)}
-  .stat .l{font-size:13px;color:#9DA8C2;margin-top:8px;max-width:22ch}
+  .stat .v.null{color:#FF8A73} .stat .v.vix{color:#BBA3FF} .stat .v.depth{color:#A7F0D1}
+  .stat .l{font-size:13px;color:#8FB3A6;margin-top:8px;max-width:22ch}
 
   /* ---------- HOW IT WORKS ---------- */
   .twocol{display:grid;grid-template-columns:1fr 1fr;gap:30px}
@@ -90,6 +93,11 @@
 
   /* ---------- DOWNLOADS ---------- */
   .dlrow{display:flex;flex-wrap:wrap;gap:12px;margin-top:8px}
+  #paper{padding-top:34px;padding-bottom:8px}
+  .paperband{background:var(--paper-2);border:1px solid var(--line);border-radius:18px;padding:24px 26px;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap}
+  .paperband-text{flex:1;min-width:260px}
+  .paperband-text p{font-size:15px;color:var(--ink-soft);margin-top:8px;max-width:50ch}
+  .paperband-text b{color:var(--ink)}
   .btn{font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.06em;padding:12px 18px;border-radius:10px;
     border:1.5px solid var(--ink);display:inline-flex;align-items:center;gap:8px;transition:all .14s}
   .btn.primary{background:var(--ink);color:var(--paper)}
@@ -133,7 +141,8 @@
   <div class="wrap">
     <div class="eyebrow">MA Thesis · Central European University · 2026</div>
     <h1>When governments say <span class="q">"green"</span>, do bond markets <span class="belief">believe them?</span></h1>
-    <p class="sub">A green bond is a promise. If investors trust it, they accept a lower yield, a discount called the <b>greenium</b>. This project asks whether anything a government does can actually move that price. Play with the answer below.</p>
+    <p class="sub">A green bond is a promise: the money will fund something green. If investors believe the promise, they accept a slightly lower yield, a discount called the <b>greenium</b>. But a promise is only words, so this project asks a sharper question: when a government signals its climate commitment, through speeches, announcements, pledges, and the climate conversation around it, does that talk actually move the price investors pay? Or does credibility need more than words?</p>
+    <p class="why">This is my MA thesis, submitted for the <b>Economics, Data &amp; Policy</b> degree at Central European University. The interactive tools below turn its findings into something anyone can explore.</p>
 
     <div class="heroline">
       <div class="cap"><b>Greenium (bp) · India &amp; Indonesia</b><span class="tag" id="heroTag">THIN MARKET · NO BELIEF</span></div>
@@ -150,14 +159,39 @@
   </div>
 </header>
 
-<!-- TOOLS FIRST -->
+<!-- PAPER & CODE (moved up) -->
+<section id="paper">
+  <div class="wrap">
+    <div class="paperband">
+      <div class="paperband-text">
+        <span class="eyebrow" style="color:var(--coral)">Read &amp; replicate</span>
+        <p><b>Here for the research?</b> Read the full thesis and run the code below. Or scroll on to explore the findings through the interactive tools.</p>
+      </div>
+      <div class="dlrow">
+        <a class="btn primary" href="Nahian_Ibnat_2026_MA_Thesis.pdf">📄 Full thesis (PDF)</a>
+        <a class="btn ghost" href="https://github.com/NahianIbnat-2000/Thesis">⌥ GitHub repository</a>
+        <a class="btn ghost" href="https://github.com/NahianIbnat-2000/Thesis/tree/master/notebooks">⊞ Replication notebooks</a>
+        <a class="btn ghost" href="https://codespaces.new/NahianIbnat-2000/Thesis">⬡ Open in Codespaces</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TOOLS -->
 <section id="tools">
   <div class="wrap">
     <div class="sechead">
-      <span class="eyebrow" style="color:var(--violet)">Start here</span>
-      <h2>Four ways in, no economics needed</h2>
+      <span class="eyebrow" style="color:var(--violet)">Interactive</span>
+      <h2>Play with the research</h2>
     </div>
     <div class="tools">
+      <a class="card c-amber" href="live_simulator/greenium_explainer.html">
+        <span class="pill">~1 minute</span>
+        <span class="ic">📈</span>
+        <h3>Explainer</h3>
+        <p>The whole argument in about a minute: the line drawing itself, reacting to fear, crossing the threshold. Autoplays, or pause and scrub. New here? Start with this.</p>
+        <span class="go">Watch it →</span>
+      </a>
       <a class="card c-mint" href="Play it/greenium_game.html">
         <span class="pill">Play in browser</span>
         <span class="ic">🎮</span>
@@ -169,54 +203,16 @@
         <span class="pill">Open in browser</span>
         <span class="ic">📊</span>
         <h3>Live Simulator</h3>
-        <p>Watch the greenium stream in real time. Drag the sliders, fire credibility events, inject a VIX shock, and see the market respond, or refuse to.</p>
+        <p>A sandbox where the greenium streams in real time. Drag the sliders, fire credibility events, inject a VIX shock, and watch the market respond, or refuse to. No win or lose, just explore.</p>
         <span class="go">Open the simulator →</span>
-      </a>
-      <a class="card c-amber" href="live_simulator/greenium_explainer.html">
-        <span class="pill">~1 minute</span>
-        <span class="ic">🎬</span>
-        <h3>Animated Explainer</h3>
-        <p>The whole argument in about a minute: the line drawing itself, reacting to fear, crossing the threshold. Autoplays, or pause and scrub. New here? Start with this.</p>
-        <span class="go">Watch it →</span>
       </a>
       <a class="card c-coral" href="chatbot.html">
         <span class="pill">Chat in browser</span>
         <span class="ic">🤖</span>
         <h3>Credibility Assistant</h3>
-        <p>Ask a research assistant what the evidence says. Citations on every claim, null results reported honestly, and no policy advice by design.</p>
+        <p>Ask a research assistant what the evidence says. Grounded in the thesis, null results reported honestly, and no policy advice by design.</p>
         <span class="go">Ask a question →</span>
       </a>
-    </div>
-  </div>
-</section>
-
-<!-- AI ASSISTANT SHOWCASE -->
-<section id="assistant">
-  <div class="wrap">
-    <div class="aibox">
-      <div class="aimain">
-        <span class="eyebrow" style="color:var(--coral)">The research assistant</span>
-        <h2>Ask the thesis a question.</h2>
-        <p>A retrieval-augmented assistant trained on the thesis and the greenium literature. It answers with inline citations on every claim, reports null results honestly instead of inventing positive effects, and declines policy advice, price predictions, and investment recommendations by design. It is a knowledge tool, not an advisor.</p>
-        <div class="dlrow" style="margin-top:18px">
-          <a class="btn primary" href="chatbot.html">🤖 Open the live chat</a>
-          <a class="btn ghost" href="https://codespaces.new/NahianIbnat-2000/Thesis">⬡ Open in Codespaces</a>
-        </div>
-      </div>
-      <div class="aiways">
-        <div class="way">
-          <span class="wn">01</span>
-          <div><b>Live web chat</b><span>No setup, no API key. Just open and ask. Runs on GitHub Pages, talks to a hosted retriever that passes the top passages to the model under a citation-enforcing prompt.</span></div>
-        </div>
-        <div class="way">
-          <span class="wn">02</span>
-          <div><b>Deploy your own backend</b><span>The FastAPI + TF-IDF backend in the repo deploys to Render. The thesis corpus is bundled and indexed on startup, so no manual upload is needed.</span></div>
-        </div>
-        <div class="way">
-          <span class="wn">03</span>
-          <div><b>Full RAG in a Codespace</b><span>A dense-retrieval build with bge-small embeddings, a ChromaDB store, and a 15-question evaluation set including trap-null questions. Run <code>bash green-bond-credibility-assistant/scripts/run.sh</code> (needs a free Anthropic key).</span></div>
-        </div>
-      </div>
     </div>
   </div>
 </section>
@@ -233,6 +229,7 @@
         <div class="stat"><div class="v vix">0.35 to 0.48 bp</div><div class="l">VIX effect per SD, the one robust daily driver</div></div>
         <div class="stat"><div class="v depth">−1.82 / −2.80</div><div class="l">persistent greenium (bp), Germany / Denmark benchmark</div></div>
       </div>
+      <p class="contrib"><b>Why it matters.</b> Most green-bond pricing evidence comes from developed markets. This is one of the first twin-bond studies of <i>emerging-market sovereign</i> green debt, and it shows that in thin markets, credibility signals do not yet reach bond prices. The European benchmark confirms the method works, so the null reflects market depth, not a failure to measure.</p>
     </div>
   </div>
 </section>
@@ -264,22 +261,6 @@
           Coverage 2020 to 2024 · daily · bond yields via Refinitiv/LSEG (CEU) · tone via GDELT BigQuery · VIX via FRED. Thailand dropped: no tradeable sovereign green bond with verifiable secondary-market yields.
         </p>
       </div>
-    </div>
-  </div>
-</section>
-
-<!-- DOWNLOADS -->
-<section>
-  <div class="wrap">
-    <div class="sechead">
-      <span class="eyebrow" style="color:var(--coral)">Read &amp; replicate</span>
-      <h2>The paper and the code</h2>
-    </div>
-    <div class="dlrow">
-      <a class="btn primary" href="Nahian_Ibnat_2026_MA_Thesis.pdf">📄 Full thesis (PDF)</a>
-      <a class="btn ghost" href="https://github.com/NahianIbnat-2000/Thesis">⌥ GitHub repository</a>
-      <a class="btn ghost" href="https://github.com/NahianIbnat-2000/Thesis/tree/master/notebooks">⊞ Replication notebooks</a>
-      <a class="btn ghost" href="https://codespaces.new/NahianIbnat-2000/Thesis">⬡ Open in Codespaces</a>
     </div>
   </div>
 </section>
