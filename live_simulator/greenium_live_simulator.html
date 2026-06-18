@@ -30,6 +30,9 @@
   h1{font-size:20px;font-weight:700;letter-spacing:.02em}
   h1 span{color:var(--good)}
   .src{font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+  .sandbox-note{font-family:var(--mono);font-size:10.5px;color:var(--good);margin-top:5px;max-width:60ch}
+  .backlink{font-family:var(--mono);font-size:11px;color:var(--muted);text-decoration:none;border:1px solid var(--grid);border-radius:6px;padding:6px 11px;white-space:nowrap;transition:all .15s}
+  .backlink:hover{color:var(--good);border-color:var(--good)}
 
   /* status pills */
   .pills{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px}
@@ -137,7 +140,9 @@
   <div>
     <h1>GREENIUM <span>LIVE</span> SIMULATOR</h1>
     <div class="src">stylized model · Ibnat (2026), CEU · twin-bond ΔGreenium under the market development threshold interpretation</div>
+    <div class="sandbox-note">Sandbox · runs continuously, no win or lose. Fire events and read each verdict; a summary appears once you've tested both market regimes.</div>
   </div>
+  <a class="backlink" href="../index.html">← Back to homepage</a>
 </header>
 
 <div class="pills" role="status" aria-live="polite" data-tour="pills">
@@ -245,7 +250,8 @@ const S = {
   day:0, depth:25, cred:10, baseVix:17, vix:17,
   g:0.5, gSeries:[], vSeries:[],
   events:[],                            // {day, preMean, resolved}
-  playing:true, speed:1, wasMature:false
+  playing:true, speed:1, wasMature:false,
+  sawThin:false, sawMature:false, summaryShown:false
 };
 const $=id=>document.getElementById(id);
 
@@ -288,9 +294,12 @@ function tick(){
       if(e.thin){
         const p=(0.35+Math.random()*0.55).toFixed(2);
         pushFeed(`<span class="d">day ${e.day}</span> event study: Δ = ${fmt(d)} over 20 days. Not distinguishable from noise (p ≈ ${p}). The market didn't blink.`,"null");
+        S.sawThin=true;
       } else {
         pushFeed(`<span class="d">day ${e.day}</span> event study: Δ = ${fmt(d)} — repriced. Mandate-driven investors received the signal.`,"hit");
+        S.sawMature=true;
       }
+      maybeSummary();
     }
   });
   // threshold crossing message
@@ -306,6 +315,18 @@ function pushFeed(html,cls){
   const p=document.createElement("p"); if(cls)p.className=cls; p.innerHTML=html;
   const f=$("feed"); f.prepend(p);
   while(f.children.length>40)f.removeChild(f.lastChild);
+}
+
+function maybeSummary(){
+  if(S.summaryShown || !(S.sawThin && S.sawMature)) return;
+  S.summaryShown=true;
+  pushFeed(
+    `<b>✓ You've seen the whole argument.</b> You fired a credibility event in a <b>thin</b> market `+
+    `(it didn't price — lost in noise) and in a <b>deep</b> market past the depth threshold `+
+    `(it repriced). That contrast <i>is</i> the thesis finding: credibility only moves the greenium `+
+    `once a market is deep enough to carry the signal. Keep playing to explore, or head back to read more.`,
+    "gold"
+  );
 }
 
 /* ---------------- rendering ---------------- */
