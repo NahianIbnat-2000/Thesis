@@ -284,6 +284,140 @@
   </div>
 </footer>
 
+<!-- ===== FLOATING FAQ CHATBOT ===== -->
+<style>
+  #faq-fab{position:fixed;bottom:26px;right:22px;z-index:9999;
+    width:54px;height:54px;border-radius:50%;border:none;cursor:pointer;
+    background:var(--mint);color:#fff;font-size:24px;
+    box-shadow:0 6px 24px rgba(30,158,120,.45);
+    display:flex;align-items:center;justify-content:center;
+    transition:transform .15s,box-shadow .15s}
+  #faq-fab:hover{transform:scale(1.08);box-shadow:0 10px 32px rgba(30,158,120,.55)}
+  #faq-panel{position:fixed;bottom:92px;right:22px;z-index:9998;
+    width:340px;max-width:calc(100vw - 28px);
+    background:#fff;border:1.5px solid var(--line);border-radius:18px;
+    box-shadow:0 20px 56px -16px rgba(22,35,59,.38);
+    display:none;flex-direction:column;overflow:hidden;font-family:var(--sans)}
+  #faq-panel.open{display:flex}
+  #faq-head{background:var(--mint);color:#fff;padding:14px 18px;
+    display:flex;align-items:center;justify-content:space-between}
+  #faq-head span{font-size:14px;font-weight:600}
+  #faq-head button{background:none;border:none;color:#fff;font-size:19px;cursor:pointer;line-height:1;padding:0}
+  #faq-msgs{flex:1;overflow-y:auto;padding:14px 14px 6px;
+    display:flex;flex-direction:column;gap:8px;max-height:320px}
+  .fmsg{max-width:90%;padding:10px 13px;border-radius:14px;font-size:13.5px;line-height:1.5}
+  .fmsg.bot{background:var(--paper-2);color:var(--ink);align-self:flex-start;border-bottom-left-radius:4px}
+  .fmsg.usr{background:var(--mint);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+  #faq-chips{padding:8px 12px;display:flex;flex-wrap:wrap;gap:6px}
+  .fchip{font-family:var(--mono);font-size:11px;font-weight:600;padding:5px 11px;
+    border-radius:20px;border:1.5px solid var(--mint);color:var(--mint);
+    background:#fff;cursor:pointer;transition:all .12s;white-space:nowrap}
+  .fchip:hover{background:var(--mint);color:#fff}
+  #faq-form{display:flex;padding:8px 12px 12px;gap:8px}
+  #faq-input{flex:1;border:1.5px solid var(--line);border-radius:10px;
+    padding:9px 12px;font-size:13px;font-family:var(--sans);outline:none;background:var(--paper-2)}
+  #faq-input:focus{border-color:var(--mint)}
+  #faq-send{background:var(--mint);color:#fff;border:none;border-radius:10px;
+    padding:9px 13px;cursor:pointer;font-size:16px;line-height:1;transition:background .12s}
+  #faq-send:hover{background:#17835f}
+</style>
+
+<button id="faq-fab" aria-label="Ask a question about the thesis">💬</button>
+<div id="faq-panel" role="dialog" aria-label="Thesis Q&A">
+  <div id="faq-head">
+    <span>Ask about the thesis</span>
+    <button id="faq-close" aria-label="Close">×</button>
+  </div>
+  <div id="faq-msgs"></div>
+  <div id="faq-chips"></div>
+  <form id="faq-form">
+    <input id="faq-input" type="text" placeholder="Type a question…" autocomplete="off">
+    <button id="faq-send" type="submit">↑</button>
+  </form>
+</div>
+
+<script>
+(function(){
+  const QA=[
+    {q:"What is the greenium?",chips:true,
+      a:"The greenium is the yield discount investors accept when buying a green bond instead of an otherwise identical conventional bond. If a conventional bond yields 5%, the matching green bond might yield 4.97%, a greenium of 3 basis points. Investors are willing to pay a small premium to hold an asset labelled green."},
+    {q:"What did you find?",chips:true,
+      a:"In India and Indonesia, no credibility signal moved the greenium. Climate-news tone, government pledges, and green-bond issuance all came back null across five specifications. The one robust daily driver was VIX: global risk appetite, not local credibility. Germany and Denmark show a persistent greenium of roughly 1.8 to 2.8 basis points, which confirms the method works. The null reflects thin, illiquid markets, not a failure of green bonds in general."},
+    {q:"Why is the result null?",chips:true,
+      a:"Thin secondary markets. In India and Indonesia, sovereign green bonds trade infrequently, so even genuine credibility signals cannot move prices when there are too few active buyers and sellers to reprice the asset daily. Germany and Denmark, with deep and liquid markets, do show a greenium, so the channel exists — it just needs market infrastructure to function."},
+    {q:"What method did you use?",chips:true,
+      a:"Twin-bond stacked difference-in-differences. Each green bond is paired with a maturity-matched conventional bond from the same issuer, and the daily yield gap between them is the greenium. The estimator is anchored on two political shocks, with GDELT V2Tone for climate-news sentiment and HC3 / panel-corrected standard errors. This design controls for issuer credit risk, duration, and macro conditions."},
+    {q:"What is GDELT?",chips:true,
+      a:"GDELT is the Global Database of Events, Language, and Tone, a project that monitors news coverage worldwide in near real time. The thesis uses GDELT's V2Tone score, a continuous measure of sentiment in climate-related articles, as a proxy for the climate credibility signal governments send through the media environment around their bonds."},
+    {q:"What are the limitations?",chips:true,
+      a:"Two main ones. First, the two-country sample limits statistical power, so the null could partly reflect that rather than a true zero. Second, GDELT tone is a noisy proxy for credibility — it captures the media environment but cannot distinguish between genuine policy progress and spin. The thesis states both plainly."},
+    {q:"What is VIX?",chips:false,
+      a:"VIX is the CBOE Volatility Index, a measure of expected volatility in the US equity market. It is widely used as a gauge of global risk appetite. When VIX rises, investors become more risk-averse and demand higher yields everywhere; when it falls, they accept lower yields. In this thesis, VIX is the one variable that consistently and significantly moves the daily greenium in India and Indonesia."},
+    {q:"What should future research do?",chips:false,
+      a:"Expand the sample to more emerging-market issuers, incorporate secondary-market liquidity measures directly, and test whether credibility signals matter more after a country crosses a market-depth threshold. A longer time horizon would also help, since India and Indonesia only issued their first sovereign green bonds in 2022 and 2018."}
+  ];
+
+  const panel=document.getElementById("faq-panel");
+  const msgs=document.getElementById("faq-msgs");
+  const chips=document.getElementById("faq-chips");
+  const input=document.getElementById("faq-input");
+  const fab=document.getElementById("faq-fab");
+  const form=document.getElementById("faq-form");
+  const closeBtn=document.getElementById("faq-close");
+  let started=false;
+
+  function addMsg(text,role){
+    const d=document.createElement("div");
+    d.className="fmsg "+role; d.textContent=text;
+    msgs.appendChild(d); msgs.scrollTop=msgs.scrollHeight;
+  }
+
+  function showChips(){
+    chips.innerHTML="";
+    QA.filter(q=>q.chips).forEach(qa=>{
+      const b=document.createElement("button");
+      b.className="fchip"; b.textContent=qa.q;
+      b.addEventListener("click",()=>answer(qa.q,qa.a));
+      chips.appendChild(b);
+    });
+  }
+
+  function answer(q,a){
+    addMsg(q,"usr"); chips.innerHTML="";
+    setTimeout(()=>{ addMsg(a,"bot"); showChips(); },220);
+  }
+
+  function tryKeyword(text){
+    const t=text.toLowerCase();
+    const kw=[
+      {k:["greenium","premium","discount","yield"],i:0},
+      {k:["find","result","conclusion","significant","null","evidence"],i:1},
+      {k:["why","thin","market","liquidity","depth"],i:2},
+      {k:["method","design","did","diff","twin","stacked","specification"],i:3},
+      {k:["gdelt","tone","sentiment","news","media"],i:4},
+      {k:["limit","limitation","problem","weakness"],i:5},
+      {k:["vix","volatility","risk","global"],i:6},
+      {k:["future","next","research","extend"],i:7}
+    ];
+    for(const {k,i} of kw){ if(k.some(w=>t.includes(w))) return QA[i].a; }
+    return "Good question. The thesis covers credibility, greenium pricing, twin-bond methodology, GDELT sentiment, and emerging-market market depth. Try one of the quick questions below, or ask in different words.";
+  }
+
+  fab.addEventListener("click",()=>{
+    panel.classList.toggle("open");
+    if(!started){ started=true; addMsg("Hi! Ask me anything about the thesis. The quick buttons below cover the main topics.","bot"); showChips(); }
+  });
+  closeBtn.addEventListener("click",()=>panel.classList.remove("open"));
+  form.addEventListener("submit",e=>{
+    e.preventDefault();
+    const v=input.value.trim(); if(!v) return;
+    const match=QA.find(qa=>qa.q.toLowerCase()===v.toLowerCase());
+    answer(v, match ? match.a : tryKeyword(v));
+    input.value="";
+  });
+})();
+</script>
+
 <script>
 "use strict";
 // hero greenium line: noisy/red while "thin", then settles green, answers the headline
