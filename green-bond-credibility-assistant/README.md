@@ -1,5 +1,11 @@
 # Green Bond Credibility Assistant
 
+> **Status: local prototype, not deployed.** The assistant on the thesis website
+> runs a different, simpler backend: [`green-bond-assistant-backend/`](../green-bond-assistant-backend/)
+> (FastAPI on Render, TF-IDF retrieval over the thesis text only). Everything below
+> describes this local version: dense retrieval with `bge-small-en-v1.5`, ChromaDB,
+> and a ~30-document corpus that you assemble yourself (it is not in the repo).
+
 A retrieval-augmented research assistant for the sovereign green bond
 ("greenium") literature — built on top of my MA thesis,
 [*When Governments Say "Green" — Do Bond Markets Believe Them?*](https://github.com/NahianIbnat-2000/Thesis)
